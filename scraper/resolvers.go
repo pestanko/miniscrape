@@ -89,7 +89,7 @@ func (r pageResolvedGet) htmlToText(selection *goquery.Selection) (string, error
 	if err != nil {
 		return "", err
 	}
-	text, err := html2text.FromString(htmlContent)
+	text, err := html2text.FromString(htmlContent, html2text.Options{PrettyTables: false})
 	if err != nil {
 		log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
 		return "", err
@@ -105,10 +105,14 @@ func (r pageResolvedGet) applyFilters(contentArray []string) string {
 	filters := []func(*config.Page) PageFilter{
 		NewCutFilter,
 		NewDayFilter,
+		NewCutLineFilter,
 	}
 	newContent := content
 	for _, newFilter := range filters {
 		filter := newFilter(r.page)
+		if !filter.IsEnabled() {
+			continue
+		}
 		newContent, _ = filter.Filter(newContent)
 		if newContent == "" {
 			return ""

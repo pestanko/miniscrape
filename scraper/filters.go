@@ -8,7 +8,7 @@ import (
 
 type PageFilter interface {
 	Filter(content string) (string, error)
-	Enabled() bool
+	IsEnabled() bool
 }
 
 func NewCutFilter(page *config.Page) PageFilter {
@@ -16,6 +16,13 @@ func NewCutFilter(page *config.Page) PageFilter {
 		page.Filters.Cut,
 	}
 }
+
+func NewCutLineFilter(page *config.Page) PageFilter {
+	return &cutLineFilter{
+		page.Filters.CutLine,
+	}
+}
+
 func NewDayFilter(page *config.Page) PageFilter {
 	return &dayFilter{
 		page.Filters.Day,
@@ -26,7 +33,7 @@ type dayFilter struct {
 	day config.DayFilter
 }
 
-func (f *dayFilter) Enabled() bool {
+func (f *dayFilter) IsEnabled() bool {
 	return f.config().Enabled
 }
 
@@ -66,14 +73,51 @@ func (f *cutFilter) config() *config.CutFilter {
 	return &f.cut
 }
 
-func (f *cutFilter) Enabled() bool {
-	return f.config().After != "" && f.config().Before != ""
+func (f *cutFilter) IsEnabled() bool {
+	return f.config().After != "" || f.config().Before != ""
 }
 
 func (f *cutFilter) Filter(content string) (string, error) {
 	cfg := f.config()
 	startIndex, endIndex := findBoundaries(content, cfg.Before, cfg.After)
 	return cutContent(content, startIndex, endIndex), nil
+}
+
+type cutLineFilter struct {
+	cutLine config.CutLineFilter
+}
+
+func (c *cutLineFilter) Filter(content string) (string, error) {
+	cfg := c.config()
+	lines := strings.Split(content, "\n")
+	var result []string
+	for _, line := range lines {
+		line := line
+		if cfg.Contains != "" && strings.Contains(line, cfg.Contains) {
+			line = ""
+		}
+		if cfg.StartsWith != "" && strings.HasPrefix(line, cfg.StartsWith) {
+			line = ""
+		}
+		if cfg.CutAfter != "" {
+			start, end := findBoundaries(line, "", cfg.CutAfter)
+			line = cutContent(line, start, end)
+		}
+		if line != "" {
+			result = append(result, line)
+		}
+	}
+
+	return strings.Join(result, "\n"), nil
+}
+
+func (c *cutLineFilter) IsEnabled() bool {
+	cfg := c.config()
+	return cfg.Contains != "" || cfg.CutAfter != "" || cfg.StartsWith != ""
+}
+
+func (c *cutLineFilter) config() *config.CutLineFilter {
+	return &c.cutLine
 }
 
 func findBoundaries(content string, start string, end string) (int, int) {

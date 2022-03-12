@@ -16,18 +16,26 @@ type Page struct {
 	Url         string        `yaml:"url"`
 	Query       string        `yaml:"query"`
 	CachePolicy string        `yaml:"cache_policy"`
-	Filters     FiltersConfig `yaml:"filters"`
+	Category    string        `yaml:"category"`
 	Tags        []string      `yaml:"tags"`
+	Filters     FiltersConfig `yaml:"filters"`
 }
 
 type FiltersConfig struct {
-	Cut CutFilter `yaml:"cut"`
-	Day DayFilter `yaml:"day"`
+	Cut     CutFilter     `yaml:"cut"`
+	CutLine CutLineFilter `yaml:"cutLine"`
+	Day     DayFilter     `yaml:"day"`
 }
 
 type CutFilter struct {
 	Before string `yaml:"before"`
 	After  string `yaml:"after"`
+}
+
+type CutLineFilter struct {
+	StartsWith string `yaml:"startsWith"`
+	Contains   string `yaml:"contains"`
+	CutAfter   string `yaml:"cutAfter"`
 }
 
 type DayFilter struct {
