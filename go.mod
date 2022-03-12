@@ -6,6 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
+	jaytaylor.com/html2text v0.0.0-20211105163654-bc68cce691ba
 )
 
 require (
@@ -31,5 +32,4 @@ require (
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	jaytaylor.com/html2text v0.0.0-20211105163654-bc68cce691ba // indirect
 )
