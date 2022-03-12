@@ -60,8 +60,7 @@ func (r pageResolvedGet) Resolve(ctx context.Context) RunResult {
 	}
 
 	contentArray := r.selectByQueryString(doc)
-	content := strings.Join(contentArray, "\n")
-	content = r.applyFilters(content)
+	content := r.applyFilters(contentArray)
 	log.Printf("Alvin resolved!")
 
 	return RunResult{
@@ -98,7 +97,11 @@ func (r pageResolvedGet) htmlToText(selection *goquery.Selection) (string, error
 	return text, err
 }
 
-func (r pageResolvedGet) applyFilters(content string) string {
+func (r pageResolvedGet) applyFilters(contentArray []string) string {
+	content := strings.Join(contentArray, "\n")
+	if strings.TrimSpace(content) == "" {
+		return ""
+	}
 	filters := []func(*config.Page) PageFilter{
 		NewCutFilter,
 		NewDayFilter,
@@ -107,6 +110,9 @@ func (r pageResolvedGet) applyFilters(content string) string {
 	for _, newFilter := range filters {
 		filter := newFilter(r.page)
 		newContent, _ = filter.Filter(newContent)
+		if newContent == "" {
+			return ""
+		}
 	}
 	return newContent
 }
