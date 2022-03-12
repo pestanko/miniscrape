@@ -26,15 +26,20 @@ type dayFilter struct {
 	day config.DayFilter
 }
 
-func (f dayFilter) Enabled() bool {
+func (f *dayFilter) Enabled() bool {
 	return f.config().Enabled
 }
 
-func (f dayFilter) Filter(content string) (string, error) {
+func (f *dayFilter) config() *config.DayFilter {
+	return &f.day
+}
+
+func (f *dayFilter) Filter(content string) (string, error) {
 	days := f.config().Days
 	weekday := time.Now().Weekday()
+	upperContent := strings.ToUpper(content)
 	if len(days) != 0 {
-		start, end := tryApplyDayFilter(content, days, weekday)
+		start, end := tryApplyDayFilter(upperContent, days, weekday)
 		return cutContent(content, start, end), nil
 	} else {
 		allVersions := [][]string{
@@ -43,7 +48,7 @@ func (f dayFilter) Filter(content string) (string, error) {
 			{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"},
 		}
 		for _, days := range allVersions {
-			start, end := tryApplyDayFilter(content, days, weekday)
+			start, end := tryApplyDayFilter(upperContent, days, weekday)
 			if start == -1 && end == -1 {
 				continue
 			}
@@ -53,23 +58,19 @@ func (f dayFilter) Filter(content string) (string, error) {
 	return content, nil
 }
 
-func (f dayFilter) config() *config.DayFilter {
-	return &f.day
-}
-
 type cutFilter struct {
 	cut config.CutFilter
 }
 
-func (f cutFilter) config() *config.CutFilter {
+func (f *cutFilter) config() *config.CutFilter {
 	return &f.cut
 }
 
-func (f cutFilter) Enabled() bool {
+func (f *cutFilter) Enabled() bool {
 	return f.config().After != "" && f.config().Before != ""
 }
 
-func (f cutFilter) Filter(content string) (string, error) {
+func (f *cutFilter) Filter(content string) (string, error) {
 	cfg := f.config()
 	startIndex, endIndex := findBoundaries(content, cfg.Before, cfg.After)
 	return cutContent(content, startIndex, endIndex), nil
@@ -106,8 +107,12 @@ func cutContent(content string, startIndex int, endIndex int) string {
 func tryApplyDayFilter(content string, days []string, weekday time.Weekday) (int, int) {
 	currIdx := (int(weekday) - 1) % 7
 	nextIdx := (currIdx + 1) % 7
-	currDay := days[currIdx]
-	nextDay := days[nextIdx]
+	var upperDays []string
+	for _, day := range days {
+		upperDays = append(upperDays, strings.ToUpper(day))
+	}
+	currDay := upperDays[currIdx]
+	nextDay := upperDays[nextIdx]
 
 	return findBoundaries(content, currDay, nextDay)
 }
