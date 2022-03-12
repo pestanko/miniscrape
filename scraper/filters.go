@@ -100,6 +100,9 @@ func cutContent(content string, startIndex int, endIndex int) string {
 	if endIndex == -1 {
 		endIndex = len(content) - 1
 	}
+	if content == "" {
+		return ""
+	}
 
 	return content[startIndex:endIndex]
 }

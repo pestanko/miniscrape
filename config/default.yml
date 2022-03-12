@@ -10,4 +10,11 @@ pages:
         before: "*TÝDENNÍ MENU*"
       day:
         enabled: true
+    tags: [ "rh", "cz", "medlanky", "ita" ]
+
+  - codename: "moravia"
+    name: "Moravia Week Menu"
+    homepage: "https://www.pivovarskarestauracemoravia.cz/"
+    url: "https://www.pivovarskarestauracemoravia.cz/"
+    query: "#block-dennimenu .active"
     tags: [ "rh", "cz", "medlanky" ]

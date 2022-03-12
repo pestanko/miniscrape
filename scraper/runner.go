@@ -11,7 +11,6 @@ type RunResultStatus string
 const (
 	RunSuccess RunResultStatus = "ok"
 	RunError   RunResultStatus = "error"
-	RunTimeout RunResultStatus = "timeout"
 )
 
 type RunResult struct {
@@ -64,6 +63,8 @@ func (a asyncRunner) collectResults(channelWithResults chan RunResult) []RunResu
 
 func (a asyncRunner) startAsyncRequests(resChan chan<- RunResult, ctx context.Context) {
 	for idx, page := range a.cfg.Pages {
+		idx := idx
+		page := page
 		go func() {
 			log.Printf("%03d. Starting to Resolve \"%s\"", idx, page.CodeName)
 			resolver := NewGetPageResolver(&page)
