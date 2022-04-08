@@ -31,7 +31,9 @@ type Page struct {
 	Url         string        `yaml:"url"`
 	Query       string        `yaml:"query"`
 	CachePolicy string        `yaml:"cache_policy"`
+	Resolver    string        `yaml:"resolver"`
 	Category    string        `yaml:"category"`
+	Disabled    bool          `yaml:"disabled"`
 	Tags        []string      `yaml:"tags"`
 	Filters     FiltersConfig `yaml:"filters"`
 }
@@ -103,10 +105,13 @@ func loadCategoryFile(baseDir string, catName string) (bool, Category) {
 		cat.Name = catName
 	}
 
-	// Normalize the category
+	// Normalize the pages
 	for idx := range cat.Pages {
 		if cat.Pages[idx].Category == "" {
 			cat.Pages[idx].Category = cat.Name
+		}
+		if cat.Pages[idx].Resolver == "" {
+			cat.Pages[idx].Resolver = "default"
 		}
 	}
 

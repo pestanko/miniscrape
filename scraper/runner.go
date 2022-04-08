@@ -99,7 +99,7 @@ func (a *asyncRunner) filterPages(sel RunSelector) []config.Page {
 		}
 
 		for _, page := range category.Pages {
-			if tagsResolver.isMatch(page.Tags) {
+			if !page.Disabled && tagsResolver.isMatch(page.Tags) {
 				result = append(result, page)
 			}
 		}
