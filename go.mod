@@ -11,7 +11,10 @@ require (
 
 require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
+	github.com/antchfx/htmlquery v1.2.4 // indirect
+	github.com/antchfx/xpath v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
