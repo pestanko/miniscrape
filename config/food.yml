@@ -18,3 +18,11 @@ pages:
     url: "https://www.pivovarskarestauracemoravia.cz/"
     query: "#block-dennimenu .active"
     tags: [ "rh", "food", "cz", "medlanky" ]
+
+  - codename: "himalaya"
+    name: "Himalaya"
+    url: "https://www.himalayarestaurace.cz/"
+    homepage: "https://www.himalayarestaurace.cz/"
+    resolver: "url-only"
+    cache_policy: "no-cache"
+    tags: [ "ns", "food", "india", "city" ]

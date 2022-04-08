@@ -20,17 +20,26 @@ type PageResolver interface {
 	Resolve(ctx context.Context) RunResult
 }
 
-func NewGetPageResolver(page config.Page) PageResolver {
-	return &pageResolvedGet{
-		page: page,
-		client: http.Client{
-			Timeout: 30 * time.Second,
-		},
+func NewPageResolver(page config.Page) PageResolver {
+	switch page.Resolver {
+	case "url_only", "urlonly", "url-only":
+		return &urlOnlyResolver{
+			page: page,
+		}
+	case "get", "default":
+		fallthrough
+	default:
+		return &pageResolvedGet{
+			page: page,
+			client: http.Client{
+				Timeout: 30 * time.Second,
+			},
+		}
 	}
 }
 
 func NewGetCachedPageResolver(page config.Page, cacheInstance cache.Cache) PageResolver {
-	inner := NewGetPageResolver(page)
+	inner := NewPageResolver(page)
 	if cacheInstance == nil {
 		return inner
 	}
@@ -60,12 +69,17 @@ func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
 			Status:  RunSuccess,
 		}
 	}
+
 	res := c.resolver.Resolve(ctx)
 	if res.Status != RunSuccess {
 		return res
 	}
 
-	err := c.cache.Store(cache.Item{PageName: c.page.CodeName}, []byte(res.Content))
+	err := c.cache.Store(cache.Item{
+		PageName:     c.page.CodeName,
+		CategoryName: c.page.Category,
+		CachePolicy:  c.page.CachePolicy,
+	}, []byte(res.Content))
 	if err != nil {
 		return makeErrorResult(c.page, err)
 	}
@@ -164,6 +178,18 @@ func (r *pageResolvedGet) applyFilters(contentArray []string) string {
 		}
 	}
 	return newContent
+}
+
+type urlOnlyResolver struct {
+	page config.Page
+}
+
+func (u *urlOnlyResolver) Resolve(ctx context.Context) RunResult {
+	return RunResult{
+		Page:    u.page,
+		Content: fmt.Sprintf("Url for menu: %s", u.page.Url),
+		Status:  RunSuccess,
+	}
 }
 
 func makeErrorResult(page config.Page, err error) RunResult {

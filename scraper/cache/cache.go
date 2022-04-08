@@ -50,6 +50,7 @@ type Item struct {
 	PageName     string
 	FileName     string
 	CategoryName string
+	CachePolicy  string
 }
 
 func (c *cacheFs) GetContent(item Item) []byte {
@@ -69,6 +70,10 @@ func (c *cacheFs) IsPageCached(pageName string) bool {
 }
 
 func (c *cacheFs) Store(item Item, content []byte) error {
+	if item.CachePolicy == "no-cache" || item.CachePolicy == "no" {
+		return nil
+	}
+
 	fp := c.getFileForItem(item)
 
 	if !c.IsPageCached(item.PageName) {

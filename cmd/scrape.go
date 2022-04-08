@@ -25,6 +25,8 @@ import (
 var (
 	categoryArg string
 	tagsArg     []string
+	noCache     bool
+	updateCache bool
 )
 
 // scrapeCmd represents the scrape command
@@ -34,6 +36,12 @@ var scrapeCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.GetAppConfig()
+		if noCache {
+			cfg.Cache.Enabled = false
+		}
+		if updateCache {
+			cfg.Cache.Update = true
+		}
 		categories := config.LoadCategories(cfg)
 		runner := scraper.NewAsyncRunner(cfg, categories)
 		selector := scraper.RunSelector{
@@ -63,6 +71,11 @@ func init() {
 		"Scrape pages based on the category")
 	scrapeCmd.PersistentFlags().StringSliceVarP(&tagsArg, "tags", "T", []string{},
 		"Select pages based on provided tags")
+
+	scrapeCmd.PersistentFlags().BoolVar(&noCache, "no-cache", false,
+		"Disable caching")
+	scrapeCmd.PersistentFlags().BoolVarP(&updateCache, "update-cache", "U", false,
+		"Update cache")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
