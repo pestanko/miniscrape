@@ -21,8 +21,20 @@ pages:
 
   - codename: "himalaya"
     name: "Himalaya"
-    url: "https://www.himalayarestaurace.cz/"
     homepage: "https://www.himalayarestaurace.cz/"
+    url: "https://www.himalayarestaurace.cz/denni-menu/"
     resolver: "url-only"
     cache_policy: "no-cache"
     tags: [ "ns", "food", "india", "city" ]
+
+  - codename: "charlies_square"
+    name: "Charlie's square"
+    homepage: "https://www.charliessquare.cz/"
+    url: "https://www.charliessquare.cz/"
+    query: "div.entry-content"
+    tags: [ "ns", "city", "cz" ]
+    filters:
+      html:
+        pretty_tables: True
+      cut:
+        after: "NABÍDKA BARU"

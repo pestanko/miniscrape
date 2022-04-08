@@ -145,10 +145,15 @@ func (r *pageResolvedGet) selectByQueryString(doc *goquery.Document) []string {
 
 func (r *pageResolvedGet) htmlToText(selection *goquery.Selection) (string, error) {
 	htmlContent, err := selection.Html()
+
 	if err != nil {
 		return "", err
 	}
-	text, err := html2text.FromString(htmlContent, html2text.Options{PrettyTables: false})
+	log.Printf("Found by query: %s", htmlContent)
+	text, err := html2text.FromString(htmlContent, html2text.Options{
+		PrettyTables: r.page.Filters.Html.PrettyTables,
+		TextOnly:     r.page.Filters.Html.TextOnly,
+	})
 	if err != nil {
 		log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
 		return "", err

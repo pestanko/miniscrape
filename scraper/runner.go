@@ -5,6 +5,7 @@ import (
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -18,6 +19,7 @@ const (
 type RunSelector struct {
 	Tags     []string
 	Category string
+	Name     string
 }
 
 type RunResult struct {
@@ -94,12 +96,21 @@ func (a *asyncRunner) filterPages(sel RunSelector) []config.Page {
 	tagsResolver := MakeTagsResolver(sel.Tags)
 	for _, category := range a.categories {
 		// filter out the category
+
 		if sel.Category != "" && category.Name != sel.Category {
 			continue
 		}
 
 		for _, page := range category.Pages {
-			if !page.Disabled && tagsResolver.isMatch(page.Tags) {
+			if page.Disabled {
+				continue
+			}
+
+			if sel.Name != "" && !strings.Contains(page.CodeName, sel.Name) {
+				continue
+			}
+
+			if tagsResolver.isMatch(page.Tags) {
 				result = append(result, page)
 			}
 		}

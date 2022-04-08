@@ -27,6 +27,7 @@ var (
 	tagsArg     []string
 	noCache     bool
 	updateCache bool
+	nameArg     string
 )
 
 // scrapeCmd represents the scrape command
@@ -47,6 +48,7 @@ var scrapeCmd = &cobra.Command{
 		selector := scraper.RunSelector{
 			Tags:     tagsArg,
 			Category: categoryArg,
+			Name:     nameArg,
 		}
 		results := runner.Run(selector)
 		for _, r := range results {
@@ -76,6 +78,9 @@ func init() {
 		"Disable caching")
 	scrapeCmd.PersistentFlags().BoolVarP(&updateCache, "update-cache", "U", false,
 		"Update cache")
+
+	scrapeCmd.PersistentFlags().StringVarP(&nameArg, "nameArg", "N", "",
+		"Select by codename")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

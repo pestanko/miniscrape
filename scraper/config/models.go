@@ -38,10 +38,16 @@ type Page struct {
 	Filters     FiltersConfig `yaml:"filters"`
 }
 
+type HtmlFilter struct {
+	PrettyTables bool `yaml:"pretty_tables"`
+	TextOnly     bool `yaml:"text_only"`
+}
+
 type FiltersConfig struct {
 	Cut     CutFilter     `yaml:"cut"`
 	CutLine CutLineFilter `yaml:"cutLine"`
 	Day     DayFilter     `yaml:"day"`
+	Html    HtmlFilter    `yaml:"html"`
 }
 
 type CutFilter struct {
