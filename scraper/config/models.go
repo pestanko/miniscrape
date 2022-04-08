@@ -30,6 +30,7 @@ type Page struct {
 	Homepage    string        `yaml:"homepage"`
 	Url         string        `yaml:"url"`
 	Query       string        `yaml:"query"`
+	XPath       string        `yaml:"xpath"`
 	CachePolicy string        `yaml:"cache_policy"`
 	Resolver    string        `yaml:"resolver"`
 	Category    string        `yaml:"category"`

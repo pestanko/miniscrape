@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/antchfx/htmlquery"
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
 	"io"
@@ -112,15 +113,20 @@ func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
 		return makeErrorResult(r.page, err)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
+	var contentArray []string
+
+	if r.page.Query != "" {
+		contentArray, err = r.parseUsingCssQuery(bodyContent)
+	} else {
+		contentArray, err = r.parseUsingXPathQuery(bodyContent)
+	}
+
 	if err != nil {
 		log.Printf("Parsing failed for (url: \"%s\"): %v\n", r.page.Url, err)
 		return makeErrorResult(r.page, err)
 	}
-
-	contentArray := r.selectByQueryString(doc)
 	content := r.applyFilters(contentArray)
-	log.Printf("Alvin resolved!")
+	log.Printf("%s resolved!", r.page.CodeName)
 
 	return RunResult{
 		Page:    r.page,
@@ -129,26 +135,55 @@ func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
 	}
 }
 
-func (r *pageResolvedGet) selectByQueryString(doc *goquery.Document) []string {
+func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error) {
+	root, err := htmlquery.Parse(bytes.NewReader(content))
+	if err != nil {
+		return []string{}, err
+	}
+	nodes, err := htmlquery.QueryAll(root, r.page.XPath)
+	if err != nil {
+		return []string{}, err
+	}
+
+	var result []string
+
+	for _, node := range nodes {
+		html := htmlquery.OutputHTML(node, true)
+		text, err := r.htmlToText(html)
+		if err != nil {
+			continue
+		}
+		result = append(result, text)
+	}
+
+	return result, nil
+}
+
+func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, error) {
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
+	if err != nil {
+		return []string{}, err
+	}
+
 	var content []string
 	doc.Find(r.page.Query).Each(func(idx int, selection *goquery.Selection) {
-		text, err := r.htmlToText(selection)
+		htmlContent, err := selection.Html()
 		if err != nil {
 			log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
 			return
 		}
-		content = append(content, normalizeString(text))
+		text, err := r.htmlToText(htmlContent)
+		if err != nil {
+			log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
+			return
+		}
+		content = append(content, text)
 	})
 
-	return content
+	return content, nil
 }
 
-func (r *pageResolvedGet) htmlToText(selection *goquery.Selection) (string, error) {
-	htmlContent, err := selection.Html()
-
-	if err != nil {
-		return "", err
-	}
+func (r *pageResolvedGet) htmlToText(htmlContent string) (string, error) {
 	log.Printf("Found by query: %s", htmlContent)
 	text, err := html2text.FromString(htmlContent, html2text.Options{
 		PrettyTables: r.page.Filters.Html.PrettyTables,
@@ -158,7 +193,7 @@ func (r *pageResolvedGet) htmlToText(selection *goquery.Selection) (string, erro
 		log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
 		return "", err
 	}
-	return text, err
+	return normalizeString(text), nil
 }
 
 func (r *pageResolvedGet) applyFilters(contentArray []string) string {
