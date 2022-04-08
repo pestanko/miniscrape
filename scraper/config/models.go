@@ -2,11 +2,19 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"log"
+	"path/filepath"
 )
 
 type AppConfig struct {
+	Categories []string
+}
+
+type Category struct {
 	Pages []Page `yaml:"pages"`
+	Name  string `yaml:"name"`
 }
 
 type Page struct {
@@ -51,4 +59,49 @@ func GetAppConfig() *AppConfig {
 		log.Fatalf("Unable to load configuration (file used: %s): %v", viper.ConfigFileUsed(), err)
 	}
 	return &config
+}
+
+func LoadCategories(cfg *AppConfig) []Category {
+	cfgPathUsed := viper.ConfigFileUsed()
+	baseDir := filepath.Dir(cfgPathUsed)
+	var categories []Category
+
+	for _, catName := range cfg.Categories {
+		ok, cat := loadCategoryFile(baseDir, catName)
+		if ok {
+			categories = append(categories, cat)
+		}
+	}
+
+	return categories
+}
+
+func loadCategoryFile(baseDir string, catName string) (bool, Category) {
+	fp := filepath.Join(baseDir, catName+".yml")
+	log.Printf("Loading file: %s", fp)
+
+	content, err := ioutil.ReadFile(fp)
+	if err != nil {
+		log.Printf("Unable to open file \"%s\": %v", fp, err)
+		return false, Category{}
+	}
+
+	var cat Category
+	if err = yaml.Unmarshal(content, &cat); err != nil {
+		log.Printf("Unable to load file \"%s\": %v", fp, err)
+		return false, Category{}
+	}
+
+	if cat.Name == "" {
+		cat.Name = catName
+	}
+
+	// Normalize the category
+	for idx := range cat.Pages {
+		if cat.Pages[idx].Category == "" {
+			cat.Pages[idx].Category = cat.Name
+		}
+	}
+
+	return true, cat
 }

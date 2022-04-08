@@ -19,7 +19,7 @@ type PageResolver interface {
 	Resolve(ctx context.Context) RunResult
 }
 
-func NewGetPageResolver(page *config.Page) PageResolver {
+func NewGetPageResolver(page config.Page) PageResolver {
 	return &pageResolvedGet{
 		page: page,
 		client: http.Client{
@@ -29,7 +29,7 @@ func NewGetPageResolver(page *config.Page) PageResolver {
 }
 
 type pageResolvedGet struct {
-	page   *config.Page
+	page   config.Page
 	client http.Client
 }
 
@@ -109,7 +109,7 @@ func (r pageResolvedGet) applyFilters(contentArray []string) string {
 	}
 	newContent := content
 	for _, newFilter := range filters {
-		filter := newFilter(r.page)
+		filter := newFilter(&r.page)
 		if !filter.IsEnabled() {
 			continue
 		}
@@ -121,7 +121,7 @@ func (r pageResolvedGet) applyFilters(contentArray []string) string {
 	return newContent
 }
 
-func makeErrorResult(page *config.Page, err error) RunResult {
+func makeErrorResult(page config.Page, err error) RunResult {
 	return RunResult{
 		Page:    page,
 		Content: fmt.Sprintf("Error: %v\n", err),

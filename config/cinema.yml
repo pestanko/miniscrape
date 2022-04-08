@@ -1,0 +1,12 @@
+pages:
+  - codename: "kina-brno"
+    name: "Kina Brno"
+    category: "cinema"
+    homepage: "https://www.csfd.cz/kino/?period=today&district=55"
+    url: "https://www.csfd.cz/kino/?period=today&district=55"
+    query: "#snippet--cinemas"
+    filters:
+      cutLine:
+        startsWith: "tel."
+        cutAfter: "( /"
+    tags: [ "cinema", "kino", "brno" ]

@@ -22,22 +22,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	categoryArg string
+	tagsArg     []string
+)
+
 // scrapeCmd represents the scrape command
 var scrapeCmd = &cobra.Command{
 	Use:   "scrape",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Scrape the pages",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.GetAppConfig()
-		runner := scraper.NewAsyncRunner(cfg)
-		results := runner.Run()
+		categories := config.LoadCategories(cfg)
+		runner := scraper.NewAsyncRunner(cfg, categories)
+		selector := scraper.RunSelector{
+			Tags:     tagsArg,
+			Category: categoryArg,
+		}
+		results := runner.Run(selector)
 		for _, r := range results {
-			fmt.Printf("Result[%s] for \"%s\"\n", r.Status, r.Page.Homepage)
+			fmt.Printf("Result[%s] for  \"%s (%s)\" (url: \"%s\")\n",
+				r.Status,
+				r.Page.Name,
+				r.Page.CodeName,
+				r.Page.Homepage)
 			fmt.Printf("%s\n\n", r.Content)
 		}
 	},
@@ -48,9 +57,12 @@ func init() {
 
 	// Here you will define your flags and configuration settings.
 
-	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// scrapeCmd.PersistentFlags().String("foo", "", "A help for foo")
+	scrapeCmd.PersistentFlags().StringVarP(&categoryArg, "category", "C", "",
+		"Scrape pages based on the category")
+	scrapeCmd.PersistentFlags().StringSliceVarP(&tagsArg, "tags", "T", []string{},
+		"Select pages based on provided tags")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

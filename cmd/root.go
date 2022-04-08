@@ -57,7 +57,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config-file", "", "config file (default is ./config/default.yml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config-file", "", "config file (default is ./config/food.yml)")
 }
 
 // initConfig reads in config file and ENV variables if set.

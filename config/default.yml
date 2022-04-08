@@ -1,34 +1,3 @@
-pages:
-  - codename: "alvin"
-    name: "Alvin Week Menu"
-    homepage: "https://www.alvinrestaurace.cz/"
-    category: "food"
-    url: "https://www.alvinrestaurace.cz/obchod/"
-    query: ".content"
-    filters:
-      cut:
-        after: "*Informace o alergenech získáte u obsluhy, nebo v rozvozovém menu.*"
-        before: "*TÝDENNÍ MENU*"
-      day:
-        enabled: true
-    tags: [ "rh", "food", "cz", "medlanky", "ita" ]
-
-  - codename: "moravia"
-    name: "Moravia Week Menu"
-    category: "food"
-    homepage: "https://www.pivovarskarestauracemoravia.cz/"
-    url: "https://www.pivovarskarestauracemoravia.cz/"
-    query: "#block-dennimenu .active"
-    tags: [ "rh", "food", "cz", "medlanky" ]
-
-  - codename: "kina-brno"
-    name: "Kina Brno"
-    category: "cinema"
-    homepage: "https://www.csfd.cz/kino/?period=today&district=55"
-    url: "https://www.csfd.cz/kino/?period=today&district=55"
-    query: "#snippet--cinemas"
-    filters:
-      cutLine:
-        startsWith: "tel."
-        cutAfter: "( /"
-    tags: [ "cinema", "kino", "brno" ]
+categories:
+  - food
+  - cinema
