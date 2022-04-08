@@ -94,7 +94,13 @@ type pageResolvedGet struct {
 }
 
 func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
-	res, err := r.client.Get(r.page.Url)
+	req, err := http.NewRequest("GET", r.page.Url, nil)
+	if err != nil {
+		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
+		return makeErrorResult(r.page, err)
+	}
+	req.Header.Add("User-Agent", `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`)
+	res, err := r.client.Do(req)
 	if err != nil {
 		log.Printf("Request failed for (url: \"%s\"): %v\n", r.page.Url, err)
 		log.Printf("Error[%d]: %v", res.StatusCode, res)

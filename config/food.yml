@@ -30,11 +30,84 @@ pages:
   - codename: "charlies_square"
     name: "Charlie's square"
     homepage: "https://www.charliessquare.cz/"
-    url: "https://www.charliessquare.cz/"
+    url: "https://www.charliessquare.cz/menu"
     xpath: "//div[@class='entry-content']//table[not(contains(@class, 'menu-bar'))]"
     tags: [ "ns", "city", "cz" ]
     filters:
       html:
         pretty_tables: True
+
+  - codename: "charlies_mill"
+    name: "Charlie's mill"
+    homepage: "https://www.charliesmill.cz/"
+    url: "https://www.charliesmill.cz/menu"
+    xpath: "//div[@class='entry-content']//table[not(contains(@class, 'menu-bar'))]"
+    tags: [ "cz" ]
+    filters:
+      html:
+        pretty_tables: True
+
+  - codename: "jean_pauls"
+    name: "Jean Pauls"
+    homepage: "http://jpbistro.cz/"
+    url: "http://jpbistro.cz/menu/index.php"
+    query: "div.denni-menu"
+    tags: [ "ns", "gd", "ita", "city" ]
+    filters:
+      day:
+        enabled: true
       cut:
-        after: "NABÍDKA BARU"
+        after: "TÝDENNÍ MENU"
+
+  - codename: "drevak"
+    name: "U Drevaka"
+    tags: [ "fi", "cz" ]
+    homepage: "https://udrevaka.cz/"
+    url: "https://udrevaka.cz/"
+    query: "#menu .special-menu"
+
+  - codename: "padagali"
+    name: "Padagali"
+    homepage: "https://padagali.cz/"
+    url: "https://padagali.cz/denni-menu/"
+    tags: ["fi", "india", "asia"]
+    query: ".glf-mor-restaurant-menu-wrapper"
+    filters:
+      day:
+        enabled: true
+      cut:
+        after: "PŘÍLOHA NAVÍC"
+
+  - codename: "nepal"
+    name: "Nepal"
+    url: "https://nepalbrno.cz/weekly-menu/"
+    homepage: "https://nepalbrno.cz/"
+    query: "#Content .the_content_wrapper"
+    tags: ["rh", "india", asia]
+    filters:
+      day:
+        enabled: true
+      cut:
+        after: "Seznam alergenů"
+      html:
+        pretty_tables: true
+
+  - codename: "globus"
+    name: "Globus Brno"
+    url: "https://www.globus.cz/brno/nabidka/restaurace.html"
+    homepage: "https://www.globus.cz/brno/"
+    tags: [ "rh", "fast" ]
+    query: ".restaurant__menu-table-row--active"
+    disabled: true
+
+  - codename: "annapurna"
+    name: "Annapurna"
+    homepage: "http://www.indicka-restaurace-annapurna.cz/"
+    url: "http://www.indicka-restaurace-annapurna.cz/"
+    query: "div#T_menu"
+    tags: [ "city", "ns", "india", "asia" ]
+    filters:
+      day:
+        enabled: true
+      cut:
+        after: "Polední menu podáváme"
