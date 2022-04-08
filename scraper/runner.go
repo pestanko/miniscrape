@@ -25,7 +25,10 @@ type RunResult struct {
 }
 
 func NewAsyncRunner(cfg *config.AppConfig, categories []config.Category) Runner {
-	return &asyncRunner{cfg: cfg, categories: categories}
+	return &asyncRunner{
+		cfg:        cfg,
+		categories: categories,
+	}
 }
 
 type Runner interface {
@@ -82,7 +85,7 @@ func (a *asyncRunner) startAsyncRequests(resChan chan<- RunResult, ctx context.C
 
 func (a *asyncRunner) filterPages(sel RunSelector) []config.Page {
 	var result []config.Page
-
+	tagsResolver := MakeTagsResolver(sel.Tags)
 	for _, category := range a.categories {
 		// filter out the category
 		if sel.Category != "" && category.Name != sel.Category {
@@ -90,47 +93,11 @@ func (a *asyncRunner) filterPages(sel RunSelector) []config.Page {
 		}
 
 		for _, page := range category.Pages {
-			if filterBySelector(&sel, &page) {
+			if tagsResolver.isMatch(page.Tags) {
 				result = append(result, page)
 			}
 		}
 	}
 
 	return result
-}
-
-func filterBySelector(sel *RunSelector, page *config.Page) bool {
-	if sel.Category != "" && sel.Category != page.Category {
-		return false
-	}
-
-	//if len(sel.Tags) != 0 {
-	//	return false
-	//}
-
-	return true
-}
-
-func containsString(array []string, needle string) bool {
-	for _, item := range array {
-		if needle == item {
-			return true
-		}
-	}
-	return false
-}
-
-func Intersection(a, b []string) (c []string) {
-	m := make(map[string]bool)
-
-	for _, item := range a {
-		m[item] = true
-	}
-
-	for _, item := range b {
-		if _, ok := m[item]; ok {
-			c = append(c, item)
-		}
-	}
-	return
 }
