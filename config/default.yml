@@ -1,3 +1,7 @@
+cache:
+  enabled: true
+  update: false
+
 categories:
   - food
   - cinema

@@ -2,8 +2,10 @@ package scraper
 
 import (
 	"context"
+	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
 	"log"
+	"time"
 )
 
 type RunResultStatus string
@@ -28,6 +30,7 @@ func NewAsyncRunner(cfg *config.AppConfig, categories []config.Category) Runner 
 	return &asyncRunner{
 		cfg:        cfg,
 		categories: categories,
+		cache:      cache.NewCache(cfg.Cache, time.Now()),
 	}
 }
 
@@ -38,6 +41,7 @@ type Runner interface {
 type asyncRunner struct {
 	cfg        *config.AppConfig
 	categories []config.Category
+	cache      cache.Cache
 }
 
 func (a *asyncRunner) Run(selector RunSelector) []RunResult {
@@ -45,8 +49,10 @@ func (a *asyncRunner) Run(selector RunSelector) []RunResult {
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
 	if numberOfPages == 0 {
-		log.Fatalln("No pages available")
+		log.Println("No pages available")
+		return []RunResult{}
 	}
+
 	log.Printf("Processing number of pages: %d", numberOfPages)
 	channelWithResults := make(chan RunResult, numberOfPages)
 	ctx := context.Background()
@@ -77,7 +83,7 @@ func (a *asyncRunner) startAsyncRequests(resChan chan<- RunResult, ctx context.C
 		page := page
 		go func() {
 			log.Printf("%03d. Starting to Resolve \"%s\"", idx, page.CodeName)
-			resolver := NewGetPageResolver(page)
+			resolver := NewGetCachedPageResolver(page, a.cache)
 			resChan <- resolver.Resolve(ctx)
 		}()
 	}

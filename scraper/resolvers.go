@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
 	"io"
 	"jaytaylor.com/html2text"
@@ -28,12 +29,56 @@ func NewGetPageResolver(page config.Page) PageResolver {
 	}
 }
 
+func NewGetCachedPageResolver(page config.Page, cacheInstance cache.Cache) PageResolver {
+	inner := NewGetPageResolver(page)
+	if cacheInstance == nil {
+		return inner
+	}
+	return &cachedPageResolver{
+		resolver: inner,
+		cache:    cacheInstance,
+		page:     page,
+	}
+}
+
+type cachedPageResolver struct {
+	resolver PageResolver
+	cache    cache.Cache
+	page     config.Page
+}
+
+func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
+	if c.cache.IsPageCached(c.page.CodeName) {
+		log.Printf("Loading content from cache '%s'", c.page.CodeName)
+		content := string(c.cache.GetContent(cache.Item{
+			PageName:     c.page.CodeName,
+			CategoryName: c.page.Category,
+		}))
+		return RunResult{
+			Page:    c.page,
+			Content: content,
+			Status:  RunSuccess,
+		}
+	}
+	res := c.resolver.Resolve(ctx)
+	if res.Status != RunSuccess {
+		return res
+	}
+
+	err := c.cache.Store(cache.Item{PageName: c.page.CodeName}, []byte(res.Content))
+	if err != nil {
+		return makeErrorResult(c.page, err)
+	}
+
+	return res
+}
+
 type pageResolvedGet struct {
 	page   config.Page
 	client http.Client
 }
 
-func (r pageResolvedGet) Resolve(ctx context.Context) RunResult {
+func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
 	res, err := r.client.Get(r.page.Url)
 	if err != nil {
 		log.Printf("Request failed for (url: \"%s\"): %v\n", r.page.Url, err)
@@ -70,7 +115,7 @@ func (r pageResolvedGet) Resolve(ctx context.Context) RunResult {
 	}
 }
 
-func (r pageResolvedGet) selectByQueryString(doc *goquery.Document) []string {
+func (r *pageResolvedGet) selectByQueryString(doc *goquery.Document) []string {
 	var content []string
 	doc.Find(r.page.Query).Each(func(idx int, selection *goquery.Selection) {
 		text, err := r.htmlToText(selection)
@@ -84,7 +129,7 @@ func (r pageResolvedGet) selectByQueryString(doc *goquery.Document) []string {
 	return content
 }
 
-func (r pageResolvedGet) htmlToText(selection *goquery.Selection) (string, error) {
+func (r *pageResolvedGet) htmlToText(selection *goquery.Selection) (string, error) {
 	htmlContent, err := selection.Html()
 	if err != nil {
 		return "", err
@@ -97,7 +142,7 @@ func (r pageResolvedGet) htmlToText(selection *goquery.Selection) (string, error
 	return text, err
 }
 
-func (r pageResolvedGet) applyFilters(contentArray []string) string {
+func (r *pageResolvedGet) applyFilters(contentArray []string) string {
 	content := strings.Join(contentArray, "\n")
 	if strings.TrimSpace(content) == "" {
 		return ""

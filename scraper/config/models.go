@@ -10,6 +10,13 @@ import (
 
 type AppConfig struct {
 	Categories []string
+	Cache      CacheCfg
+}
+
+type CacheCfg struct {
+	Enabled bool
+	Update  bool
+	Root    string
 }
 
 type Category struct {
