@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
+	"github.com/pestanko/miniscrape/scraper/resolvers"
 	"log"
 	"strings"
 	"time"
@@ -85,7 +86,7 @@ func (a *asyncRunner) startAsyncRequests(resChan chan<- RunResult, ctx context.C
 		page := page
 		go func() {
 			log.Printf("%03d. Starting to Resolve \"%s\"", idx, page.CodeName)
-			resolver := NewGetCachedPageResolver(page, a.cache)
+			resolver := resolvers.NewGetCachedPageResolver(page, a.cache)
 			resChan <- resolver.Resolve(ctx)
 		}()
 	}

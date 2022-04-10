@@ -1,4 +1,4 @@
-package scraper
+package resolvers
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/antchfx/htmlquery"
+	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
 	"io"
@@ -18,7 +19,7 @@ import (
 )
 
 type PageResolver interface {
-	Resolve(ctx context.Context) RunResult
+	Resolve(ctx context.Context) scraper.RunResult
 }
 
 func NewPageResolver(page config.Page) PageResolver {
@@ -57,22 +58,22 @@ type cachedPageResolver struct {
 	page     config.Page
 }
 
-func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
+func (c *cachedPageResolver) Resolve(ctx context.Context) scraper.RunResult {
 	if c.cache.IsPageCached(c.page.CodeName) {
 		log.Printf("Loading content from cache '%s'", c.page.CodeName)
 		content := string(c.cache.GetContent(cache.Item{
 			PageName:     c.page.CodeName,
 			CategoryName: c.page.Category,
 		}))
-		return RunResult{
+		return scraper.RunResult{
 			Page:    c.page,
 			Content: content,
-			Status:  RunSuccess,
+			Status:  scraper.RunSuccess,
 		}
 	}
 
 	res := c.resolver.Resolve(ctx)
-	if res.Status != RunSuccess {
+	if res.Status != scraper.RunSuccess {
 		return res
 	}
 
@@ -93,7 +94,7 @@ type pageResolvedGet struct {
 	client http.Client
 }
 
-func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
+func (r *pageResolvedGet) Resolve(ctx context.Context) scraper.RunResult {
 	req, err := http.NewRequest("GET", r.page.Url, nil)
 	if err != nil {
 		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
@@ -134,9 +135,9 @@ func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
 	content := r.applyFilters(contentArray)
 	log.Printf("%s resolved!", r.page.CodeName)
 
-	return RunResult{
+	return scraper.RunResult{
 		Page:    r.page,
-		Status:  RunSuccess,
+		Status:  scraper.RunSuccess,
 		Content: content,
 	}
 }
@@ -207,10 +208,10 @@ func (r *pageResolvedGet) applyFilters(contentArray []string) string {
 	if strings.TrimSpace(content) == "" {
 		return ""
 	}
-	filters := []func(*config.Page) PageFilter{
-		NewCutFilter,
-		NewDayFilter,
-		NewCutLineFilter,
+	filters := []func(*config.Page) scraper.PageFilter{
+		scraper.NewCutFilter,
+		scraper.NewDayFilter,
+		scraper.NewCutLineFilter,
 	}
 	newContent := content
 	for _, newFilter := range filters {
@@ -230,19 +231,19 @@ type urlOnlyResolver struct {
 	page config.Page
 }
 
-func (u *urlOnlyResolver) Resolve(ctx context.Context) RunResult {
-	return RunResult{
+func (u *urlOnlyResolver) Resolve(ctx context.Context) scraper.RunResult {
+	return scraper.RunResult{
 		Page:    u.page,
 		Content: fmt.Sprintf("Url for menu: %s", u.page.Url),
-		Status:  RunSuccess,
+		Status:  scraper.RunSuccess,
 	}
 }
 
-func makeErrorResult(page config.Page, err error) RunResult {
-	return RunResult{
+func makeErrorResult(page config.Page, err error) scraper.RunResult {
+	return scraper.RunResult{
 		Page:    page,
 		Content: fmt.Sprintf("Error: %v\n", err),
-		Status:  RunError,
+		Status:  scraper.RunError,
 	}
 }
 
