@@ -8,17 +8,6 @@ import (
 	"path/filepath"
 )
 
-type AppConfig struct {
-	Categories []string
-	Cache      CacheCfg
-}
-
-type CacheCfg struct {
-	Enabled bool
-	Update  bool
-	Root    string
-}
-
 type Category struct {
 	Pages []Page `yaml:"pages"`
 	Name  string `yaml:"name"`
@@ -65,16 +54,6 @@ type CutLineFilter struct {
 type DayFilter struct {
 	Days    []string `yaml:"days"`
 	Enabled bool     `yaml:"enabled"`
-}
-
-// GetAppConfig - Unmarshal the app configuration using the viper
-func GetAppConfig() *AppConfig {
-	var config AppConfig
-
-	if err := viper.Unmarshal(&config); err != nil {
-		log.Fatalf("Unable to load configuration (file used: %s): %v", viper.ConfigFileUsed(), err)
-	}
-	return &config
 }
 
 func LoadCategories(cfg *AppConfig) []Category {

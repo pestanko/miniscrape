@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
+	"github.com/pestanko/miniscrape/scraper/utils"
 	"log"
 	"strings"
 	"time"
@@ -93,7 +94,7 @@ func (a *asyncRunner) startAsyncRequests(resChan chan<- RunResult, ctx context.C
 
 func (a *asyncRunner) filterPages(sel RunSelector) []config.Page {
 	var result []config.Page
-	tagsResolver := MakeTagsResolver(sel.Tags)
+	tagsResolver := utils.MakeTagsResolver(sel.Tags)
 	for _, category := range a.categories {
 		// filter out the category
 
@@ -110,7 +111,7 @@ func (a *asyncRunner) filterPages(sel RunSelector) []config.Page {
 				continue
 			}
 
-			if tagsResolver.isMatch(page.Tags) {
+			if tagsResolver.IsMatch(page.Tags) {
 				result = append(result, page)
 			}
 		}
