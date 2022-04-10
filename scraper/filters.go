@@ -153,6 +153,9 @@ func cutContent(content string, startIndex int, endIndex int) string {
 
 func tryApplyDayFilter(content string, days []string, weekday time.Weekday) (int, int) {
 	currIdx := (int(weekday) - 1) % 7
+	if currIdx < 0 {
+		currIdx = 6
+	}
 	nextIdx := (currIdx + 1) % 7
 	var upperDays []string
 	for _, day := range days {

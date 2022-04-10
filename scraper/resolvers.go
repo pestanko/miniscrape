@@ -1,4 +1,4 @@
-package resolvers
+package scraper
 
 import (
 	"bytes"
@@ -6,20 +6,26 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/antchfx/htmlquery"
-	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
 	"io"
 	"jaytaylor.com/html2text"
 	"log"
+	"math/rand"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 )
 
+var userAgents []string = []string{
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
+	`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`,
+	`Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36`,
+}
+
 type PageResolver interface {
-	Resolve(ctx context.Context) scraper.RunResult
+	Resolve(ctx context.Context) RunResult
 }
 
 func NewPageResolver(page config.Page) PageResolver {
@@ -58,22 +64,22 @@ type cachedPageResolver struct {
 	page     config.Page
 }
 
-func (c *cachedPageResolver) Resolve(ctx context.Context) scraper.RunResult {
+func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
 	if c.cache.IsPageCached(c.page.CodeName) {
 		log.Printf("Loading content from cache '%s'", c.page.CodeName)
 		content := string(c.cache.GetContent(cache.Item{
 			PageName:     c.page.CodeName,
 			CategoryName: c.page.Category,
 		}))
-		return scraper.RunResult{
+		return RunResult{
 			Page:    c.page,
 			Content: content,
-			Status:  scraper.RunSuccess,
+			Status:  RunSuccess,
 		}
 	}
 
 	res := c.resolver.Resolve(ctx)
-	if res.Status != scraper.RunSuccess {
+	if res.Status != RunSuccess {
 		return res
 	}
 
@@ -94,13 +100,14 @@ type pageResolvedGet struct {
 	client http.Client
 }
 
-func (r *pageResolvedGet) Resolve(ctx context.Context) scraper.RunResult {
+func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
 	req, err := http.NewRequest("GET", r.page.Url, nil)
 	if err != nil {
 		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
 		return makeErrorResult(r.page, err)
 	}
-	req.Header.Add("User-Agent", `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`)
+	randomUserAgent := userAgents[rand.Intn(len(userAgents))]
+	req.Header.Add("User-Agent", randomUserAgent)
 	res, err := r.client.Do(req)
 	if err != nil {
 		log.Printf("Request failed for (url: \"%s\"): %v\n", r.page.Url, err)
@@ -135,9 +142,9 @@ func (r *pageResolvedGet) Resolve(ctx context.Context) scraper.RunResult {
 	content := r.applyFilters(contentArray)
 	log.Printf("%s resolved!", r.page.CodeName)
 
-	return scraper.RunResult{
+	return RunResult{
 		Page:    r.page,
-		Status:  scraper.RunSuccess,
+		Status:  RunSuccess,
 		Content: content,
 	}
 }
@@ -208,10 +215,10 @@ func (r *pageResolvedGet) applyFilters(contentArray []string) string {
 	if strings.TrimSpace(content) == "" {
 		return ""
 	}
-	filters := []func(*config.Page) scraper.PageFilter{
-		scraper.NewCutFilter,
-		scraper.NewDayFilter,
-		scraper.NewCutLineFilter,
+	filters := []func(*config.Page) PageFilter{
+		NewCutFilter,
+		NewDayFilter,
+		NewCutLineFilter,
 	}
 	newContent := content
 	for _, newFilter := range filters {
@@ -231,19 +238,19 @@ type urlOnlyResolver struct {
 	page config.Page
 }
 
-func (u *urlOnlyResolver) Resolve(ctx context.Context) scraper.RunResult {
-	return scraper.RunResult{
+func (u *urlOnlyResolver) Resolve(ctx context.Context) RunResult {
+	return RunResult{
 		Page:    u.page,
 		Content: fmt.Sprintf("Url for menu: %s", u.page.Url),
-		Status:  scraper.RunSuccess,
+		Status:  RunSuccess,
 	}
 }
 
-func makeErrorResult(page config.Page, err error) scraper.RunResult {
-	return scraper.RunResult{
+func makeErrorResult(page config.Page, err error) RunResult {
+	return RunResult{
 		Page:    page,
 		Content: fmt.Sprintf("Error: %v\n", err),
-		Status:  scraper.RunError,
+		Status:  RunError,
 	}
 }
 
