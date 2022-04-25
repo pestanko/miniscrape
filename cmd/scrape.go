@@ -43,14 +43,14 @@ var scrapeCmd = &cobra.Command{
 		if updateCache {
 			cfg.Cache.Update = true
 		}
-		categories := config.LoadCategories(cfg)
-		runner := scraper.NewAsyncRunner(cfg, categories)
 		selector := scraper.RunSelector{
 			Tags:     tagsArg,
 			Category: categoryArg,
 			Name:     nameArg,
 		}
-		results := runner.Run(selector)
+
+		scrapeService := scraper.NewService(cfg)
+		results := scrapeService.Scrape(selector)
 		for _, r := range results {
 			fmt.Printf("Result[%s] for  \"%s (%s)\" (url: \"%s\")\n",
 				r.Status,
