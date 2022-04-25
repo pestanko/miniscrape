@@ -37,17 +37,16 @@ func (s *Server) Serve() {
 func (s *Server) routes() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/api/v1/pages", func(w http.ResponseWriter, req *http.Request) {
-		HandlePages(s.service, w, req)
-
-	})
-
 	mux.HandleFunc("/api/v1/categories", func(w http.ResponseWriter, req *http.Request) {
 		HandleCategories(s.service, w, req)
 	})
 
-	mux.HandleFunc("/api/v1/content", func(w http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/api/v1/pages", func(w http.ResponseWriter, req *http.Request) {
+		HandlePages(s.service, w, req)
+	})
 
+	mux.HandleFunc("/api/v1/content", func(w http.ResponseWriter, req *http.Request) {
+		HandlePagesContent(s.service, w, req)
 	})
 
 	mux.HandleFunc("/api/v1/health", HandleHealthStatus)
