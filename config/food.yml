@@ -48,11 +48,23 @@ pages:
         pretty_tables: True
 
   - codename: "jean_pauls"
-    name: "Jean Pauls"
+    name: "Jean Pauls Behounska"
     homepage: "http://jpbistro.cz/"
     url: "http://jpbistro.cz/menu/index.php"
     query: "div.denni-menu"
     tags: [ "ns", "gd", "ita", "city" ]
+    filters:
+      day:
+        enabled: true
+      cut:
+        after: "TÝDENNÍ MENU"
+
+  - codename: "jean_pauls_techpark"
+    name: "Jean Pauls Technologicky park"
+    homepage: "http://jpbistro.cz/"
+    url: "https://jpbistro.cz/menu-technopark/index.php"
+    query: "div.denni-menu"
+    tags: [ "ita", "tp", "medlanky", "rh" ]
     filters:
       day:
         enabled: true
