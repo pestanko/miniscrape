@@ -3,6 +3,7 @@ package web
 import (
 	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/config"
+	middlewares "github.com/pestanko/miniscrape/scraper/web/middlewares"
 	"log"
 	"net/http"
 )
@@ -29,7 +30,11 @@ func (s *Server) Serve() {
 
 	log.Printf("Running server at %s", addr)
 
-	if err := http.ListenAndServe(addr, applyMiddlewares(mux)); err != nil {
+	mds := []middlewares.Middleware{
+		middlewares.RequestLogger,
+	}
+
+	if err := http.ListenAndServe(addr, middlewares.ApplyMiddlewares(mux, mds)); err != nil {
 		log.Fatalf("Unable to serve: %v", err)
 	}
 }

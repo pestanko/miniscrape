@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 )
 
 type errorDto struct {
@@ -29,36 +28,4 @@ func WriteJsonResponse(w http.ResponseWriter, code int, resp interface{}) {
 	if _, err := w.Write(jsonResp); err != nil {
 		log.Fatalf("Error writing response. Err: %v", err)
 	}
-}
-
-func applyMiddlewares(targetMux http.Handler) http.Handler {
-	middlewares := []func(handler http.Handler) http.Handler{
-		RequestLogger,
-	}
-
-	result := targetMux
-	for _, middleware := range middlewares {
-		result = middleware(result)
-	}
-
-	return result
-}
-
-func RequestLogger(targetMux http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		targetMux.ServeHTTP(w, r)
-
-		// log request by who(IP address)
-		requesterIP := r.RemoteAddr
-
-		log.Printf(
-			"%-8s%s\t\t%s\t%v",
-			r.Method,
-			r.RequestURI,
-			requesterIP,
-			time.Since(start),
-		)
-	})
 }
