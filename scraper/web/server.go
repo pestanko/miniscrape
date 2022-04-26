@@ -43,6 +43,7 @@ func (s *Server) routes() *http.ServeMux {
 
 	mux.HandleFunc("/api/v1/pages", func(w http.ResponseWriter, req *http.Request) {
 		HandlePages(s.service, w, req)
+
 	})
 
 	mux.HandleFunc("/api/v1/content", func(w http.ResponseWriter, req *http.Request) {

@@ -2,18 +2,23 @@ package web
 
 import (
 	"github.com/pestanko/miniscrape/scraper"
+	"github.com/pestanko/miniscrape/scraper/config"
 	"net/http"
 )
 
 func HandlePages(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
-	writeJsonResponse(w, http.StatusOK, service.Categories)
+	WriteJsonResponse(w, http.StatusOK, service.Categories)
 }
 
 func HandlePagesContent(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
-	selector := scraper.RunSelector{
-		Tags:     nil,
-		Category: "food",
-		Name:     "",
+	category := req.URL.Query().Get("c")
+	tags := req.URL.Query()["t"]
+	name := req.URL.Query().Get("n")
+
+	selector := config.RunSelector{
+		Tags:     tags,
+		Category: category,
+		Page:     name,
 	}
 
 	results := service.Scrape(selector)
@@ -23,22 +28,22 @@ func HandlePagesContent(service *scraper.Service, w http.ResponseWriter, req *ht
 	for i, result := range results {
 		dto[i] = pageContentDto{
 			Content: result.Content,
+			Status:  string(result.Status),
 			Page: pageContentPageDto{
 				PageName:     result.Page.Name,
 				PageCodeName: result.Page.CodeName,
 				HomePage:     result.Page.Homepage,
 			},
-			Status: string(result.Status),
 		}
 	}
 
-	writeJsonResponse(w, http.StatusOK, dto)
+	WriteJsonResponse(w, http.StatusOK, dto)
 }
 
 type pageContentDto struct {
 	Content string             `json:"content"`
-	Page    pageContentPageDto `json:"page"`
 	Status  string             `json:"status"`
+	Page    pageContentPageDto `json:"page"`
 }
 
 type pageContentPageDto struct {

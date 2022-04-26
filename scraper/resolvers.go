@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-var userAgents []string = []string{
+var userAgents = []string{
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
 	`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`,
 	`Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36`,
@@ -65,11 +65,11 @@ type cachedPageResolver struct {
 }
 
 func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
-	if c.cache.IsPageCached(c.page.CodeName) {
+	namespace := cache.NewNamespace(c.page.Category, c.page.CodeName)
+	if c.cache.IsPageCached(namespace) {
 		log.Printf("Loading content from cache '%s'", c.page.CodeName)
 		content := string(c.cache.GetContent(cache.Item{
-			PageName:     c.page.CodeName,
-			CategoryName: c.page.Category,
+			Namespace: namespace,
 		}))
 		return RunResult{
 			Page:    c.page,
@@ -84,9 +84,8 @@ func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
 	}
 
 	err := c.cache.Store(cache.Item{
-		PageName:     c.page.CodeName,
-		CategoryName: c.page.Category,
-		CachePolicy:  c.page.CachePolicy,
+		Namespace:   namespace,
+		CachePolicy: c.page.CachePolicy,
 	}, []byte(res.Content))
 	if err != nil {
 		return makeErrorResult(c.page, err)
@@ -100,7 +99,7 @@ type pageResolvedGet struct {
 	client http.Client
 }
 
-func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
+func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
 	req, err := http.NewRequest("GET", r.page.Url, nil)
 	if err != nil {
 		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
@@ -238,7 +237,7 @@ type urlOnlyResolver struct {
 	page config.Page
 }
 
-func (u *urlOnlyResolver) Resolve(ctx context.Context) RunResult {
+func (u *urlOnlyResolver) Resolve(_ context.Context) RunResult {
 	return RunResult{
 		Page:    u.page,
 		Content: fmt.Sprintf("Url for menu: %s", u.page.Url),

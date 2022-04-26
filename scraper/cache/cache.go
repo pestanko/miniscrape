@@ -12,12 +12,35 @@ import (
 
 const DefaultContentFile = "content.txt"
 
+type NamespacePath interface {
+	Path() string
+}
+
+type Item struct {
+	Namespace   ItemNamespace
+	FileName    string
+	CachePolicy string
+}
+
+type ItemNamespace struct {
+	Page     string
+	Category string
+}
+
+func (n *ItemNamespace) Path() string {
+	return path.Join(n.Category, n.Page)
+}
+
+func NewNamespace(cat string, page string) ItemNamespace {
+	return ItemNamespace{Category: cat, Page: page}
+}
+
 type Cache interface {
 	Store(item Item, content []byte) error
-	BlockListPage(pageName string) error
-	IsPageCached(pageName string) bool
+	IsPageCached(nm ItemNamespace) bool
 	IsItemCached(item Item) bool
 	GetContent(item Item) []byte
+	Invalidate(sel config.RunSelector)
 }
 
 func NewCache(cacheCfg config.CacheCfg, date time.Time) Cache {
@@ -42,15 +65,14 @@ type cacheFs struct {
 	Date        time.Time
 }
 
-func (c *cacheFs) IsItemCached(item Item) bool {
-	return !c.ForceUpdate && IsPathExists(c.getFileForItem(item))
+func (c *cacheFs) Invalidate(sel config.RunSelector) {
+	nm := NewNamespace(sel.Category, sel.Page)
+	pth := c.getNamespaceDir(nm.Path())
+	RemoveDir(pth)
 }
 
-type Item struct {
-	PageName     string
-	FileName     string
-	CategoryName string
-	CachePolicy  string
+func (c *cacheFs) IsItemCached(item Item) bool {
+	return !c.ForceUpdate && IsPathExists(c.getFileForItem(item))
 }
 
 func (c *cacheFs) GetContent(item Item) []byte {
@@ -65,8 +87,8 @@ func (c *cacheFs) GetContent(item Item) []byte {
 	return content
 }
 
-func (c *cacheFs) IsPageCached(pageName string) bool {
-	return !c.ForceUpdate && IsPathExists(c.getPageDir(pageName))
+func (c *cacheFs) IsPageCached(nm ItemNamespace) bool {
+	return !c.ForceUpdate && IsPathExists(c.getNamespaceDir(nm.Path()))
 }
 
 func (c *cacheFs) Store(item Item, content []byte) error {
@@ -76,8 +98,8 @@ func (c *cacheFs) Store(item Item, content []byte) error {
 
 	fp := c.getFileForItem(item)
 
-	if !c.IsPageCached(item.PageName) {
-		if err := os.MkdirAll(c.getPageDir(item.PageName), 0700); err != nil {
+	if !c.IsPageCached(item.Namespace) {
+		if err := os.MkdirAll(c.getNamespaceDir(item.Namespace.Path()), 0700); err != nil {
 			log.Printf("Unable to create directory file '%s': %v", fp, err)
 			return err
 		}
@@ -97,11 +119,6 @@ func (c *cacheFs) Store(item Item, content []byte) error {
 	return nil
 }
 
-func (c *cacheFs) BlockListPage(name string) error {
-	// TODO: Not implemented
-	return nil
-}
-
 func (c *cacheFs) GetDateDir() string {
 	return path.Join(c.RootDir, c.getDateDirName())
 }
@@ -110,8 +127,8 @@ func (c *cacheFs) getDateDirName() string {
 	return c.Date.Format("2006-01-02")
 }
 
-func (c *cacheFs) getPageDir(pageName string) string {
-	return path.Join(c.GetDateDir(), pageName)
+func (c *cacheFs) getNamespaceDir(namespace string) string {
+	return path.Join(c.GetDateDir(), namespace)
 }
 
 func (c *cacheFs) getFileForItem(item Item) string {
@@ -120,10 +137,18 @@ func (c *cacheFs) getFileForItem(item Item) string {
 		fileName = DefaultContentFile
 	}
 
-	return filepath.Join(c.getPageDir(item.PageName), fileName)
+	return filepath.Join(c.getNamespaceDir(item.Namespace.Path()), fileName)
 }
 
 func IsPathExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
+}
+
+func RemoveDir(pth string) {
+	if IsPathExists(pth) {
+		if err := os.RemoveAll(pth); err != nil {
+			log.Printf("Unable to remove directory '%s': %v", pth, err)
+		}
+	}
 }

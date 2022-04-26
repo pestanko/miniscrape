@@ -17,7 +17,7 @@ func HandleCategories(scrapeService *scraper.Service, w http.ResponseWriter, req
 		dto = append(dto, catDto)
 	}
 
-	writeJsonResponse(w, http.StatusOK, dto)
+	WriteJsonResponse(w, http.StatusOK, dto)
 }
 
 func getPagesForCategory(pages []config.Page) []string {

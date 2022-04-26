@@ -7,7 +7,18 @@ import (
 	"time"
 )
 
-func writeJsonResponse(w http.ResponseWriter, code int, resp interface{}) {
+type errorDto struct {
+	Error       string `json:"error"`
+	ErrorDetail string `json:"error_detail"`
+}
+
+func WriteErrorResponse(w http.ResponseWriter, code int, error errorDto) {
+	log.Printf("Error[%d] - %s: %s", code, error.Error, error.ErrorDetail)
+
+	WriteJsonResponse(w, code, error)
+}
+
+func WriteJsonResponse(w http.ResponseWriter, code int, resp interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 
@@ -34,7 +45,7 @@ func RequestLogger(targetMux http.Handler) http.Handler {
 		requesterIP := r.RemoteAddr
 
 		log.Printf(
-			"%s\t\t%s\t\t%s\t\t%v",
+			"%-8s%s\t\t%s\t%v",
 			r.Method,
 			r.RequestURI,
 			requesterIP,

@@ -103,3 +103,9 @@ func loadCategoryFile(baseDir string, catName string) (bool, Category) {
 
 	return true, cat
 }
+
+type RunSelector struct {
+	Tags     []string
+	Category string
+	Page     string
+}
