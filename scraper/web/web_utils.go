@@ -32,7 +32,16 @@ func WriteJsonResponse(w http.ResponseWriter, code int, resp interface{}) {
 }
 
 func applyMiddlewares(targetMux http.Handler) http.Handler {
-	return RequestLogger(targetMux)
+	middlewares := []func(handler http.Handler) http.Handler{
+		RequestLogger,
+	}
+
+	result := targetMux
+	for _, middleware := range middlewares {
+		result = middleware(result)
+	}
+
+	return result
 }
 
 func RequestLogger(targetMux http.Handler) http.Handler {
