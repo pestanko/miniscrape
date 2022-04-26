@@ -32,6 +32,7 @@ func (s *Server) Serve() {
 
 	mds := []middlewares.Middleware{
 		middlewares.RequestLogger,
+		middlewares.VisitorCookie,
 	}
 
 	if err := http.ListenAndServe(addr, middlewares.ApplyMiddlewares(mux, mds)); err != nil {
