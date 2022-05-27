@@ -1,9 +1,10 @@
 package middlewares
 
 import (
-	"github.com/pestanko/miniscrape/scraper/utils"
 	"net/http"
 	"time"
+
+	"github.com/pestanko/miniscrape/scraper/utils"
 )
 
 const visitorCookie = "VISITOR"

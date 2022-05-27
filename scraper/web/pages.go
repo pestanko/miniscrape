@@ -1,9 +1,10 @@
 package web
 
 import (
+	"net/http"
+
 	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/config"
-	"net/http"
 )
 
 func HandlePages(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
@@ -47,7 +48,7 @@ type pageContentDto struct {
 }
 
 type pageContentPageDto struct {
-	PageName     string `json:"page_name"`
-	PageCodeName string `json:"page_code_name"`
+	PageName     string `json:"pageName"`
+	PageCodeName string `json:"pageCodeName"`
 	HomePage     string `json:"homepage"`
 }

@@ -1,11 +1,12 @@
 package config
 
 import (
-	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"path/filepath"
+
+	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
 type Category struct {
@@ -14,13 +15,13 @@ type Category struct {
 }
 
 type Page struct {
-	CodeName    string        `yaml:"codename" json:"code_name"`
+	CodeName    string        `yaml:"codename" json:"codename"`
 	Name        string        `yaml:"name" json:"name"`
 	Homepage    string        `yaml:"homepage" json:"homepage"`
 	Url         string        `yaml:"url" json:"url"`
 	Query       string        `yaml:"query" json:"query"`
 	XPath       string        `yaml:"xpath" json:"xpath"`
-	CachePolicy string        `yaml:"cache_policy" json:"cache_policy"`
+	CachePolicy string        `yaml:"cache_policy" json:"cachePolicy"`
 	Resolver    string        `yaml:"resolver" json:"resolver"`
 	Category    string        `yaml:"category" json:"category"`
 	Disabled    bool          `yaml:"disabled" json:"disabled"`
@@ -29,8 +30,8 @@ type Page struct {
 }
 
 type HtmlFilter struct {
-	PrettyTables bool `yaml:"pretty_tables"`
-	TextOnly     bool `yaml:"text_only"`
+	PrettyTables bool `yaml:"prettyTables"`
+	TextOnly     bool `yaml:"textOnly"`
 }
 
 type FiltersConfig struct {

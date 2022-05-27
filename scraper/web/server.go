@@ -1,11 +1,12 @@
 package web
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/config"
 	middlewares "github.com/pestanko/miniscrape/scraper/web/middlewares"
-	"log"
-	"net/http"
 )
 
 type Server struct {
@@ -33,6 +34,7 @@ func (s *Server) Serve() {
 	mds := []middlewares.Middleware{
 		middlewares.RequestLogger,
 		middlewares.VisitorCookie,
+		middlewares.SetupCors,
 	}
 
 	if err := http.ListenAndServe(addr, middlewares.ApplyMiddlewares(mux, mds)); err != nil {
