@@ -34,6 +34,8 @@ func HandlePagesContent(service *scraper.Service, w http.ResponseWriter, req *ht
 				PageName:     result.Page.Name,
 				PageCodeName: result.Page.CodeName,
 				HomePage:     result.Page.Homepage,
+				Tags:         result.Page.Tags,
+				Category:     result.Page.Category,
 			},
 		}
 	}
@@ -48,7 +50,9 @@ type pageContentDto struct {
 }
 
 type pageContentPageDto struct {
-	PageName     string `json:"pageName"`
-	PageCodeName string `json:"pageCodeName"`
-	HomePage     string `json:"homepage"`
+	PageName     string   `json:"name"`
+	PageCodeName string   `json:"codename"`
+	HomePage     string   `json:"homepage"`
+	Tags         []string `json:"tags"`
+	Category     string   `json:"category"`
 }
