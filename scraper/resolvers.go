@@ -4,18 +4,19 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/antchfx/htmlquery"
-	"github.com/pestanko/miniscrape/scraper/cache"
-	"github.com/pestanko/miniscrape/scraper/config"
 	"io"
-	"jaytaylor.com/html2text"
 	"log"
 	"math/rand"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/antchfx/htmlquery"
+	"github.com/pestanko/miniscrape/scraper/cache"
+	"github.com/pestanko/miniscrape/scraper/config"
+	"jaytaylor.com/html2text"
 )
 
 var userAgents = []string{
@@ -23,6 +24,8 @@ var userAgents = []string{
 	`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`,
 	`Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36`,
 }
+
+var normPattern = regexp.MustCompile("\n\n")
 
 type PageResolver interface {
 	Resolve(ctx context.Context) RunResult
@@ -149,6 +152,7 @@ func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
 }
 
 func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error) {
+	log.Printf("Parse using the the XPath: %s", r.page.XPath)
 	root, err := htmlquery.Parse(bytes.NewReader(content))
 	if err != nil {
 		return []string{}, err
@@ -173,6 +177,7 @@ func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error)
 }
 
 func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, error) {
+	log.Printf("Parse using the the CSS Query: %s", r.page.Query)
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
 	if err != nil {
 		return []string{}, err
@@ -197,7 +202,7 @@ func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, erro
 }
 
 func (r *pageResolvedGet) htmlToText(htmlContent string) (string, error) {
-	log.Printf("Found by query: %s", htmlContent)
+	log.Printf("Found content, converting: %s", htmlContent)
 	text, err := html2text.FromString(htmlContent, html2text.Options{
 		PrettyTables: r.page.Filters.Html.PrettyTables,
 		TextOnly:     r.page.Filters.Html.TextOnly,
@@ -230,6 +235,7 @@ func (r *pageResolvedGet) applyFilters(contentArray []string) string {
 			return ""
 		}
 	}
+
 	return newContent
 }
 
@@ -254,6 +260,5 @@ func makeErrorResult(page config.Page, err error) RunResult {
 }
 
 func normalizeString(content string) string {
-	var pat = regexp.MustCompile("\n\n")
-	return pat.ReplaceAllString(content, "\n")
+	return normPattern.ReplaceAllString(content, "\n")
 }

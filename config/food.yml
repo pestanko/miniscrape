@@ -35,7 +35,7 @@ pages:
     tags: [ "ns", "city", "cz" ]
     filters:
       html:
-        pretty_tables: True
+        prettyTables: True
 
   - codename: "charlies_mill"
     name: "Charlie's mill"
@@ -45,7 +45,7 @@ pages:
     tags: [ "cz" ]
     filters:
       html:
-        pretty_tables: True
+        prettyTables: True
 
   - codename: "jean_pauls"
     name: "Jean Pauls Behounska"
@@ -102,7 +102,7 @@ pages:
       cut:
         after: "Seznam alergenů"
       html:
-        pretty_tables: true
+        prettyTables: true
 
   - codename: "globus"
     name: "Globus Brno"
