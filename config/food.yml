@@ -10,14 +10,14 @@ pages:
         before: "*TÝDENNÍ MENU*"
       day:
         enabled: true
-    tags: [ "rh", "food", "cz", "medlanky", "ita" ]
+    tags: ["rh", "cz", "medlanky", "ita"]
 
   - codename: "moravia"
     name: "Moravia Week Menu"
     homepage: "https://www.pivovarskarestauracemoravia.cz/"
     url: "https://www.pivovarskarestauracemoravia.cz/"
     query: "#block-dennimenu .active"
-    tags: [ "rh", "food", "cz", "medlanky" ]
+    tags: ["rh", "cz", "medlanky"]
 
   - codename: "himalaya"
     name: "Himalaya"
@@ -25,14 +25,14 @@ pages:
     url: "https://www.himalayarestaurace.cz/denni-menu/"
     resolver: "url-only"
     cache_policy: "no-cache"
-    tags: [ "ns", "food", "india", "city" ]
+    tags: ["ns", "india", "city"]
 
   - codename: "charlies_square"
     name: "Charlie's square"
     homepage: "https://www.charliessquare.cz/"
     url: "https://www.charliessquare.cz/menu"
     xpath: "//div[@class='entry-content']//table[not(contains(@class, 'menu-bar'))]"
-    tags: [ "ns", "city", "cz" ]
+    tags: ["ns", "city", "cz"]
     filters:
       html:
         prettyTables: True
@@ -42,7 +42,7 @@ pages:
     homepage: "https://www.charliesmill.cz/"
     url: "https://www.charliesmill.cz/menu"
     xpath: "//div[@class='entry-content']//table[not(contains(@class, 'menu-bar'))]"
-    tags: [ "cz" ]
+    tags: ["cz"]
     filters:
       html:
         prettyTables: True
@@ -52,7 +52,7 @@ pages:
     homepage: "http://jpbistro.cz/"
     url: "http://jpbistro.cz/menu/index.php"
     query: "div.denni-menu"
-    tags: [ "ns", "gd", "ita", "city" ]
+    tags: ["ns", "gd", "ita", "city"]
     filters:
       day:
         enabled: true
@@ -64,7 +64,7 @@ pages:
     homepage: "http://jpbistro.cz/"
     url: "https://jpbistro.cz/menu-technopark/index.php"
     query: "div.denni-menu"
-    tags: [ "ita", "tp", "medlanky", "rh" ]
+    tags: ["ita", "tp", "medlanky", "rh"]
     filters:
       day:
         enabled: true
@@ -73,7 +73,7 @@ pages:
 
   - codename: "drevak"
     name: "U Drevaka"
-    tags: [ "fi", "cz" ]
+    tags: ["fi", "cz"]
     homepage: "https://udrevaka.cz/"
     url: "https://udrevaka.cz/"
     query: "#menu .special-menu"
@@ -108,7 +108,7 @@ pages:
     name: "Globus Brno"
     url: "https://www.globus.cz/brno/nabidka/restaurace.html"
     homepage: "https://www.globus.cz/brno/"
-    tags: [ "rh", "fast" ]
+    tags: ["rh", "fast"]
     query: ".restaurant__menu-table-row--active"
     disabled: true
 
@@ -117,9 +117,82 @@ pages:
     homepage: "http://www.indicka-restaurace-annapurna.cz/"
     url: "http://www.indicka-restaurace-annapurna.cz/"
     query: "div#T_menu"
-    tags: [ "city", "ns", "india", "asia" ]
+    tags: ["city", "ns", "india", "asia"]
     filters:
       day:
         enabled: true
       cut:
         after: "Polední menu podáváme"
+
+  - codename: "krava"
+    name: "Monte Bu"
+    homepage: "https://www.monte-bu.cz/"
+    url: "https://www.monte-bu.cz/menu.php#poledni-section"
+    query: ".menu-details .today"
+    tags: ["rh", "ns", "cz", "steak"]
+    filters:
+      day:
+        enabled: true
+
+  - codename: "sabaidy"
+    name: "Sabaidy"
+    url: "http://www.amphone.eu/restaurace"
+    homepage: "http://www.amphone.eu/restaurace"
+    query: "li:first-child"
+    tags: ["city", "asia", gd]
+    filters:
+      day:
+        enabled: true
+
+  - codename: seminar
+    name: U seminaru
+    url: "http://www.useminaru.cz/menu.php"
+    homepage: "http://www.useminaru.cz/"
+    query: ".maintab .bold"
+    tags: ["city", "cz", "fi", "gd"]
+
+  - codename: tripoli
+    name: Tripoli Vankovka
+    url: http://www.tripolivankovka.cz/denni-menu
+    homepage: http://www.tripolivankovka.cz/
+    query: "div.menu-for-one-day"
+    tags: ["city", "ita", "pizza", "vankovka", "ns"]
+    filters:
+      day:
+        enabled: true
+      cut:
+        after: "Nabídka baru"
+
+  - codename: husa-vankovka
+    name: Potrefena husa Vankovka
+    url: https://www.potrefenahusabrno.cz/menu/
+    homepage: https://www.potrefenahusabrno.cz/
+    query: "div.menu-for-one-day"
+    tags: ["city", "cz", "vankovka", "ns"]
+    filters:
+      day:
+        enabled: true
+      cut:
+        after: "Nabídka baru"
+
+  - codename: padowetz
+    name: Padowetz
+    url: http://www.restaurant-padowetz.cz/poledni-menu.htm
+    homepage: http://www.restaurant-padowetz.cz/
+    query: ".tydeniMenu"
+    tags: ["city", "cz", "ns"]
+    filters:
+      day:
+        enabled: true
+      cut:
+        after: "Nápoje k menu"
+
+  - codename: diva_bara
+    name: Diva bara
+    url: http://www.restauracedivabara.cz/menu__trashed-2/
+    homepage: http://www.restauracedivabara.cz/
+    selector: "div.daily-menu"
+    tags: ["fi", "cz"]
+    filters:
+      day:
+        enabled: true
