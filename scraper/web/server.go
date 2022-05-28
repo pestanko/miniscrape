@@ -26,7 +26,7 @@ func (s *Server) Serve() {
 
 	addr := s.cfg.Web.Addr
 	if addr == "" {
-		addr = ":8080"
+		addr = "127.0.01:8080"
 	}
 
 	log.Printf("Running server at %s", addr)

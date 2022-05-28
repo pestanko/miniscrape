@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"log"
+
+	"github.com/spf13/viper"
 )
 
 // AppConfig defines the main application configuration
@@ -21,7 +22,7 @@ type CacheCfg struct {
 
 // WebCfg web config
 type WebCfg struct {
-	Addr string
+	Addr string `json:"addr" yaml:"addr"`
 }
 
 // GetAppConfig - Unmarshal the app configuration using the viper
