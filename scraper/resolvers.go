@@ -142,11 +142,18 @@ func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
 		return makeErrorResult(r.page, err)
 	}
 	content := r.applyFilters(contentArray)
-	log.Printf("%s resolved!", r.page.CodeName)
+
+	var status = RunSuccess
+	if content == "" {
+		log.Printf("%s resolved but the content is empty", r.page.CodeName)
+		status = RunEmpty
+	} else {
+		log.Printf("%s resolved!", r.page.CodeName)
+	}
 
 	return RunResult{
 		Page:    r.page,
-		Status:  RunSuccess,
+		Status:  status,
 		Content: content,
 	}
 }
@@ -246,7 +253,7 @@ type urlOnlyResolver struct {
 func (u *urlOnlyResolver) Resolve(_ context.Context) RunResult {
 	return RunResult{
 		Page:    u.page,
-		Content: fmt.Sprintf("Url for menu: %s", u.page.Url),
+		Content: fmt.Sprintf("Url for %s menu: %s", u.page.Name, u.page.Url),
 		Status:  RunSuccess,
 	}
 }

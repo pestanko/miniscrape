@@ -2,11 +2,12 @@ package scraper
 
 import (
 	"context"
+	"log"
+	"strings"
+
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
 	"github.com/pestanko/miniscrape/scraper/utils"
-	"log"
-	"strings"
 )
 
 type RunResultStatus string
@@ -14,6 +15,7 @@ type RunResultStatus string
 const (
 	RunSuccess RunResultStatus = "ok"
 	RunError   RunResultStatus = "error"
+	RunEmpty   RunResultStatus = "empty"
 )
 
 type RunResult struct {
