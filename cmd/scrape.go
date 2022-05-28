@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/config"
 	"github.com/spf13/cobra"
@@ -67,7 +68,7 @@ func init() {
 	scrapeCmd.PersistentFlags().BoolVarP(&updateCache, "update-cache", "U", false,
 		"Update cache")
 
-	scrapeCmd.PersistentFlags().StringVarP(&nameArg, "nameArg", "N", "",
+	scrapeCmd.PersistentFlags().StringVarP(&nameArg, "name", "N", "",
 		"Select by codename")
 
 	// Cobra supports local flags which will only run when this command
