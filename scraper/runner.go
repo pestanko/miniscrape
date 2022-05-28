@@ -7,7 +7,6 @@ import (
 	"github.com/pestanko/miniscrape/scraper/utils"
 	"log"
 	"strings"
-	"time"
 )
 
 type RunResultStatus string
@@ -17,28 +16,26 @@ const (
 	RunError   RunResultStatus = "error"
 )
 
-type RunSelector struct {
-	Tags     []string
-	Category string
-	Name     string
-}
-
 type RunResult struct {
 	Page    config.Page
 	Content string
 	Status  RunResultStatus
 }
 
-func NewAsyncRunner(cfg *config.AppConfig, categories []config.Category) Runner {
+func NewAsyncRunner(
+	cfg *config.AppConfig,
+	cats []config.Category,
+	cache cache.Cache,
+) Runner {
 	return &asyncRunner{
 		cfg:        cfg,
-		categories: categories,
-		cache:      cache.NewCache(cfg.Cache, time.Now()),
+		categories: cats,
+		cache:      cache,
 	}
 }
 
 type Runner interface {
-	Run(selector RunSelector) []RunResult
+	Run(selector config.RunSelector) []RunResult
 }
 
 type asyncRunner struct {
@@ -47,7 +44,7 @@ type asyncRunner struct {
 	cache      cache.Cache
 }
 
-func (a *asyncRunner) Run(selector RunSelector) []RunResult {
+func (a *asyncRunner) Run(selector config.RunSelector) []RunResult {
 	log.Println("Runner Started!")
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
@@ -92,7 +89,7 @@ func (a *asyncRunner) startAsyncRequests(resChan chan<- RunResult, ctx context.C
 	}
 }
 
-func (a *asyncRunner) filterPages(sel RunSelector) []config.Page {
+func (a *asyncRunner) filterPages(sel config.RunSelector) []config.Page {
 	var result []config.Page
 	tagsResolver := utils.MakeTagsResolver(sel.Tags)
 	for _, category := range a.categories {
@@ -107,7 +104,7 @@ func (a *asyncRunner) filterPages(sel RunSelector) []config.Page {
 				continue
 			}
 
-			if sel.Name != "" && !strings.Contains(page.CodeName, sel.Name) {
+			if sel.Page != "" && !strings.Contains(page.CodeName, sel.Page) {
 				continue
 			}
 

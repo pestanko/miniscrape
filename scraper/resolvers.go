@@ -4,25 +4,28 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/antchfx/htmlquery"
-	"github.com/pestanko/miniscrape/scraper/cache"
-	"github.com/pestanko/miniscrape/scraper/config"
 	"io"
-	"jaytaylor.com/html2text"
 	"log"
 	"math/rand"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/antchfx/htmlquery"
+	"github.com/pestanko/miniscrape/scraper/cache"
+	"github.com/pestanko/miniscrape/scraper/config"
+	"jaytaylor.com/html2text"
 )
 
-var userAgents []string = []string{
+var userAgents = []string{
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
 	`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`,
 	`Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36`,
 }
+
+var normPattern = regexp.MustCompile("\n\n")
 
 type PageResolver interface {
 	Resolve(ctx context.Context) RunResult
@@ -65,11 +68,11 @@ type cachedPageResolver struct {
 }
 
 func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
-	if c.cache.IsPageCached(c.page.CodeName) {
+	namespace := cache.NewNamespace(c.page.Category, c.page.CodeName)
+	if c.cache.IsPageCached(namespace) {
 		log.Printf("Loading content from cache '%s'", c.page.CodeName)
 		content := string(c.cache.GetContent(cache.Item{
-			PageName:     c.page.CodeName,
-			CategoryName: c.page.Category,
+			Namespace: namespace,
 		}))
 		return RunResult{
 			Page:    c.page,
@@ -84,9 +87,8 @@ func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
 	}
 
 	err := c.cache.Store(cache.Item{
-		PageName:     c.page.CodeName,
-		CategoryName: c.page.Category,
-		CachePolicy:  c.page.CachePolicy,
+		Namespace:   namespace,
+		CachePolicy: c.page.CachePolicy,
 	}, []byte(res.Content))
 	if err != nil {
 		return makeErrorResult(c.page, err)
@@ -100,7 +102,7 @@ type pageResolvedGet struct {
 	client http.Client
 }
 
-func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
+func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
 	req, err := http.NewRequest("GET", r.page.Url, nil)
 	if err != nil {
 		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
@@ -150,6 +152,7 @@ func (r *pageResolvedGet) Resolve(ctx context.Context) RunResult {
 }
 
 func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error) {
+	log.Printf("Parse using the the XPath: %s", r.page.XPath)
 	root, err := htmlquery.Parse(bytes.NewReader(content))
 	if err != nil {
 		return []string{}, err
@@ -174,6 +177,7 @@ func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error)
 }
 
 func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, error) {
+	log.Printf("Parse using the the CSS Query: %s", r.page.Query)
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
 	if err != nil {
 		return []string{}, err
@@ -198,7 +202,7 @@ func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, erro
 }
 
 func (r *pageResolvedGet) htmlToText(htmlContent string) (string, error) {
-	log.Printf("Found by query: %s", htmlContent)
+	log.Printf("Found content, converting: %s", htmlContent)
 	text, err := html2text.FromString(htmlContent, html2text.Options{
 		PrettyTables: r.page.Filters.Html.PrettyTables,
 		TextOnly:     r.page.Filters.Html.TextOnly,
@@ -231,6 +235,7 @@ func (r *pageResolvedGet) applyFilters(contentArray []string) string {
 			return ""
 		}
 	}
+
 	return newContent
 }
 
@@ -238,7 +243,7 @@ type urlOnlyResolver struct {
 	page config.Page
 }
 
-func (u *urlOnlyResolver) Resolve(ctx context.Context) RunResult {
+func (u *urlOnlyResolver) Resolve(_ context.Context) RunResult {
 	return RunResult{
 		Page:    u.page,
 		Content: fmt.Sprintf("Url for menu: %s", u.page.Url),
@@ -255,6 +260,5 @@ func makeErrorResult(page config.Page, err error) RunResult {
 }
 
 func normalizeString(content string) string {
-	var pat = regexp.MustCompile("\n\n")
-	return pat.ReplaceAllString(content, "\n")
+	return normPattern.ReplaceAllString(content, "\n")
 }

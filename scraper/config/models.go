@@ -1,36 +1,37 @@
 package config
 
 import (
-	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"path/filepath"
+
+	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
 type Category struct {
-	Pages []Page `yaml:"pages"`
-	Name  string `yaml:"name"`
+	Pages []Page `yaml:"pages" json:"pages"`
+	Name  string `yaml:"name" json:"name"`
 }
 
 type Page struct {
-	CodeName    string        `yaml:"codename"`
-	Name        string        `yaml:"name"`
-	Homepage    string        `yaml:"homepage"`
-	Url         string        `yaml:"url"`
-	Query       string        `yaml:"query"`
-	XPath       string        `yaml:"xpath"`
-	CachePolicy string        `yaml:"cache_policy"`
-	Resolver    string        `yaml:"resolver"`
-	Category    string        `yaml:"category"`
-	Disabled    bool          `yaml:"disabled"`
-	Tags        []string      `yaml:"tags"`
-	Filters     FiltersConfig `yaml:"filters"`
+	CodeName    string        `yaml:"codename" json:"codename"`
+	Name        string        `yaml:"name" json:"name"`
+	Homepage    string        `yaml:"homepage" json:"homepage"`
+	Url         string        `yaml:"url" json:"url"`
+	Query       string        `yaml:"query" json:"query"`
+	XPath       string        `yaml:"xpath" json:"xpath"`
+	CachePolicy string        `yaml:"cache_policy" json:"cachePolicy"`
+	Resolver    string        `yaml:"resolver" json:"resolver"`
+	Category    string        `yaml:"category" json:"category"`
+	Disabled    bool          `yaml:"disabled" json:"disabled"`
+	Tags        []string      `yaml:"tags" json:"tags"`
+	Filters     FiltersConfig `yaml:"filters" json:"filters"`
 }
 
 type HtmlFilter struct {
-	PrettyTables bool `yaml:"pretty_tables"`
-	TextOnly     bool `yaml:"text_only"`
+	PrettyTables bool `yaml:"prettyTables"`
+	TextOnly     bool `yaml:"textOnly"`
 }
 
 type FiltersConfig struct {
@@ -102,4 +103,10 @@ func loadCategoryFile(baseDir string, catName string) (bool, Category) {
 	}
 
 	return true, cat
+}
+
+type RunSelector struct {
+	Tags     []string
+	Category string
+	Page     string
 }
