@@ -191,8 +191,31 @@ pages:
     name: Diva bara
     url: http://www.restauracedivabara.cz/menu__trashed-2/
     homepage: http://www.restauracedivabara.cz/
-    selector: "div.daily-menu"
+    query: "div.daily-menu"
     tags: ["fi", "cz"]
     filters:
       day:
         enabled: true
+
+  - codename: na_purkynce
+    name: "Na Purkyňce"
+    url: https://www.menicka.cz/2647-na-purkynce.html
+    homepage: https://www.menicka.cz/2647-na-purkynce.html
+    query: ".menicka"
+    tags: ["rh", "cz"]
+    filters:
+      day:
+        enabled: true
+
+  - codename: spravne_misto
+    name: "Spravne misto"
+    url:	https://spravnemisto.cz/denni-menu
+    homepage: 	https://spravnemisto.cz/
+    query: ".elementor-widget-wrap i .elementor-widget-wrap"
+    tags: ["rh", "cz"]
+    filters:
+      day:
+        enabled: true
+      cut:
+        before: "DENNÍ menu"
+        after: "u nás si necháte chutnat"
