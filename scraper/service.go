@@ -1,32 +1,42 @@
 package scraper
 
 import (
+	"time"
+
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
-	"time"
+	"github.com/pestanko/miniscrape/scraper/utils"
 )
 
 type Service struct {
 	Cfg        config.AppConfig
-	Categories []config.Category
+	categories utils.CachedContainer[[]config.Category]
 	cache      cache.Cache
 }
 
 func NewService(cfg *config.AppConfig) *Service {
-	categories := config.LoadCategories(cfg)
 	cache := cache.NewCache(cfg.Cache, time.Now())
+	categoriesLoader := func() *[]config.Category {
+		categories := config.LoadCategories(cfg)
+		return &categories
+	}
+
 	return &Service{
 		*cfg,
-		categories,
+		utils.NewCachedContainer(categoriesLoader, 10*time.Minute),
 		cache,
 	}
 }
 
 func (s *Service) Scrape(selector config.RunSelector) []RunResult {
-	runner := NewAsyncRunner(&s.Cfg, s.Categories, s.cache)
+	runner := NewAsyncRunner(&s.Cfg, s.GetCategories(), s.cache)
 	return runner.Run(selector)
 }
 
 func (s *Service) InvalidateCache(sel config.RunSelector) {
 	s.cache.Invalidate(sel)
+}
+
+func (s *Service) GetCategories() []config.Category {
+	return *s.categories.Get()
 }
