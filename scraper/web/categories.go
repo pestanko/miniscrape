@@ -1,14 +1,15 @@
 package web
 
 import (
+	"net/http"
+
 	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/config"
-	"net/http"
 )
 
 func HandleCategories(scrapeService *scraper.Service, w http.ResponseWriter, req *http.Request) {
 	var dto []categoryDto
-	for _, cat := range scrapeService.Categories {
+	for _, cat := range scrapeService.GetCategories() {
 		catDto := categoryDto{
 			Name:  cat.Name,
 			Tags:  getAllTagsForCategory(cat.Pages),

@@ -8,7 +8,7 @@ import (
 )
 
 func HandlePages(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
-	WriteJsonResponse(w, http.StatusOK, service.Categories)
+	WriteJsonResponse(w, http.StatusOK, service.GetCategories())
 }
 
 func HandlePagesContent(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
