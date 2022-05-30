@@ -12,15 +12,7 @@ func HandlePages(service *scraper.Service, w http.ResponseWriter, req *http.Requ
 }
 
 func HandlePagesContent(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
-	category := req.URL.Query().Get("c")
-	tags := req.URL.Query()["t"]
-	name := req.URL.Query().Get("n")
-
-	selector := config.RunSelector{
-		Tags:     tags,
-		Category: category,
-		Page:     name,
-	}
+	selector := makeSelectorFromRequest(req)
 
 	results := service.Scrape(selector)
 
@@ -55,4 +47,16 @@ type pageContentPageDto struct {
 	HomePage     string   `json:"homepage"`
 	Tags         []string `json:"tags"`
 	Category     string   `json:"category"`
+}
+
+func makeSelectorFromRequest(req *http.Request) config.RunSelector {
+	category := req.URL.Query().Get("c")
+	tags := req.URL.Query()["t"]
+	name := req.URL.Query().Get("n")
+
+	return config.RunSelector{
+		Tags:     tags,
+		Category: category,
+		Page:     name,
+	}
 }

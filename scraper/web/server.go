@@ -59,5 +59,30 @@ func (s *Server) routes() *http.ServeMux {
 
 	mux.HandleFunc("/api/v1/health", HandleHealthStatus)
 
+	// Auth related
+
+	mux.HandleFunc("/api/v1/auth/login", func(w http.ResponseWriter, req *http.Request) {
+		// sample way how to deal with annotations
+		requireHttpMethod(w, req, []string{http.MethodPost}, func() {
+			HandleAuthLogin(s.service, w, req)
+		})
+	})
+
+	mux.HandleFunc("/api/v1/auth/logout", func(w http.ResponseWriter, req *http.Request) {
+		HandleAuthLogout(s.service, w, req)
+	})
+
+	mux.HandleFunc("/api/v1/auth/logout", func(w http.ResponseWriter, req *http.Request) {
+		HandleUserInfo(s.service, w, req)
+	})
+
+	// Auth Required
+
+	mux.HandleFunc("/api/v1/cache", func(w http.ResponseWriter, req *http.Request) {
+		requireAuthentication(s.service, w, req, func() {
+			HandleCacheInvalidation(s.service, w, req)
+		})
+	})
+
 	return mux
 }

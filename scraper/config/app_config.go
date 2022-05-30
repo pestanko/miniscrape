@@ -22,7 +22,14 @@ type CacheCfg struct {
 
 // WebCfg web config
 type WebCfg struct {
-	Addr string `json:"addr" yaml:"addr"`
+	Addr  string `json:"addr" yaml:"addr"`
+	Users []User `json:"user" yaml:"user"`
+}
+
+// User definition in the system
+type User struct {
+	Username string
+	Password string
 }
 
 // GetAppConfig - Unmarshal the app configuration using the viper
