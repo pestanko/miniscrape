@@ -5,7 +5,6 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
 
@@ -58,13 +57,13 @@ type DayFilter struct {
 }
 
 func LoadCategories(cfg *AppConfig) []Category {
-	cfgPathUsed := viper.ConfigFileUsed()
-	baseDir := filepath.Dir(cfgPathUsed)
+	baseDir := "config/categories"
 	var categories []Category
 
 	for _, catName := range cfg.Categories {
 		ok, cat := loadCategoryFile(baseDir, catName)
 		if ok {
+			log.Printf("Loaded category: %v", cat.Name)
 			categories = append(categories, cat)
 		}
 	}
