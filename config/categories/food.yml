@@ -116,6 +116,11 @@ pages:
     homepage: "https://www.globus.cz/brno/"
     tags: ["rh", "fast"]
     query: ".restaurant__menu-table-row--active"
+    filters:
+      html:
+        prettyTables: True
+
+
 
   - codename: "annapurna"
     name: "Annapurna"
