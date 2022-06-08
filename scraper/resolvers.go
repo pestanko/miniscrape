@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -103,29 +104,15 @@ type pageResolvedGet struct {
 }
 
 func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
-	req, err := http.NewRequest("GET", r.page.Url, nil)
-	if err != nil {
-		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
-		return makeErrorResult(r.page, err)
-	}
-	randomUserAgent := userAgents[rand.Intn(len(userAgents))]
-	req.Header.Add("User-Agent", randomUserAgent)
-	res, err := r.client.Do(req)
-	if err != nil {
-		log.Printf("Request failed for (url: \"%s\"): %v\n", r.page.Url, err)
-		log.Printf("Error[%d]: %v", res.StatusCode, res)
-		return makeErrorResult(r.page, err)
+	var bodyContent []byte
+	var err error
+	if r.page.Command.Content.Name != "" {
+		bodyContent, err = r.getContentByCommand()
+	} else {
+		bodyContent, err = r.getContentByRequest()
 	}
 
-	defer func() {
-		if err := res.Body.Close(); err != nil {
-			log.Printf("Unable to close body: %v", err)
-		}
-	}()
-
-	bodyContent, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Printf("Failed to read a body for (url: \"%s\"): %v\n", r.page.Url, err)
 		return makeErrorResult(r.page, err)
 	}
 
@@ -156,6 +143,51 @@ func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
 		Status:  status,
 		Content: content,
 	}
+}
+
+func (r *pageResolvedGet) getContentByCommand() ([]byte, error) {
+	// Use command
+	log.Printf("Using command: '%s' with args %v", r.page.Command.Content.Name, r.page.Command.Content.Args)
+	var outb, errb bytes.Buffer
+	cmd := exec.Command(r.page.Command.Content.Name, r.page.Command.Content.Args...)
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	err := cmd.Run()
+	if err != nil {
+		log.Printf("Command error[%v]: %s", err, errb.String())
+	}
+
+	return outb.Bytes(), err
+}
+
+func (r *pageResolvedGet) getContentByRequest() ([]byte, error) {
+	req, err := http.NewRequest("GET", r.page.Url, nil)
+	if err != nil {
+		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
+		return []byte{}, err
+	}
+	randomUserAgent := userAgents[rand.Intn(len(userAgents))]
+	req.Header.Add("User-Agent", randomUserAgent)
+	res, err := r.client.Do(req)
+	if err != nil {
+		log.Printf("Request failed for (url: \"%s\"): %v\n", r.page.Url, err)
+		log.Printf("Error[%d]: %v", res.StatusCode, res)
+		return []byte{}, err
+	}
+
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			log.Printf("Unable to close body: %v", err)
+		}
+	}()
+
+	bodyContent, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("Failed to read a body for (url: \"%s\"): %v\n", r.page.Url, err)
+		return []byte{}, err
+	}
+
+	return bodyContent, err
 }
 
 func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error) {

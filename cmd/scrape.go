@@ -12,11 +12,9 @@ import (
 )
 
 var (
-	categoryArg string
-	tagsArg     []string
+	selector    config.RunSelector
 	noCache     bool
 	updateCache bool
-	nameArg     string
 )
 
 // scrapeCmd represents the scrape command
@@ -31,11 +29,6 @@ var scrapeCmd = &cobra.Command{
 		}
 		if updateCache {
 			cfg.Cache.Update = true
-		}
-		selector := config.RunSelector{
-			Tags:     tagsArg,
-			Category: categoryArg,
-			Page:     nameArg,
 		}
 
 		scrapeService := scraper.NewService(cfg)
@@ -58,9 +51,9 @@ func init() {
 
 	// and all subcommands, e.g.:
 	// scrapeCmd.PersistentFlags().String("foo", "", "A help for foo")
-	scrapeCmd.PersistentFlags().StringVarP(&categoryArg, "category", "C", "",
+	scrapeCmd.PersistentFlags().StringVarP(&selector.Category, "category", "C", "",
 		"Scrape pages based on the category")
-	scrapeCmd.PersistentFlags().StringSliceVarP(&tagsArg, "tags", "T", []string{},
+	scrapeCmd.PersistentFlags().StringSliceVarP(&selector.Tags, "tags", "T", []string{},
 		"Select pages based on provided tags")
 
 	scrapeCmd.PersistentFlags().BoolVar(&noCache, "no-cache", false,
@@ -68,8 +61,11 @@ func init() {
 	scrapeCmd.PersistentFlags().BoolVarP(&updateCache, "update-cache", "U", false,
 		"Update cache")
 
-	scrapeCmd.PersistentFlags().StringVarP(&nameArg, "name", "N", "",
+	scrapeCmd.PersistentFlags().StringVarP(&selector.Page, "name", "N", "",
 		"Select by codename")
+
+	scrapeCmd.PersistentFlags().BoolVarP(&selector.Force, "force", "f", false,
+		"Force scrape - ignore disabled")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
