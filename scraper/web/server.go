@@ -72,8 +72,8 @@ func (s *Server) routes() *http.ServeMux {
 		HandleAuthLogout(s.service, w, req)
 	})
 
-	mux.HandleFunc("/api/v1/auth/logout", func(w http.ResponseWriter, req *http.Request) {
-		HandleUserInfo(s.service, w, req)
+	mux.HandleFunc("/api/v1/auth/sessionstatus", func(w http.ResponseWriter, req *http.Request) {
+		HandleSessionStatus(s.service, w, req)
 	})
 
 	// Auth Required

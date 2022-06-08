@@ -1,10 +1,11 @@
-cache:
-  enabled: true
-  update: false
-
 categories:
   - food
   - cinema
 
+cache:
+  enabled: true
+  update: false
+
 web:
   addr: '127.0.0.1:8080'
+  domain: localhost

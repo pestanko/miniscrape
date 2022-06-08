@@ -14,8 +14,8 @@ import (
 const sessionCookieName = "SESSIONID"
 
 type loginCredentials struct {
-	username string `json:"username"`
-	password string `json:"password"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func HandleAuthLogout(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
@@ -86,7 +86,7 @@ func HandleAuthLogin(service *scraper.Service, w http.ResponseWriter, req *http.
 	})
 }
 
-func HandleUserInfo(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
+func HandleSessionStatus(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
 	session := GetSessionFromRequest(req)
 	if session == nil {
 		WriteJsonResponse(w, http.StatusOK, map[string]string{
@@ -141,7 +141,7 @@ func getSessionCookieFromRequest(req *http.Request) *http.Cookie {
 }
 
 func findUser(users []config.User, cred loginCredentials) *config.User {
-	return utils.FindInSlice[config.User](users, func(u config.User) bool {
-		return u.Username == cred.username && u.Password == u.Password
+	return utils.FindInSlice(users, func(u config.User) bool {
+		return u.Username == cred.Username && u.Password == u.Password
 	})
 }

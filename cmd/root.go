@@ -5,10 +5,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
 )
@@ -63,16 +64,25 @@ func initConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
+		viper.ReadInConfig()
+
 	} else {
-		viper.SetConfigName("default")
 		viper.AddConfigPath("./config/")
+
+		loadConfig("default-config")
+		loadConfig("local-config")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	log.Printf("Load config file: %s\n", viper.ConfigFileUsed())
-	if err := viper.ReadInConfig(); err == nil {
+	if err := viper.MergeInConfig(); err == nil {
 		log.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func loadConfig(name string) {
+	viper.SetConfigName(name)
+	log.Printf("Load config file: %s\n", viper.ConfigFileUsed())
+	viper.MergeInConfig()
 }
