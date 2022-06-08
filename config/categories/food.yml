@@ -209,8 +209,8 @@ pages:
 
   - codename: spravne_misto
     name: "Spravne misto"
-    url:	https://spravnemisto.cz/denni-menu
-    homepage: 	https://spravnemisto.cz/
+    url: https://spravnemisto.cz/denni-menu
+    homepage: https://spravnemisto.cz/
     query: ".elementor-widget-wrap i .elementor-widget-wrap"
     tags: ["rh", "cz"]
     filters:
@@ -219,3 +219,16 @@ pages:
       cut:
         before: "DENNÍ menu"
         after: "u nás si necháte chutnat"
+
+  - codename: ubaumanu
+    name: U Baumanu
+    url: https://ubaumannu.cz/menu
+    homepage: https://ubaumannu.cz/
+    tags: ["ceska", "cz"]
+    query: '.Main-content'
+    filters:
+      day:
+        enabled: true
+      cut:
+        before: "Cena za menu včetně polévky je 149 Kč."
+        after: "Menu podáváme od 11 hod. do 14 hod. případně do vyprodání."
