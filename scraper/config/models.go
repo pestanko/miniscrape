@@ -14,18 +14,28 @@ type Category struct {
 }
 
 type Page struct {
-	CodeName    string        `yaml:"codename" json:"codename"`
-	Name        string        `yaml:"name" json:"name"`
-	Homepage    string        `yaml:"homepage" json:"homepage"`
-	Url         string        `yaml:"url" json:"url"`
-	Query       string        `yaml:"query" json:"query"`
-	XPath       string        `yaml:"xpath" json:"xpath"`
-	CachePolicy string        `yaml:"cache_policy" json:"cachePolicy"`
-	Resolver    string        `yaml:"resolver" json:"resolver"`
-	Category    string        `yaml:"category" json:"category"`
-	Disabled    bool          `yaml:"disabled" json:"disabled"`
-	Tags        []string      `yaml:"tags" json:"tags"`
-	Filters     FiltersConfig `yaml:"filters" json:"filters"`
+	CodeName    string         `yaml:"codename" json:"codename"`
+	Name        string         `yaml:"name" json:"name"`
+	Homepage    string         `yaml:"homepage" json:"homepage"`
+	Url         string         `yaml:"url" json:"url"`
+	Query       string         `yaml:"query" json:"query"`
+	XPath       string         `yaml:"xpath" json:"xpath"`
+	CachePolicy string         `yaml:"cache_policy" json:"cachePolicy"`
+	Resolver    string         `yaml:"resolver" json:"resolver"`
+	Category    string         `yaml:"category" json:"category"`
+	Disabled    bool           `yaml:"disabled" json:"disabled"`
+	Tags        []string       `yaml:"tags" json:"tags"`
+	Filters     FiltersConfig  `yaml:"filters" json:"filters"`
+	Command     CommandsConfig `yaml:"command" json:"command"`
+}
+
+type CommandsConfig struct {
+	Content CommandConfig `yaml:"content" json:"content"`
+}
+
+type CommandConfig struct {
+	Name string   `yaml:"name" json:"name"`
+	Args []string `yaml:"args" json:"args"`
 }
 
 type HtmlFilter struct {
@@ -108,4 +118,5 @@ type RunSelector struct {
 	Tags     []string
 	Category string
 	Page     string
+	Force    bool
 }

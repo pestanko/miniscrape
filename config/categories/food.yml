@@ -107,10 +107,15 @@ pages:
   - codename: "globus"
     name: "Globus Brno"
     url: "https://www.globus.cz/brno/nabidka/restaurace.html"
+    command:
+      content:
+        name: python
+        args:
+          - "-c"
+          - 'import requests; import sys; sys.stdout.buffer.write(requests.get("https://www.globus.cz/brno/nabidka/restaurace.html").content)'
     homepage: "https://www.globus.cz/brno/"
     tags: ["rh", "fast"]
     query: ".restaurant__menu-table-row--active"
-    disabled: true
 
   - codename: "annapurna"
     name: "Annapurna"
@@ -225,7 +230,7 @@ pages:
     url: https://ubaumannu.cz/menu
     homepage: https://ubaumannu.cz/
     tags: ["ceska", "cz"]
-    query: '.Main-content'
+    query: ".Main-content"
     filters:
       day:
         enabled: true

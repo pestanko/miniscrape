@@ -102,7 +102,7 @@ func (a *asyncRunner) filterPages(sel config.RunSelector) []config.Page {
 		}
 
 		for _, page := range category.Pages {
-			if page.Disabled {
+			if page.Disabled && !sel.Force {
 				continue
 			}
 
