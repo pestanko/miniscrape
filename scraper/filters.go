@@ -1,9 +1,10 @@
 package scraper
 
 import (
-	"github.com/pestanko/miniscrape/scraper/config"
 	"strings"
 	"time"
+
+	"github.com/pestanko/miniscrape/scraper/config"
 )
 
 type PageFilter interface {
@@ -123,7 +124,7 @@ func (c *cutLineFilter) config() *config.CutLineFilter {
 func findBoundaries(content string, start string, end string) (int, int) {
 	startIndex := -1
 	if start != "" {
-		startIndex = strings.LastIndex(content, start)
+		startIndex = strings.Index(content, start)
 	}
 
 	if startIndex == -1 {

@@ -242,3 +242,23 @@ pages:
       cut:
         before: "Cena za menu včetně polévky je 149 Kč."
         after: "Menu podáváme od 11 hod. do 14 hod. případně do vyprodání."
+
+
+  - codename: garden_food_concept
+    name: Garden Food Concept
+    homepage: https://www.gardenfoodconcept.cz/
+    tags: ["city", "gd"]
+    url: https://www.gardenfoodconcept.cz/poledni-menu/
+    resolver: url_only
+
+  - codename: stopkova
+    name: Stopkova Plzenska Pivnice
+    homepage: https://www.kolkovna.cz/cs/stopkova-plzenska-pivnice-16
+    tags: ["cz", "gd", "ns", "city"]
+    url: https://www.kolkovna.cz/cs/stopkova-plzenska-pivnice-16/denni-menu
+    query: '.dailyMenuWeek'
+    filters:
+      day:
+        enabled: true
+      html:
+        prettyTables: True
