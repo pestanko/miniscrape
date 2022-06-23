@@ -1,3 +1,5 @@
 .idea/
 target/
 *.tmp
+miniscrape
+config/local-config.*
