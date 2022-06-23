@@ -120,8 +120,6 @@ pages:
       html:
         prettyTables: True
 
-
-
   - codename: "annapurna"
     name: "Annapurna"
     homepage: "http://www.indicka-restaurace-annapurna.cz/"
@@ -196,6 +194,8 @@ pages:
         enabled: true
       cut:
         after: "Nápoje k menu"
+      html:
+        prettyTables: True
 
   - codename: diva_bara
     name: Diva bara
