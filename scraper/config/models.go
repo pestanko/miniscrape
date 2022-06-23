@@ -27,7 +27,6 @@ type Page struct {
 	Tags        []string       `yaml:"tags" json:"tags"`
 	Filters     FiltersConfig  `yaml:"filters" json:"filters"`
 	Command     CommandsConfig `yaml:"command" json:"command"`
-	Encoding    string 		   `yaml:"encoding" json:"encoding"`
 }
 
 type CommandsConfig struct {

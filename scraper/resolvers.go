@@ -1,10 +1,12 @@
 package scraper
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -17,6 +19,9 @@ import (
 	"github.com/antchfx/htmlquery"
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
+	"golang.org/x/net/html/charset"
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/transform"
 	"jaytaylor.com/html2text"
 )
 
@@ -111,6 +116,8 @@ func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
 	} else {
 		bodyContent, err = r.getContentByRequest()
 	}
+
+	bodyContent = transformEncoding(bodyContent)
 
 	if err != nil {
 		return makeErrorResult(r.page, err)
@@ -300,4 +307,34 @@ func makeErrorResult(page config.Page, err error) RunResult {
 
 func normalizeString(content string) string {
 	return normPattern.ReplaceAllString(content, "\n")
+}
+
+func transformEncoding(content []byte) []byte {
+	bytesReader := bytes.NewReader(content);
+
+	e, name, _, err := DetermineEncodingFromReader(bytes.NewReader(content))
+	if err != nil {
+		log.Printf("Unable to determine the encoding: %v", err)
+		return content
+	}
+
+	log.Printf("Found encoding: %s", name)
+
+	reader := transform.NewReader(bytesReader, e.NewDecoder())
+	result, err := ioutil.ReadAll(reader)
+	if err != nil {
+		log.Printf("Unable to read from reader: %v", err)
+	}
+
+	return result
+}
+
+func DetermineEncodingFromReader(r io.Reader) (e encoding.Encoding, name string, certain bool, err error) {
+	b, err := bufio.NewReader(r).Peek(1024)
+	if err != nil {
+		return
+	}
+
+	e, name, certain = charset.DetermineEncoding(b, "")
+	return
 }

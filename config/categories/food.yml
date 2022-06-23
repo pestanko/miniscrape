@@ -158,6 +158,9 @@ pages:
     homepage: "http://www.useminaru.cz/"
     query: ".maintab .bold"
     tags: ["city", "cz", "fi", "gd"]
+    filters:
+      day:
+        enabled: true
 
   - codename: tripoli
     name: Tripoli Vankovka
