@@ -243,7 +243,7 @@ func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, erro
 func (r *pageResolvedGet) htmlToText(htmlContent string) (string, error) {
 	log.Printf("Found content, converting: %s", htmlContent)
 	text, err := html2text.FromString(htmlContent, html2text.Options{
-		PrettyTables: r.page.Filters.Html.PrettyTables,
+		PrettyTables: !r.page.Filters.Html.NoPrettyTables,
 		TextOnly:     r.page.Filters.Html.TextOnly,
 	})
 	if err != nil {

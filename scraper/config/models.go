@@ -39,7 +39,7 @@ type CommandConfig struct {
 }
 
 type HtmlFilter struct {
-	PrettyTables bool `yaml:"prettyTables"`
+	NoPrettyTables bool `yaml:"noPrettyTables"`
 	TextOnly     bool `yaml:"textOnly"`
 }
 
