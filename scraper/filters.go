@@ -5,7 +5,11 @@ import (
 	"strings"
 	"time"
 
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/JohannesKaufmann/html-to-markdown/plugin"
+
 	"github.com/pestanko/miniscrape/scraper/config"
+
 	"jaytaylor.com/html2text"
 )
 
@@ -37,6 +41,16 @@ func NewHTMLConverter(page *config.Page) PageFilter {
 	return &htmlFilterTags{
 		page.Filters.Html,
 	}
+}
+
+func NewHTMLToMdConverter(page *config.Page) PageFilter {
+	return &htmlToMdConverter{
+		page.Filters.Html,
+	}
+}
+
+func NewNewLineTrimConverter(page *config.Page) PageFilter {
+	return &newLineTrimConverter{}
 }
 
 type dayFilter struct {
@@ -214,7 +228,7 @@ func (f *htmlFilterTags) Filter(content string) (string, error) {
 		return "", err
 	}
 
-	return normalizeString(text), nil
+	return text, nil
 }
 
 // IsEnabled implements PageFilter
@@ -224,10 +238,6 @@ func (*htmlFilterTags) IsEnabled() bool {
 
 func (*htmlFilterTags) Name() string {
 	return "html2text"
-}
-
-func normalizeString(content string) string {
-	return normPattern.ReplaceAllString(content, "\n")
 }
 
 func useCustomHTMLTablesConverter(content string) string {
@@ -244,4 +254,50 @@ func useCustomHTMLTablesConverter(content string) string {
 	content = strings.ReplaceAll(content, "</tr>", "</p>")
 
 	return strings.ReplaceAll(content, "</TR>", "</p>")
+}
+
+type htmlToMdConverter struct {
+	html config.HtmlFilter
+}
+
+// Filter implements PageFilter
+func (*htmlToMdConverter) Filter(content string) (string, error) {
+	converter := makeMdConverter()
+
+	return converter.ConvertString(content)
+}
+
+// IsEnabled implements PageFilter
+func (*htmlToMdConverter) IsEnabled() bool {
+	return true
+}
+
+// Name implements PageFilter
+func (*htmlToMdConverter) Name() string {
+	return "html2md"
+}
+
+func makeMdConverter() *md.Converter {
+	converter := md.NewConverter("", true, nil)
+	// Use the `GitHubFlavored` plugin from the `plugin` package.
+	converter.Use(plugin.GitHubFlavored())
+
+	return converter
+}
+
+type newLineTrimConverter struct{}
+
+// Filter implements PageFilter
+func (*newLineTrimConverter) Filter(content string) (string, error) {
+	return normPattern.ReplaceAllString(content, "\n"), nil
+}
+
+// IsEnabled implements PageFilter
+func (*newLineTrimConverter) IsEnabled() bool {
+	return true
+}
+
+// Name implements PageFilter
+func (*newLineTrimConverter) Name() string {
+	return "newline"
 }

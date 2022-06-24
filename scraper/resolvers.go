@@ -51,7 +51,8 @@ func NewPageResolver(page config.Page) PageResolver {
 				Timeout: 30 * time.Second,
 			},
 			filters: []func(*config.Page) PageFilter{
-				NewHTMLConverter,
+				NewHTMLToMdConverter,
+				NewNewLineTrimConverter,
 				NewCutFilter,
 				NewDayFilter,
 				NewCutLineFilter,
