@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -148,6 +149,8 @@ func cutContent(content string, startIndex int, endIndex int) string {
 	if content == "" {
 		return ""
 	}
+
+	log.Printf("Content range: [from=%d; to=%d]", startIndex, endIndex)
 
 	return content[startIndex:endIndex]
 }

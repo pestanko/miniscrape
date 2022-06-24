@@ -250,12 +250,12 @@ func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, erro
 func (r *pageResolvedGet) htmlToText(htmlContent string) (string, error) {
 	log.Printf("Found content, converting: %s", htmlContent)
 
-	if r.page.Filters.Html.Tables == "custom" {
+	if r.page.Filters.Html.Tables != "pretty" {
 		htmlContent = useCustomHTMLTablesConverter(htmlContent)
 	}
 
 	text, err := html2text.FromString(htmlContent, html2text.Options{
-		PrettyTables: !r.page.Filters.Html.NoPrettyTables,
+		PrettyTables: r.page.Filters.Html.Tables == "pretty",
 		TextOnly:     r.page.Filters.Html.TextOnly,
 	})
 	if err != nil {
@@ -315,7 +315,7 @@ func normalizeString(content string) string {
 }
 
 func transformEncoding(content []byte) []byte {
-	bytesReader := bytes.NewReader(content);
+	bytesReader := bytes.NewReader(content)
 
 	e, name, _, err := DetermineEncodingFromReader(bytes.NewReader(content))
 	if err != nil {
@@ -344,13 +344,18 @@ func DetermineEncodingFromReader(r io.Reader) (e encoding.Encoding, name string,
 	return
 }
 
-
 func useCustomHTMLTablesConverter(content string) string {
 	if content == "" {
 		return ""
 	}
 
-	content = strings.ReplaceAll(content, "</tr>", "<br/>")
-	
-	return strings.ReplaceAll(content, "</TR>", "<br/>")
+	content = strings.ReplaceAll(content, "<table", "<p")
+	content = strings.ReplaceAll(content, "<TABLE", "<p")
+
+	content = strings.ReplaceAll(content, "<tr", "<p")
+	content = strings.ReplaceAll(content, "<TR", "<p")
+
+	content = strings.ReplaceAll(content, "</tr>", "</p>")
+
+	return strings.ReplaceAll(content, "</TR>", "</p>")
 }

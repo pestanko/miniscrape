@@ -39,9 +39,8 @@ type CommandConfig struct {
 }
 
 type HtmlFilter struct {
-	NoPrettyTables 	bool 	`yaml:"noPrettyTables"`
-	TextOnly     	bool 	`yaml:"textOnly"`
-	Tables 			string 	`yaml:"tables"`
+	TextOnly bool   `yaml:"textOnly"`
+	Tables   string `yaml:"tables"`
 }
 
 type FiltersConfig struct {

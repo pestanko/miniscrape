@@ -35,7 +35,7 @@ pages:
     tags: ["ns", "city", "cz"]
     filters:
       html:
-        prettyTables: True
+        tables: custom
 
   - codename: "charlies_mill"
     name: "Charlie's mill"
@@ -45,7 +45,7 @@ pages:
     tags: ["cz"]
     filters:
       html:
-        prettyTables: True
+        tables: custom
 
   - codename: "jean_pauls"
     name: "Jean Pauls Behounska"
@@ -102,7 +102,7 @@ pages:
       cut:
         after: "Seznam alergenů"
       html:
-        prettyTables: true
+        tables: custom
 
   - codename: "globus"
     name: "Globus Brno"
@@ -118,7 +118,7 @@ pages:
     query: ".restaurant__menu-table-row--active"
     filters:
       html:
-        prettyTables: True
+        tables: custom
 
   - codename: "annapurna"
     name: "Annapurna"
@@ -200,7 +200,7 @@ pages:
       cut:
         after: "Nápoje k menu"
       html:
-        prettyTables: True
+        tables: custom
 
   - codename: diva_bara
     name: Diva bara
@@ -266,4 +266,4 @@ pages:
       day:
         enabled: true
       html:
-        prettyTables: True
+        tables: custom
