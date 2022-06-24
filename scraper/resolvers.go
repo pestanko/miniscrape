@@ -52,6 +52,7 @@ func NewPageResolver(page config.Page) PageResolver {
 			},
 			filters: []func(*config.Page) PageFilter{
 				NewHTMLToMdConverter,
+				NewNewLineTrimConverter,
 				NewCutFilter,
 				NewDayFilter,
 				NewCutLineFilter,

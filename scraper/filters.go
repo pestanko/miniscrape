@@ -49,6 +49,10 @@ func NewHTMLToMdConverter(page *config.Page) PageFilter {
 	}
 }
 
+func NewNewLineTrimConverter(page *config.Page) PageFilter {
+	return &newLineTrimConverter{}
+}
+
 type dayFilter struct {
 	day config.DayFilter
 }
@@ -224,7 +228,7 @@ func (f *htmlFilterTags) Filter(content string) (string, error) {
 		return "", err
 	}
 
-	return normalizeString(text), nil
+	return text, nil
 }
 
 // IsEnabled implements PageFilter
@@ -234,10 +238,6 @@ func (*htmlFilterTags) IsEnabled() bool {
 
 func (*htmlFilterTags) Name() string {
 	return "html2text"
-}
-
-func normalizeString(content string) string {
-	return normPattern.ReplaceAllString(content, "\n")
 }
 
 func useCustomHTMLTablesConverter(content string) string {
@@ -283,4 +283,21 @@ func makeMdConverter() *md.Converter {
 	converter.Use(plugin.GitHubFlavored())
 
 	return converter
+}
+
+type newLineTrimConverter struct{}
+
+// Filter implements PageFilter
+func (*newLineTrimConverter) Filter(content string) (string, error) {
+	return normPattern.ReplaceAllString(content, "\n"), nil
+}
+
+// IsEnabled implements PageFilter
+func (*newLineTrimConverter) IsEnabled() bool {
+	return true
+}
+
+// Name implements PageFilter
+func (*newLineTrimConverter) Name() string {
+	return "newline"
 }
