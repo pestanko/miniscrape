@@ -155,6 +155,7 @@ func (r *pageResolverContent) Resolve(_ context.Context) RunResult {
 		Page:    r.page,
 		Status:  status,
 		Content: content,
+		Kind:    "content",
 	}
 }
 
@@ -249,25 +250,29 @@ func (r *pageResolverContent) applyFilters(contentArray []string) string {
 	if strings.TrimSpace(content) == "" {
 		return ""
 	}
-	filters := []func(*config.Page) PageFilter{
-		NewHTMLConverter,
-		NewCutFilter,
-		NewDayFilter,
-		NewCutLineFilter,
-	}
-	newContent := content
-	for _, newFilter := range filters {
+
+	var err error
+
+	for _, newFilter := range r.filters {
 		filter := newFilter(&r.page)
+
 		if !filter.IsEnabled() {
 			continue
 		}
-		newContent, _ = filter.Filter(newContent)
-		if newContent == "" {
+
+		log.Printf("Appling filter \"%s\": %s", filter.Name(), content)
+		content, err = filter.Filter(content)
+
+		if err != nil {
+			log.Printf("Unable to apply filter: %v", err)
+		}
+
+		if content == "" {
 			return ""
 		}
 	}
 
-	return newContent
+	return strings.TrimSpace(content)
 }
 
 type urlOnlyResolver struct {

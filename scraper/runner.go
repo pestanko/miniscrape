@@ -22,6 +22,7 @@ type RunResult struct {
 	Page    config.Page
 	Content string
 	Status  RunResultStatus
+	Kind    string
 }
 
 func NewAsyncRunner(

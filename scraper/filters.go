@@ -12,6 +12,7 @@ import (
 type PageFilter interface {
 	Filter(content string) (string, error)
 	IsEnabled() bool
+	Name() string
 }
 
 func NewCutFilter(page *config.Page) PageFilter {
@@ -44,6 +45,10 @@ type dayFilter struct {
 
 func (f *dayFilter) IsEnabled() bool {
 	return f.config().Enabled
+}
+
+func (*dayFilter) Name() string {
+	return "day"
 }
 
 func (f *dayFilter) config() *config.DayFilter {
@@ -84,6 +89,10 @@ func (f *cutFilter) config() *config.CutFilter {
 
 func (f *cutFilter) IsEnabled() bool {
 	return f.config().After != "" || f.config().Before != ""
+}
+
+func (*cutFilter) Name() string {
+	return "cut"
 }
 
 func (f *cutFilter) Filter(content string) (string, error) {
@@ -129,6 +138,10 @@ func (c *cutLineFilter) config() *config.CutLineFilter {
 	return &c.cutLine
 }
 
+func (*cutLineFilter) Name() string {
+	return "cut_line"
+}
+
 func findBoundaries(content string, start string, end string) (int, int) {
 	startIndex := -1
 	if start != "" {
@@ -143,6 +156,7 @@ func findBoundaries(content string, start string, end string) (int, int) {
 	if end != "" {
 		endIndex = strings.Index(content, end)
 	}
+
 	return startIndex, endIndex
 }
 
@@ -150,9 +164,11 @@ func cutContent(content string, startIndex int, endIndex int) string {
 	if startIndex == -1 {
 		startIndex = 0
 	}
+
 	if endIndex == -1 {
 		endIndex = len(content) - 1
 	}
+
 	if content == "" {
 		return ""
 	}
@@ -192,16 +208,22 @@ func (f *htmlFilterTags) Filter(content string) (string, error) {
 		PrettyTables: f.html.Tables == "pretty",
 		TextOnly:     f.html.TextOnly,
 	})
+
 	if err != nil {
 		log.Printf("Text extraction failed: %v\n", err)
 		return "", err
 	}
+
 	return normalizeString(text), nil
 }
 
 // IsEnabled implements PageFilter
 func (*htmlFilterTags) IsEnabled() bool {
 	return true
+}
+
+func (*htmlFilterTags) Name() string {
+	return "html2text"
 }
 
 func normalizeString(content string) string {
