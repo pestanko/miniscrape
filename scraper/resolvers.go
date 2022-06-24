@@ -45,10 +45,16 @@ func NewPageResolver(page config.Page) PageResolver {
 	case "get", "default":
 		fallthrough
 	default:
-		return &pageResolvedGet{
+		return &pageResolverContent{
 			page: page,
 			client: http.Client{
 				Timeout: 30 * time.Second,
+			},
+			filters: []func(*config.Page) PageFilter{
+				NewHTMLConverter,
+				NewCutFilter,
+				NewDayFilter,
+				NewCutLineFilter,
 			},
 		}
 	}
@@ -102,12 +108,13 @@ func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
 	return res
 }
 
-type pageResolvedGet struct {
-	page   config.Page
-	client http.Client
+type pageResolverContent struct {
+	page    config.Page
+	client  http.Client
+	filters []func(*config.Page) PageFilter
 }
 
-func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
+func (r *pageResolverContent) Resolve(_ context.Context) RunResult {
 	var bodyContent []byte
 	var err error
 	if r.page.Command.Content.Name != "" {
@@ -151,7 +158,7 @@ func (r *pageResolvedGet) Resolve(_ context.Context) RunResult {
 	}
 }
 
-func (r *pageResolvedGet) getContentByCommand() ([]byte, error) {
+func (r *pageResolverContent) getContentByCommand() ([]byte, error) {
 	// Use command
 	log.Printf("Using command: '%s' with args %v", r.page.Command.Content.Name, r.page.Command.Content.Args)
 	var outb, errb bytes.Buffer
@@ -166,7 +173,7 @@ func (r *pageResolvedGet) getContentByCommand() ([]byte, error) {
 	return outb.Bytes(), err
 }
 
-func (r *pageResolvedGet) getContentByRequest() ([]byte, error) {
+func (r *pageResolverContent) getContentByRequest() ([]byte, error) {
 	req, err := http.NewRequest("GET", r.page.Url, nil)
 	if err != nil {
 		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
@@ -196,7 +203,7 @@ func (r *pageResolvedGet) getContentByRequest() ([]byte, error) {
 	return bodyContent, err
 }
 
-func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error) {
+func (r *pageResolverContent) parseUsingXPathQuery(content []byte) ([]string, error) {
 	log.Printf("Parse using the the XPath: %s", r.page.XPath)
 	root, err := htmlquery.Parse(bytes.NewReader(content))
 	if err != nil {
@@ -217,7 +224,7 @@ func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error)
 	return result, nil
 }
 
-func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, error) {
+func (r *pageResolverContent) parseUsingCssQuery(bodyContent []byte) ([]string, error) {
 	log.Printf("Parse using the the CSS Query: %s", r.page.Query)
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
 	if err != nil {
@@ -237,7 +244,7 @@ func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, erro
 	return content, nil
 }
 
-func (r *pageResolvedGet) applyFilters(contentArray []string) string {
+func (r *pageResolverContent) applyFilters(contentArray []string) string {
 	content := strings.Join(contentArray, "\n")
 	if strings.TrimSpace(content) == "" {
 		return ""
