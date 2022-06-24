@@ -5,7 +5,11 @@ import (
 	"strings"
 	"time"
 
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/JohannesKaufmann/html-to-markdown/plugin"
+
 	"github.com/pestanko/miniscrape/scraper/config"
+
 	"jaytaylor.com/html2text"
 )
 
@@ -35,6 +39,12 @@ func NewDayFilter(page *config.Page) PageFilter {
 
 func NewHTMLConverter(page *config.Page) PageFilter {
 	return &htmlFilterTags{
+		page.Filters.Html,
+	}
+}
+
+func NewHTMLToMdConverter(page *config.Page) PageFilter {
+	return &htmlToMdConverter{
 		page.Filters.Html,
 	}
 }
@@ -244,4 +254,33 @@ func useCustomHTMLTablesConverter(content string) string {
 	content = strings.ReplaceAll(content, "</tr>", "</p>")
 
 	return strings.ReplaceAll(content, "</TR>", "</p>")
+}
+
+type htmlToMdConverter struct {
+	html config.HtmlFilter
+}
+
+// Filter implements PageFilter
+func (*htmlToMdConverter) Filter(content string) (string, error) {
+	converter := makeMdConverter()
+
+	return converter.ConvertString(content)
+}
+
+// IsEnabled implements PageFilter
+func (*htmlToMdConverter) IsEnabled() bool {
+	return true
+}
+
+// Name implements PageFilter
+func (*htmlToMdConverter) Name() string {
+	return "html2md"
+}
+
+func makeMdConverter() *md.Converter {
+	converter := md.NewConverter("", true, nil)
+	// Use the `GitHubFlavored` plugin from the `plugin` package.
+	converter.Use(plugin.GitHubFlavored())
+
+	return converter
 }
