@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pestanko/miniscrape/scraper/config"
+	"jaytaylor.com/html2text"
 )
 
 type PageFilter interface {
@@ -28,6 +29,12 @@ func NewCutLineFilter(page *config.Page) PageFilter {
 func NewDayFilter(page *config.Page) PageFilter {
 	return &dayFilter{
 		page.Filters.Day,
+	}
+}
+
+func NewHTMLConverter(page *config.Page) PageFilter {
+	return &htmlFilterTags{
+		page.Filters.Html,
 	}
 }
 
@@ -169,4 +176,50 @@ func tryApplyDayFilter(content string, days []string, weekday time.Weekday) (int
 	nextDay := upperDays[nextIdx]
 
 	return findBoundaries(content, currDay, nextDay)
+}
+
+type htmlFilterTags struct {
+	html config.HtmlFilter
+}
+
+// Filter implements PageFilter
+func (f *htmlFilterTags) Filter(content string) (string, error) {
+	if f.html.Tables != "pretty" {
+		content = useCustomHTMLTablesConverter(content)
+	}
+
+	text, err := html2text.FromString(content, html2text.Options{
+		PrettyTables: f.html.Tables == "pretty",
+		TextOnly:     f.html.TextOnly,
+	})
+	if err != nil {
+		log.Printf("Text extraction failed: %v\n", err)
+		return "", err
+	}
+	return normalizeString(text), nil
+}
+
+// IsEnabled implements PageFilter
+func (*htmlFilterTags) IsEnabled() bool {
+	return true
+}
+
+func normalizeString(content string) string {
+	return normPattern.ReplaceAllString(content, "\n")
+}
+
+func useCustomHTMLTablesConverter(content string) string {
+	if content == "" {
+		return ""
+	}
+
+	content = strings.ReplaceAll(content, "<table", "<p")
+	content = strings.ReplaceAll(content, "<TABLE", "<p")
+
+	content = strings.ReplaceAll(content, "<tr", "<p")
+	content = strings.ReplaceAll(content, "<TR", "<p")
+
+	content = strings.ReplaceAll(content, "</tr>", "</p>")
+
+	return strings.ReplaceAll(content, "</TR>", "</p>")
 }

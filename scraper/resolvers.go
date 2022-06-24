@@ -22,7 +22,6 @@ import (
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/transform"
-	"jaytaylor.com/html2text"
 )
 
 var userAgents = []string{
@@ -212,11 +211,7 @@ func (r *pageResolvedGet) parseUsingXPathQuery(content []byte) ([]string, error)
 
 	for _, node := range nodes {
 		html := htmlquery.OutputHTML(node, true)
-		text, err := r.htmlToText(html)
-		if err != nil {
-			continue
-		}
-		result = append(result, text)
+		result = append(result, html)
 	}
 
 	return result, nil
@@ -236,33 +231,10 @@ func (r *pageResolvedGet) parseUsingCssQuery(bodyContent []byte) ([]string, erro
 			log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
 			return
 		}
-		text, err := r.htmlToText(htmlContent)
-		if err != nil {
-			log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
-			return
-		}
-		content = append(content, text)
+		content = append(content, htmlContent)
 	})
 
 	return content, nil
-}
-
-func (r *pageResolvedGet) htmlToText(htmlContent string) (string, error) {
-	log.Printf("Found content, converting: %s", htmlContent)
-
-	if r.page.Filters.Html.Tables != "pretty" {
-		htmlContent = useCustomHTMLTablesConverter(htmlContent)
-	}
-
-	text, err := html2text.FromString(htmlContent, html2text.Options{
-		PrettyTables: r.page.Filters.Html.Tables == "pretty",
-		TextOnly:     r.page.Filters.Html.TextOnly,
-	})
-	if err != nil {
-		log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
-		return "", err
-	}
-	return normalizeString(text), nil
 }
 
 func (r *pageResolvedGet) applyFilters(contentArray []string) string {
@@ -271,6 +243,7 @@ func (r *pageResolvedGet) applyFilters(contentArray []string) string {
 		return ""
 	}
 	filters := []func(*config.Page) PageFilter{
+		NewHTMLConverter,
 		NewCutFilter,
 		NewDayFilter,
 		NewCutLineFilter,
@@ -310,10 +283,6 @@ func makeErrorResult(page config.Page, err error) RunResult {
 	}
 }
 
-func normalizeString(content string) string {
-	return normPattern.ReplaceAllString(content, "\n")
-}
-
 func transformEncoding(content []byte) []byte {
 	bytesReader := bytes.NewReader(content)
 
@@ -342,20 +311,4 @@ func DetermineEncodingFromReader(r io.Reader) (e encoding.Encoding, name string,
 
 	e, name, certain = charset.DetermineEncoding(b, "")
 	return
-}
-
-func useCustomHTMLTablesConverter(content string) string {
-	if content == "" {
-		return ""
-	}
-
-	content = strings.ReplaceAll(content, "<table", "<p")
-	content = strings.ReplaceAll(content, "<TABLE", "<p")
-
-	content = strings.ReplaceAll(content, "<tr", "<p")
-	content = strings.ReplaceAll(content, "<TR", "<p")
-
-	content = strings.ReplaceAll(content, "</tr>", "</p>")
-
-	return strings.ReplaceAll(content, "</TR>", "</p>")
 }
