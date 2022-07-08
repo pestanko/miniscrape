@@ -2,9 +2,9 @@ package config
 
 import (
 	"io/ioutil"
-	"log"
 	"path/filepath"
 
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -73,7 +73,7 @@ func LoadCategories(cfg *AppConfig) []Category {
 	for _, catName := range cfg.Categories {
 		ok, cat := loadCategoryFile(baseDir, catName)
 		if ok {
-			log.Printf("Loaded category: %v", cat.Name)
+			log.Info().Str("category", cat.Name).Msg("Loaded category:")
 			categories = append(categories, cat)
 		}
 	}
@@ -83,17 +83,17 @@ func LoadCategories(cfg *AppConfig) []Category {
 
 func loadCategoryFile(baseDir string, catName string) (bool, Category) {
 	fp := filepath.Join(baseDir, catName+".yml")
-	log.Printf("Loading file: %s", fp)
+	log.Info().Str("file", fp).Msg("Loading file")
 
 	content, err := ioutil.ReadFile(fp)
 	if err != nil {
-		log.Printf("Unable to open file \"%s\": %v", fp, err)
+		log.Error().Err(err).Str("file", fp).Msg("Unable to open file")
 		return false, Category{}
 	}
 
 	var cat Category
 	if err = yaml.Unmarshal(content, &cat); err != nil {
-		log.Printf("Unable to load file \"%s\": %v", fp, err)
+		log.Error().Err(err).Str("file", fp).Msg("Unable to load file")
 		return false, Category{}
 	}
 

@@ -2,8 +2,9 @@ package scraper
 
 import (
 	"context"
-	"log"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
@@ -48,22 +49,22 @@ type asyncRunner struct {
 }
 
 func (a *asyncRunner) Run(selector config.RunSelector) []RunResult {
-	log.Println("Runner Started!")
+	log.Debug().Msg("Runner Started!")
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
 	if numberOfPages == 0 {
-		log.Println("No pages available")
+		log.Warn().Msg("No pages available")
 		return []RunResult{}
 	}
 
-	log.Printf("Processing number of pages: %d", numberOfPages)
+	log.Debug().Int("numberOfPages", numberOfPages).Msg("Processing number of pages")
 	channelWithResults := make(chan RunResult, numberOfPages)
 	ctx := context.Background()
 	// start async tasks
 	a.startAsyncRequests(channelWithResults, ctx, pages)
 	// collect results
 	resultsCollection := a.collectResults(channelWithResults, numberOfPages)
-	log.Println("Runner Ended")
+	log.Debug().Msg("Runner Ended")
 
 	return resultsCollection
 }
@@ -85,7 +86,7 @@ func (a *asyncRunner) startAsyncRequests(resChan chan<- RunResult, ctx context.C
 		idx := idx
 		page := page
 		go func() {
-			log.Printf("%03d. Starting to Resolve \"%s\"", idx, page.CodeName)
+			log.Debug().Int("idx", idx).Str("codename", page.CodeName).Msg("Starting to Resolve")
 			resolver := NewGetCachedPageResolver(page, a.cache)
 			resChan <- resolver.Resolve(ctx)
 		}()

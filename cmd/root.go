@@ -5,18 +5,18 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
 )
 
 var (
-	cfgFile    string
-	logEnabled bool
+	cfgFile  string
+	logLevel string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -52,15 +52,19 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config-file", "",
 		"config file (default is ./config/food.yml)")
-	rootCmd.PersistentFlags().BoolVarP(&logEnabled, "log", "L",
-		false, "Enable logging")
+	rootCmd.PersistentFlags().StringVarP(&logLevel, "log", "L",
+		"info", "Set log level")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if !logEnabled {
-		log.SetOutput(ioutil.Discard)
+	logLevelZero, err := zerolog.ParseLevel(logLevel)
+	if err != nil {
+		logLevelZero = zerolog.WarnLevel
 	}
+
+	zerolog.SetGlobalLevel(logLevelZero)
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -74,11 +78,6 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.MergeInConfig(); err == nil {
-		log.Println("Using config file:", viper.ConfigFileUsed())
-	}
 }
 
 func loadConfig(name string) {

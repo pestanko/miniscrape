@@ -1,9 +1,11 @@
 package middlewares
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 func RequestLogger(targetMux http.Handler) http.Handler {
@@ -15,14 +17,13 @@ func RequestLogger(targetMux http.Handler) http.Handler {
 		targetMux.ServeHTTP(o, r)
 
 		// log request by who(IP address)
-		log.Printf(
-			"%-7s%s\t%-6d%s\t %v",
-			r.Method,
-			r.RequestURI,
-			o.status,
-			r.RemoteAddr,
-			time.Since(start),
-		)
+		log.Trace().
+			Str("method", r.Method).
+			Str("requestUri", r.RequestURI).
+			Str("remoteAddr", r.RemoteAddr).
+			Str("duration", fmt.Sprintf("%v", time.Since(start))).
+			Int("statusCode", o.status).
+			Msg("Incoming request")
 	})
 }
 

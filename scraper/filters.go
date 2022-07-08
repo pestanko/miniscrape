@@ -1,9 +1,10 @@
 package scraper
 
 import (
-	"log"
 	"strings"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/JohannesKaufmann/html-to-markdown/plugin"
@@ -187,7 +188,10 @@ func cutContent(content string, startIndex int, endIndex int) string {
 		return ""
 	}
 
-	log.Printf("Content range: [from=%d; to=%d]", startIndex, endIndex)
+	log.Debug().
+		Int("from", startIndex).
+		Int("to", endIndex).
+		Msg("Content range")
 
 	return content[startIndex:endIndex]
 }
@@ -224,7 +228,7 @@ func (f *htmlFilterTags) Filter(content string) (string, error) {
 	})
 
 	if err != nil {
-		log.Printf("Text extraction failed: %v\n", err)
+		log.Warn().Err(err).Msg("Text extraction failed")
 		return "", err
 	}
 
