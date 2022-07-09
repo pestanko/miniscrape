@@ -8,23 +8,9 @@ import (
 
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
+	"github.com/pestanko/miniscrape/scraper/resolvers"
 	"github.com/pestanko/miniscrape/scraper/utils"
 )
-
-type RunResultStatus string
-
-const (
-	RunSuccess RunResultStatus = "ok"
-	RunError   RunResultStatus = "error"
-	RunEmpty   RunResultStatus = "empty"
-)
-
-type RunResult struct {
-	Page    config.Page
-	Content string
-	Status  RunResultStatus
-	Kind    string
-}
 
 func NewAsyncRunner(
 	cfg *config.AppConfig,
@@ -39,7 +25,7 @@ func NewAsyncRunner(
 }
 
 type Runner interface {
-	Run(selector config.RunSelector) []RunResult
+	Run(selector config.RunSelector) []config.RunResult
 }
 
 type asyncRunner struct {
@@ -48,17 +34,17 @@ type asyncRunner struct {
 	cache      cache.Cache
 }
 
-func (a *asyncRunner) Run(selector config.RunSelector) []RunResult {
+func (a *asyncRunner) Run(selector config.RunSelector) []config.RunResult {
 	log.Debug().Msg("Runner Started!")
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
 	if numberOfPages == 0 {
 		log.Warn().Msg("No pages available")
-		return []RunResult{}
+		return []config.RunResult{}
 	}
 
 	log.Debug().Int("numberOfPages", numberOfPages).Msg("Processing number of pages")
-	channelWithResults := make(chan RunResult, numberOfPages)
+	channelWithResults := make(chan config.RunResult, numberOfPages)
 	ctx := context.Background()
 	// start async tasks
 	a.startAsyncRequests(channelWithResults, ctx, pages)
@@ -69,8 +55,8 @@ func (a *asyncRunner) Run(selector config.RunSelector) []RunResult {
 	return resultsCollection
 }
 
-func (a *asyncRunner) collectResults(channelWithResults chan RunResult, numberOfPages int) []RunResult {
-	var resultsCollection []RunResult
+func (a *asyncRunner) collectResults(channelWithResults chan config.RunResult, numberOfPages int) []config.RunResult {
+	var resultsCollection []config.RunResult
 	for res := range channelWithResults {
 		resultsCollection = append(resultsCollection, res)
 		if len(resultsCollection) == numberOfPages {
@@ -81,13 +67,13 @@ func (a *asyncRunner) collectResults(channelWithResults chan RunResult, numberOf
 	return resultsCollection
 }
 
-func (a *asyncRunner) startAsyncRequests(resChan chan<- RunResult, ctx context.Context, pages []config.Page) {
+func (a *asyncRunner) startAsyncRequests(resChan chan<- config.RunResult, ctx context.Context, pages []config.Page) {
 	for idx, page := range pages {
 		idx := idx
 		page := page
 		go func() {
 			log.Debug().Int("idx", idx).Str("codename", page.CodeName).Msg("Starting to Resolve")
-			resolver := NewGetCachedPageResolver(page, a.cache)
+			resolver := resolvers.NewGetCachedPageResolver(page, a.cache)
 			resChan <- resolver.Resolve(ctx)
 		}()
 	}

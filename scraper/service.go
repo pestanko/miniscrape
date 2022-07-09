@@ -25,7 +25,7 @@ func NewService(cfg *config.AppConfig) *Service {
 	}
 }
 
-func (s *Service) Scrape(selector config.RunSelector) []RunResult {
+func (s *Service) Scrape(selector config.RunSelector) []config.RunResult {
 	runner := NewAsyncRunner(&s.Cfg, s.GetCategories(), s.getCache())
 	return runner.Run(selector)
 }
