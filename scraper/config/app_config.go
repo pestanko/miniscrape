@@ -10,6 +10,13 @@ type AppConfig struct {
 	Categories []string
 	Cache      CacheCfg
 	Web        WebCfg
+	Log        LogConfig
+}
+
+// LogConfig
+type LogConfig struct {
+	Dir                   string
+	ConsoleLoggingEnabled bool
 }
 
 // CacheCfg defines the configuration for the cache
