@@ -32,6 +32,10 @@ var userAgents = []string{
 
 var normPattern = regexp.MustCompile("\n\n")
 
+var httpClient = http.Client{
+	Timeout: 30 * time.Second,
+}
+
 type PageResolver interface {
 	Resolve(ctx context.Context) RunResult
 }
@@ -42,14 +46,17 @@ func NewPageResolver(page config.Page) PageResolver {
 		return &urlOnlyResolver{
 			page: page,
 		}
+	case "image", "img":
+		return &imageResolver{
+			page:   page,
+			client: httpClient,
+		}
 	case "get", "default":
 		fallthrough
 	default:
 		return &pageResolverContent{
-			page: page,
-			client: http.Client{
-				Timeout: 30 * time.Second,
-			},
+			page:   page,
+			client: httpClient,
 			filters: []func(*config.Page) PageFilter{
 				NewHTMLToMdConverter,
 				NewNewLineTrimConverter,
@@ -116,33 +123,19 @@ type pageResolverContent struct {
 }
 
 func (r *pageResolverContent) Resolve(_ context.Context) RunResult {
-	var bodyContent []byte
-	var err error
-	if r.page.Command.Content.Name != "" {
-		bodyContent, err = r.getContentByCommand()
-	} else {
-		bodyContent, err = r.getContentByRequest()
-	}
-
-	bodyContent = transformEncoding(bodyContent)
-
+	bodyContent, err := getContentForWebPage(&r.page)
 	if err != nil {
 		return makeErrorResult(r.page, err)
 	}
 
-	var contentArray []string
-
-	if r.page.Query != "" {
-		contentArray, err = r.parseUsingCssQuery(bodyContent)
-	} else {
-		contentArray, err = r.parseUsingXPathQuery(bodyContent)
-	}
-
+	contentArray, err := parseWebPageContent(&r.page, bodyContent)
 	if err != nil {
 		log.Printf("Parsing failed for (url: \"%s\"): %v\n", r.page.Url, err)
 		return makeErrorResult(r.page, err)
 	}
-	content := r.applyFilters(contentArray)
+
+	content := strings.Join(contentArray, "\n")
+	content = r.applyFilters(content)
 
 	var status = RunSuccess
 	if content == "" {
@@ -160,11 +153,25 @@ func (r *pageResolverContent) Resolve(_ context.Context) RunResult {
 	}
 }
 
-func (r *pageResolverContent) getContentByCommand() ([]byte, error) {
+func getContentForWebPage(page *config.Page) (bodyContent []byte, err error) {
+	if page.Command.Content.Name != "" {
+		bodyContent, err = getContentByCommand(page)
+	} else {
+		bodyContent, err = getContentByRequest(page)
+	}
+
+	if err == nil {
+		bodyContent = transformEncoding(bodyContent)
+	}
+
+	return
+}
+
+func getContentByCommand(page *config.Page) ([]byte, error) {
 	// Use command
-	log.Printf("Using command: '%s' with args %v", r.page.Command.Content.Name, r.page.Command.Content.Args)
+	log.Printf("Using command: '%s' with args %v", page.Command.Content.Name, page.Command.Content.Args)
 	var outb, errb bytes.Buffer
-	cmd := exec.Command(r.page.Command.Content.Name, r.page.Command.Content.Args...)
+	cmd := exec.Command(page.Command.Content.Name, page.Command.Content.Args...)
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	err := cmd.Run()
@@ -175,17 +182,19 @@ func (r *pageResolverContent) getContentByCommand() ([]byte, error) {
 	return outb.Bytes(), err
 }
 
-func (r *pageResolverContent) getContentByRequest() ([]byte, error) {
-	req, err := http.NewRequest("GET", r.page.Url, nil)
+func getContentByRequest(page *config.Page) ([]byte, error) {
+	req, err := http.NewRequest("GET", page.Url, nil)
 	if err != nil {
-		log.Printf("Request creation failed for (url: \"%s\"): %v\n", r.page.Url, err)
+		log.Printf("Request creation failed for (url: \"%s\"): %v\n", page.Url, err)
 		return []byte{}, err
 	}
+
 	randomUserAgent := userAgents[rand.Intn(len(userAgents))]
 	req.Header.Add("User-Agent", randomUserAgent)
-	res, err := r.client.Do(req)
+
+	res, err := httpClient.Do(req)
 	if err != nil {
-		log.Printf("Request failed for (url: \"%s\"): %v\n", r.page.Url, err)
+		log.Printf("Request failed for (url: \"%s\"): %v\n", page.Url, err)
 		log.Printf("Error[%d]: %v", res.StatusCode, res)
 		return []byte{}, err
 	}
@@ -198,20 +207,20 @@ func (r *pageResolverContent) getContentByRequest() ([]byte, error) {
 
 	bodyContent, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Printf("Failed to read a body for (url: \"%s\"): %v\n", r.page.Url, err)
+		log.Printf("Failed to read a body for (url: \"%s\"): %v\n", page.Url, err)
 		return []byte{}, err
 	}
 
 	return bodyContent, err
 }
 
-func (r *pageResolverContent) parseUsingXPathQuery(content []byte) ([]string, error) {
-	log.Printf("Parse using the the XPath: %s", r.page.XPath)
+func parseUsingXPathQuery(content []byte, xpath string) ([]string, error) {
+	log.Printf("Parse using the the XPath: %s", xpath)
 	root, err := htmlquery.Parse(bytes.NewReader(content))
 	if err != nil {
 		return []string{}, err
 	}
-	nodes, err := htmlquery.QueryAll(root, r.page.XPath)
+	nodes, err := htmlquery.QueryAll(root, xpath)
 	if err != nil {
 		return []string{}, err
 	}
@@ -226,18 +235,27 @@ func (r *pageResolverContent) parseUsingXPathQuery(content []byte) ([]string, er
 	return result, nil
 }
 
-func (r *pageResolverContent) parseUsingCssQuery(bodyContent []byte) ([]string, error) {
-	log.Printf("Parse using the the CSS Query: %s", r.page.Query)
+func parseWebPageContent(page *config.Page, bodyContent []byte) (contentArray []string, err error) {
+	if page.Query != "" {
+		contentArray, err = parseUsingCssQuery(bodyContent, page.Query)
+	} else {
+		contentArray, err = parseUsingXPathQuery(bodyContent, page.XPath)
+	}
+	return
+}
+
+func parseUsingCssQuery(bodyContent []byte, query string) ([]string, error) {
+	log.Printf("Parse using the the CSS Query: %s", query)
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
 	if err != nil {
 		return []string{}, err
 	}
 
 	var content []string
-	doc.Find(r.page.Query).Each(func(idx int, selection *goquery.Selection) {
+	doc.Find(query).Each(func(idx int, selection *goquery.Selection) {
 		htmlContent, err := selection.Html()
 		if err != nil {
-			log.Printf("Text extraction failed for (url: \"%s\"): %v\n", r.page.Url, err)
+			log.Printf("Text extraction failed %v\n", err)
 			return
 		}
 		content = append(content, htmlContent)
@@ -246,8 +264,7 @@ func (r *pageResolverContent) parseUsingCssQuery(bodyContent []byte) ([]string, 
 	return content, nil
 }
 
-func (r *pageResolverContent) applyFilters(contentArray []string) string {
-	content := strings.Join(contentArray, "\n")
+func (r *pageResolverContent) applyFilters(content string) string {
 	if strings.TrimSpace(content) == "" {
 		return ""
 	}
@@ -285,6 +302,7 @@ func (u *urlOnlyResolver) Resolve(_ context.Context) RunResult {
 		Page:    u.page,
 		Content: fmt.Sprintf("Url for %s menu: %s", u.page.Name, u.page.Url),
 		Status:  RunSuccess,
+		Kind:    "url",
 	}
 }
 
@@ -293,6 +311,7 @@ func makeErrorResult(page config.Page, err error) RunResult {
 		Page:    page,
 		Content: fmt.Sprintf("Error: %v\n", err),
 		Status:  RunError,
+		Kind:    "error",
 	}
 }
 
@@ -324,4 +343,32 @@ func DetermineEncodingFromReader(r io.Reader) (e encoding.Encoding, name string,
 
 	e, name, certain = charset.DetermineEncoding(b, "")
 	return
+}
+
+type imageResolver struct {
+	page   config.Page
+	client http.Client
+}
+
+// Resolve implements PageResolver
+func (r *imageResolver) Resolve(ctx context.Context) RunResult {
+	bodyContent, err := getContentForWebPage(&r.page)
+	if err != nil {
+		return makeErrorResult(r.page, err)
+	}
+
+	contentArray, err := parseWebPageContent(&r.page, bodyContent)
+	if err != nil {
+		log.Printf("Parsing failed for (url: \"%s\"): %v\n", r.page.Url, err)
+		return makeErrorResult(r.page, err)
+	}
+
+	content := strings.Join(contentArray, "")
+
+	return RunResult{
+		Page:    r.page,
+		Content: content,
+		Status:  RunSuccess,
+		Kind:    "img",
+	}
 }
