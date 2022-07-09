@@ -1,12 +1,12 @@
 package web
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/config"
 	middlewares "github.com/pestanko/miniscrape/scraper/web/middlewares"
+	"github.com/rs/zerolog/log"
 )
 
 type Server struct {
@@ -29,7 +29,7 @@ func (s *Server) Serve() {
 		addr = "127.0.01:8080"
 	}
 
-	log.Printf("Running server at %s", addr)
+	log.Info().Str("addr", addr).Msg("Running server")
 
 	mds := []middlewares.Middleware{
 		middlewares.RequestLogger,
@@ -38,7 +38,7 @@ func (s *Server) Serve() {
 	}
 
 	if err := http.ListenAndServe(addr, middlewares.ApplyMiddlewares(mux, mds)); err != nil {
-		log.Fatalf("Unable to serve: %v", err)
+		log.Fatal().Err(err).Msg("Unable to serve")
 	}
 }
 

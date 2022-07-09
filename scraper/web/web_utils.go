@@ -2,13 +2,13 @@ package web
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/utils"
 	"github.com/pestanko/miniscrape/scraper/web/auth"
+	"github.com/rs/zerolog/log"
 )
 
 type errorDto struct {
@@ -17,7 +17,11 @@ type errorDto struct {
 }
 
 func WriteErrorResponse(w http.ResponseWriter, code int, err errorDto) {
-	log.Printf("Error[%d] - %s: %s", code, err.Error, err.ErrorDetail)
+	log.Warn().
+		Str("error", err.Error).
+		Str("detail", err.ErrorDetail).
+		Int("code", code).
+		Msg("Returning the error response")
 
 	WriteJsonResponse(w, code, err)
 }
@@ -28,10 +32,10 @@ func WriteJsonResponse(w http.ResponseWriter, code int, resp interface{}) {
 
 	jsonResp, err := json.Marshal(resp)
 	if err != nil {
-		log.Fatalf("Error happened in JSON marshal. Err: %v", err)
+		log.Error().Err(err).Msg("Error happened in JSON marshal")
 	}
 	if _, err := w.Write(jsonResp); err != nil {
-		log.Fatalf("Error writing response. Err: %v", err)
+		log.Error().Err(err).Msg("Error writing response")
 	}
 }
 
@@ -59,7 +63,7 @@ func requireAuthentication(service *scraper.Service, w http.ResponseWriter, req 
 }
 
 func requireHttpMethod(w http.ResponseWriter, req *http.Request, methods []string, callable func()) {
-	if utils.IsInSlice[string](methods, func(i string) bool { return strings.ToUpper(req.Method) == i }) {
+	if utils.IsInSlice(methods, func(i string) bool { return strings.ToUpper(req.Method) == i }) {
 		callable()
 	} else {
 		WriteUnsupportedHttpMethod(w, req.Method)

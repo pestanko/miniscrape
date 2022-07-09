@@ -1,8 +1,7 @@
 package config
 
 import (
-	"log"
-
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -37,7 +36,10 @@ func GetAppConfig() *AppConfig {
 	var config AppConfig
 
 	if err := viper.Unmarshal(&config); err != nil {
-		log.Fatalf("Unable to load configuration (file used: %s): %v", viper.ConfigFileUsed(), err)
+		log.Info().
+			Str("file", viper.ConfigFileUsed()).
+			Err(err).
+			Msg("Unable to load configuration")
 	}
 	return &config
 }
