@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/pestanko/miniscrape/scraper/config"
 	"github.com/pestanko/miniscrape/scraper/utils"
 )
 
 const visitorCookie = "VISITOR"
 
-func VisitorCookie(targetMux http.Handler) http.Handler {
+func VisitorCookie(targetMux http.Handler, cfg *config.AppConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		WrapWithVisitorCookie(w, r)

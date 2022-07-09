@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"github.com/pestanko/miniscrape/scraper/config"
+	"github.com/pestanko/miniscrape/scraper/utils"
 	"github.com/pestanko/miniscrape/scraper/web"
 
 	"github.com/spf13/cobra"
@@ -17,6 +18,7 @@ var serveCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.GetAppConfig()
+		utils.InitGlobalLogger(&cfg.Log)
 
 		server := web.MakeServer(cfg)
 

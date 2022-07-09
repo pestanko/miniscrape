@@ -8,6 +8,7 @@ import (
 
 	"github.com/pestanko/miniscrape/scraper"
 	"github.com/pestanko/miniscrape/scraper/config"
+	"github.com/pestanko/miniscrape/scraper/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,7 @@ var scrapeCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.GetAppConfig()
+		utils.InitGlobalLogger(&cfg.Log)
 		if noCache {
 			cfg.Cache.Enabled = false
 		}

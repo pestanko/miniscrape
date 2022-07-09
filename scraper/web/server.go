@@ -37,7 +37,7 @@ func (s *Server) Serve() {
 		middlewares.SetupCors,
 	}
 
-	if err := http.ListenAndServe(addr, middlewares.ApplyMiddlewares(mux, mds)); err != nil {
+	if err := http.ListenAndServe(addr, middlewares.ApplyMiddlewares(mux, s.cfg, mds)); err != nil {
 		log.Fatal().Err(err).Msg("Unable to serve")
 	}
 }

@@ -5,10 +5,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rs/zerolog/log"
+	"github.com/pestanko/miniscrape/scraper/config"
+	"github.com/pestanko/miniscrape/scraper/utils"
 )
 
-func RequestLogger(targetMux http.Handler) http.Handler {
+func RequestLogger(targetMux http.Handler, cfg *config.AppConfig) http.Handler {
+
+	accessLog := utils.MakeAccessLog(&cfg.Log)
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -17,7 +21,7 @@ func RequestLogger(targetMux http.Handler) http.Handler {
 		targetMux.ServeHTTP(o, r)
 
 		// log request by who(IP address)
-		log.Trace().
+		accessLog.Info().
 			Str("method", r.Method).
 			Str("requestUri", r.RequestURI).
 			Str("remoteAddr", r.RemoteAddr).
