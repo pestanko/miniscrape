@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 
@@ -27,6 +28,10 @@ type Page struct {
 	Tags        []string       `yaml:"tags" json:"tags"`
 	Filters     FiltersConfig  `yaml:"filters" json:"filters"`
 	Command     CommandsConfig `yaml:"command" json:"command"`
+}
+
+func (p Page) Namespace() string {
+	return fmt.Sprintf("%s/%s", p.Category, p.CodeName)
 }
 
 type CommandsConfig struct {

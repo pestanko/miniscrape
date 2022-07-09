@@ -1,13 +1,16 @@
 package cache
 
 import (
-	"github.com/pestanko/miniscrape/scraper/config"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"time"
+
+	"github.com/rs/zerolog/log"
+
+	"github.com/pestanko/miniscrape/scraper/config"
 )
 
 const DefaultContentFile = "content.txt"
@@ -29,6 +32,10 @@ type ItemNamespace struct {
 
 func (n *ItemNamespace) Path() string {
 	return path.Join(n.Category, n.Page)
+}
+
+func (n ItemNamespace) String() string {
+	return fmt.Sprintf("%s/%s", n.Category, n.Page)
 }
 
 func NewNamespace(cat string, page string) ItemNamespace {
@@ -80,10 +87,20 @@ func (c *cacheFs) GetContent(item Item) []byte {
 	content, err := ioutil.ReadFile(fp)
 
 	if err != nil {
-		log.Printf("CACHE: Unable to load content '%s': %v", fp, err)
+		log.Warn().
+			Err(err).
+			Str("file", fp).
+			Str("type", "cache").
+			Msg("CACHE: Unable to load content")
+
 		return []byte{}
 	}
-	log.Printf("CACHE: Loading cached content '%s'", fp)
+
+	log.Trace().
+		Str("file", fp).
+		Str("type", "cache").
+		Msg("CACHE: Loading cached content")
+
 	return content
 }
 
@@ -100,19 +117,36 @@ func (c *cacheFs) Store(item Item, content []byte) error {
 
 	if !c.IsPageCached(item.Namespace) {
 		if err := os.MkdirAll(c.getNamespaceDir(item.Namespace.Path()), 0700); err != nil {
-			log.Printf("Unable to create directory file '%s': %v", fp, err)
+			log.Error().
+				Err(err).
+				Str("file", fp).
+				Str("type", "cache").
+				Msg("CACHE: Unable to create directory file")
+
 			return err
 		}
 	}
 
 	if c.IsItemCached(item) {
-		log.Printf("Item already cached: %v", item)
+		log.Trace().
+			Str("item", item.Namespace.String()).
+			Str("type", "cache").
+			Msg("CACHE: Item already cache")
 		return nil
 	}
 
-	log.Printf("Writing cache file '%s': %v", fp, item)
+	log.Trace().
+		Str("item", item.Namespace.String()).
+		Str("file", fp).
+		Str("type", "cache").
+		Msg("CACHE: Writing cache file")
+
 	if err := ioutil.WriteFile(fp, content, 0600); err != nil {
-		log.Printf("Unable to write file '%s': %v", fp, err)
+		log.Error().
+			Err(err).
+			Str("file", fp).
+			Str("type", "cache").
+			Msg("CACHE: Unable to write file")
 		return err
 	}
 
@@ -148,7 +182,11 @@ func IsPathExists(path string) bool {
 func RemoveDir(pth string) {
 	if IsPathExists(pth) {
 		if err := os.RemoveAll(pth); err != nil {
-			log.Printf("Unable to remove directory '%s': %v", pth, err)
+			log.Error().
+				Err(err).
+				Str("path", pth).
+				Str("type", "cache").
+				Msg("CACHE: Unable to remove directory")
 		}
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"os/exec"
@@ -19,6 +18,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"github.com/pestanko/miniscrape/scraper/cache"
 	"github.com/pestanko/miniscrape/scraper/config"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/transform"
@@ -89,7 +89,8 @@ type cachedPageResolver struct {
 func (c *cachedPageResolver) Resolve(ctx context.Context) RunResult {
 	namespace := cache.NewNamespace(c.page.Category, c.page.CodeName)
 	if c.cache.IsPageCached(namespace) {
-		log.Printf("Loading content from cache '%s'", c.page.CodeName)
+		log.Debug().Str("page", c.page.Namespace()).Msg("Loading content from cache")
+
 		content := string(c.cache.GetContent(cache.Item{
 			Namespace: namespace,
 		}))
@@ -130,7 +131,11 @@ func (r *pageResolverContent) Resolve(_ context.Context) RunResult {
 
 	contentArray, err := parseWebPageContent(&r.page, bodyContent)
 	if err != nil {
-		log.Printf("Parsing failed for (url: \"%s\"): %v\n", r.page.Url, err)
+		log.Error().
+			Err(err).
+			Str("url", r.page.Url).
+			Str("page", r.page.Namespace()).
+			Msg("Content parsing failed")
 		return makeErrorResult(r.page, err)
 	}
 
@@ -139,10 +144,14 @@ func (r *pageResolverContent) Resolve(_ context.Context) RunResult {
 
 	var status = RunSuccess
 	if content == "" {
-		log.Printf("%s resolved but the content is empty", r.page.CodeName)
+		log.Debug().
+			Str("page", r.page.Namespace()).
+			Msg("Content resolved but the content is empty")
 		status = RunEmpty
 	} else {
-		log.Printf("%s resolved!", r.page.CodeName)
+		log.Debug().
+			Str("page", r.page.Namespace()).
+			Msg("Content resolved")
 	}
 
 	return RunResult{
@@ -169,14 +178,28 @@ func getContentForWebPage(page *config.Page) (bodyContent []byte, err error) {
 
 func getContentByCommand(page *config.Page) ([]byte, error) {
 	// Use command
-	log.Printf("Using command: '%s' with args %v", page.Command.Content.Name, page.Command.Content.Args)
+	log.Debug().
+		Str("cmdName", page.Command.Content.Name).
+		Strs("cmdArgs", page.Command.Content.Args).
+		Msg("Resolve using command")
 	var outb, errb bytes.Buffer
 	cmd := exec.Command(page.Command.Content.Name, page.Command.Content.Args...)
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	err := cmd.Run()
 	if err != nil {
-		log.Printf("Command error[%v]: %s", err, errb.String())
+		log.Error().
+			Err(err).
+			Str("page", page.Namespace()).
+			Str("cmdName", page.Command.Content.Name).
+			Strs("cmdArgs", page.Command.Content.Args).
+			Msg("Command error")
+		log.Trace().
+			Str("page", page.Namespace()).
+			Str("cmdName", page.Command.Content.Name).
+			Strs("cmdArgs", page.Command.Content.Args).
+			Str("stderr", errb.String()).
+			Msg("Command error trace")
 	}
 
 	return outb.Bytes(), err
@@ -185,7 +208,11 @@ func getContentByCommand(page *config.Page) ([]byte, error) {
 func getContentByRequest(page *config.Page) ([]byte, error) {
 	req, err := http.NewRequest("GET", page.Url, nil)
 	if err != nil {
-		log.Printf("Request creation failed for (url: \"%s\"): %v\n", page.Url, err)
+		log.Error().
+			Err(err).
+			Str("pageUrl", page.Url).
+			Str("page", page.Namespace()).
+			Msg("Request initialization failed")
 		return []byte{}, err
 	}
 
@@ -194,20 +221,41 @@ func getContentByRequest(page *config.Page) ([]byte, error) {
 
 	res, err := httpClient.Do(req)
 	if err != nil {
-		log.Printf("Request failed for (url: \"%s\"): %v\n", page.Url, err)
-		log.Printf("Error[%d]: %v", res.StatusCode, res)
+		log.Error().
+			Err(err).
+			Str("pageUrl", page.Url).
+			Str("page", page.Namespace()).
+			Int("status", res.StatusCode).
+			Msg("Request failed")
+		log.Trace().
+			Stack().
+			Err(err).
+			Str("page", page.Namespace()).
+			Str("content", fmt.Sprintf("%v", res)).
+			Msg("Error reponse content")
 		return []byte{}, err
 	}
 
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			log.Printf("Unable to close body: %v", err)
+			log.Error().
+				Err(err).
+				Str("pageUrl", page.Url).
+				Str("page", page.Namespace()).
+				Int("status", res.StatusCode).
+				Msg("Unable to close body")
 		}
 	}()
 
 	bodyContent, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Printf("Failed to read a body for (url: \"%s\"): %v\n", page.Url, err)
+		log.Error().
+			Err(err).
+			Str("pageUrl", page.Url).
+			Str("page", page.Namespace()).
+			Int("status", res.StatusCode).
+			Msg("Failed to read a body")
+
 		return []byte{}, err
 	}
 
@@ -215,7 +263,7 @@ func getContentByRequest(page *config.Page) ([]byte, error) {
 }
 
 func parseUsingXPathQuery(content []byte, xpath string) ([]string, error) {
-	log.Printf("Parse using the the XPath: %s", xpath)
+	log.Trace().Str("xpath", xpath).Msg("Parse using the the XPath")
 	root, err := htmlquery.Parse(bytes.NewReader(content))
 	if err != nil {
 		return []string{}, err
@@ -245,7 +293,7 @@ func parseWebPageContent(page *config.Page, bodyContent []byte) (contentArray []
 }
 
 func parseUsingCssQuery(bodyContent []byte, query string) ([]string, error) {
-	log.Printf("Parse using the the CSS Query: %s", query)
+	log.Trace().Str("query", query).Msg("Parse using the the CSS query")
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
 	if err != nil {
 		return []string{}, err
@@ -255,7 +303,9 @@ func parseUsingCssQuery(bodyContent []byte, query string) ([]string, error) {
 	doc.Find(query).Each(func(idx int, selection *goquery.Selection) {
 		htmlContent, err := selection.Html()
 		if err != nil {
-			log.Printf("Text extraction failed %v\n", err)
+			log.Warn().
+				Err(err).
+				Msg("Text extraction failed")
 			return
 		}
 		content = append(content, htmlContent)
@@ -278,11 +328,19 @@ func (r *pageResolverContent) applyFilters(content string) string {
 			continue
 		}
 
-		log.Printf("Appling filter \"%s\": %s", filter.Name(), content)
+		log.Trace().
+			Err(err).
+			Str("filter", filter.Name()).
+			Str("content", content).
+			Msg("Appling filter")
+
 		content, err = filter.Filter(content)
 
 		if err != nil {
-			log.Printf("Unable to apply filter: %v", err)
+			log.Warn().
+				Err(err).
+				Str("filter", filter.Name()).
+				Msg("Unable to apply filter")
 		}
 
 		if content == "" {
@@ -320,16 +378,22 @@ func transformEncoding(content []byte) []byte {
 
 	e, name, _, err := DetermineEncodingFromReader(bytes.NewReader(content))
 	if err != nil {
-		log.Printf("Unable to determine the encoding: %v", err)
+		log.Warn().
+			Err(err).
+			Msg("Unable to determine the encoding")
 		return content
 	}
 
-	log.Printf("Found encoding: %s", name)
+	log.Trace().
+		Str("encoding", name).
+		Msg("Found encoding")
 
 	reader := transform.NewReader(bytesReader, e.NewDecoder())
 	result, err := ioutil.ReadAll(reader)
 	if err != nil {
-		log.Printf("Unable to read from reader: %v", err)
+		log.Warn().
+			Err(err).
+			Msg("Unable to read from reader")
 	}
 
 	return result
@@ -359,7 +423,12 @@ func (r *imageResolver) Resolve(ctx context.Context) RunResult {
 
 	contentArray, err := parseWebPageContent(&r.page, bodyContent)
 	if err != nil {
-		log.Printf("Parsing failed for (url: \"%s\"): %v\n", r.page.Url, err)
+		log.Warn().
+			Err(err).
+			Str("page", r.page.Namespace()).
+			Str("pageUrl", r.page.Url).
+			Msg("Content parsing failed")
+
 		return makeErrorResult(r.page, err)
 	}
 

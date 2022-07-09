@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
@@ -82,6 +81,5 @@ func initConfig() {
 
 func loadConfig(name string) {
 	viper.SetConfigName(name)
-	log.Printf("Load config file: %s\n", viper.ConfigFileUsed())
 	viper.MergeInConfig()
 }
