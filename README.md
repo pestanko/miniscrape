@@ -22,10 +22,20 @@ Install the dependencies
 go get .
 ```
 
+## Build the scraper
+```shell
+make build
+```
+
 ## Run the scraper
 
 ```shell
 go run main.go scrape
+```
+
+### Run the server
+```shell
+make run-serve
 ```
 
 ## Add/Edit available webpages

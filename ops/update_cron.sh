@@ -13,6 +13,9 @@ fi
 cd "$project_dir"
 
 git pull
-go build
+
+make clean
+make build
+
 
 cd "$old_dir"

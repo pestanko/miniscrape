@@ -12,7 +12,7 @@ lint:
 	revive -formatter friendly ./...
 	gosec ./...
 
-.PHONY: help lint test install-tools build
+.PHONY: help lint test install-tools build run-serve
 
 all: help
 
@@ -50,3 +50,7 @@ build:
 clean:
 	go clean
 	rm bin/*
+
+## run-serve: Run the server
+run-serve:
+	go run main.go serve
