@@ -90,7 +90,6 @@ func NewCache(cacheCfg config.CacheCfg, date time.Time) Cache {
 
 // cacheFs cache implemented over the filesystem
 type cacheFs struct {
-	blockList   []string
 	rootDir     string
 	forceUpdate bool
 	date        time.Time
