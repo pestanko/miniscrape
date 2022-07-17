@@ -10,12 +10,14 @@ if [ ! -e "$project_dir" ]; then
 fi
 
 
-cd "$project_dir"
+cd "$project_dir" || die "Unable to change directory to the $project_dir"
 
+git stash
 git pull
+git stash apply
 
-make clean
+go clean
 make build
 
 
-cd "$old_dir"
+cd "$old_dir" || die "Unable to return the $old_dir"
