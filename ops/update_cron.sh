@@ -12,9 +12,11 @@ fi
 
 cd "$project_dir"
 
+git stash
 git pull
+git stash apply
 
-make clean
+go clean
 make build
 
 
