@@ -49,7 +49,7 @@ build:
 ## clean: clean all the binary files
 clean:
 	go clean
-	rm bin/*
+	rm bin/${BINARY_NAME}*
 
 ## run-serve: Run the server
 run-serve:
