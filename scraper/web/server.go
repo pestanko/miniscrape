@@ -9,18 +9,21 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Server representation
 type Server struct {
 	cfg     *config.AppConfig
 	service *scraper.Service
 }
 
-func MakeServer(cfg *config.AppConfig) Server {
+// NewServer instance
+func NewServer(cfg *config.AppConfig) Server {
 	return Server{
 		cfg:     cfg,
 		service: scraper.NewService(cfg),
 	}
 }
 
+// Serve the server
 func (s *Server) Serve() {
 	mux := s.routes()
 
@@ -29,7 +32,9 @@ func (s *Server) Serve() {
 		addr = "127.0.01:8080"
 	}
 
-	log.Info().Str("addr", addr).Msg("Running server")
+	log.Info().
+		Str("addr", addr).
+		Msg("Running server")
 
 	mds := []middlewares.Middleware{
 		func(handler http.Handler, _ *config.AppConfig) http.Handler {
@@ -40,7 +45,10 @@ func (s *Server) Serve() {
 		middlewares.SetupCors,
 	}
 
-	if err := http.ListenAndServe(addr, middlewares.ApplyMiddlewares(mux, s.cfg, mds)); err != nil {
+	if err := http.ListenAndServe(
+		addr,
+		middlewares.ApplyMiddlewares(mux, s.cfg, mds),
+	); err != nil {
 		log.Fatal().Err(err).Msg("Unable to serve")
 	}
 }
@@ -66,7 +74,7 @@ func (s *Server) routes() *http.ServeMux {
 
 	mux.HandleFunc("/api/v1/auth/login", func(w http.ResponseWriter, req *http.Request) {
 		// sample way how to deal with annotations
-		requireHttpMethod(w, req, []string{http.MethodPost}, func() {
+		requireHTTPMethod(w, req, []string{http.MethodPost}, func() {
 			HandleAuthLogin(s.service, w, req)
 		})
 	})

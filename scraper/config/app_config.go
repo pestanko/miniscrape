@@ -7,34 +7,47 @@ import (
 
 // AppConfig defines the main application configuration
 type AppConfig struct {
+	// Categories list of all available categories
 	Categories []string
-	Cache      CacheCfg
-	Web        WebCfg
-	Log        LogConfig
+	// Cache configuration
+	Cache CacheCfg
+	// Web configuration
+	Web WebCfg
+	// Log configuration
+	Log LogConfig
 }
 
-// LogConfig
+// LogConfig logger configuration
 type LogConfig struct {
-	Dir                   string
+	// Dir where to store log files
+	Dir string
+	// ConsoleLoggingEnabled whether logger should use console logging
 	ConsoleLoggingEnabled bool
 }
 
 // CacheCfg defines the configuration for the cache
 type CacheCfg struct {
+	// Enabled whether the cache is enabled
 	Enabled bool
-	Update  bool
-	Root    string
+	// Update whether the cache should be updated
+	Update bool
+	// Root directory for the cache
+	Root string
 }
 
 // WebCfg web config
 type WebCfg struct {
-	Addr  string `json:"addr" yaml:"addr"`
+	// Addr where the server should be running
+	Addr string `json:"addr" yaml:"addr"`
+	// Users list of available users
 	Users []User `json:"user" yaml:"user"`
 }
 
 // User definition in the system
 type User struct {
+	// Username of the user
 	Username string
+	// Password of the user
 	Password string
 }
 

@@ -7,12 +7,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// NewCutFilter create a new instance of the cut filter
 func NewCutFilter(page *config.Page) PageFilter {
 	return &cutFilter{
 		page.Filters.Cut,
 	}
 }
 
+// NewCutLineFilter create a new instance of the cut line filter
 func NewCutLineFilter(page *config.Page) PageFilter {
 	return &cutLineFilter{
 		page.Filters.CutLine,

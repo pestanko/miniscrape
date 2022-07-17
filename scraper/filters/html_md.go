@@ -6,14 +6,16 @@ import (
 	"github.com/pestanko/miniscrape/scraper/config"
 )
 
+// NewHTMLToMdConverter a new instance of the filter that
+// converts html to markdown
 func NewHTMLToMdConverter(page *config.Page) PageFilter {
 	return &htmlToMdConverter{
-		page.Filters.Html,
+		page.Filters.HTML,
 	}
 }
 
 type htmlToMdConverter struct {
-	html config.HtmlFilter
+	html config.HTMLFilter
 }
 
 // Filter implements PageFilter

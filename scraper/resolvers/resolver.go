@@ -7,10 +7,12 @@ import (
 	"github.com/pestanko/miniscrape/scraper/filters"
 )
 
+// PageResolver is a main interface for page content resolvers
 type PageResolver interface {
 	Resolve(ctx context.Context) config.RunResult
 }
 
+// NewPageResolver creates a new instance of the page resovler
 func NewPageResolver(page config.Page) PageResolver {
 	switch page.Resolver {
 	case "url_only", "urlonly", "url-only":

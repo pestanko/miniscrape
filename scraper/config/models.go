@@ -9,68 +9,110 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Category representation
 type Category struct {
+	// Pages list of all pages
 	Pages []Page `yaml:"pages" json:"pages"`
-	Name  string `yaml:"name" json:"name"`
+	// Name of the category
+	Name string `yaml:"name" json:"name"`
 }
 
+// Page representation
 type Page struct {
-	CodeName    string         `yaml:"codename" json:"codename"`
-	Name        string         `yaml:"name" json:"name"`
-	Homepage    string         `yaml:"homepage" json:"homepage"`
-	Url         string         `yaml:"url" json:"url"`
-	Query       string         `yaml:"query" json:"query"`
-	XPath       string         `yaml:"xpath" json:"xpath"`
-	CachePolicy string         `yaml:"cache_policy" json:"cachePolicy"`
-	Resolver    string         `yaml:"resolver" json:"resolver"`
-	Category    string         `yaml:"category" json:"category"`
-	Disabled    bool           `yaml:"disabled" json:"disabled"`
-	Tags        []string       `yaml:"tags" json:"tags"`
-	Filters     FiltersConfig  `yaml:"filters" json:"filters"`
-	Command     CommandsConfig `yaml:"command" json:"command"`
+	// CodeName of the page
+	CodeName string `yaml:"codename" json:"codename"`
+	// Name of the page
+	Name string `yaml:"name" json:"name"`
+	// Homepage of the page
+	Homepage string `yaml:"homepage" json:"homepage"`
+	// URL of the page where the lunch menu is
+	URL string `yaml:"url" json:"url"`
+	// Query css query to use for element extraction
+	Query string `yaml:"query" json:"query"`
+	// XPath query to use for element extraction
+	XPath string `yaml:"xpath" json:"xpath"`
+	// CachePolicy for the webpage
+	CachePolicy string `yaml:"cache_policy" json:"cachePolicy"`
+	// Resolver to be used
+	Resolver string `yaml:"resolver" json:"resolver"`
+	// Category name
+	Category string `yaml:"category" json:"category"`
+	// Disabled whether the page has been disabled
+	Disabled bool `yaml:"disabled" json:"disabled"`
+	// Tags list of all tags for the page
+	Tags []string `yaml:"tags" json:"tags"`
+	// Filters for the page
+	Filters FiltersConfig `yaml:"filters" json:"filters"`
+	// Command config for cmd to be executed to get webpage content
+	Command CommandsConfig `yaml:"command" json:"command"`
 }
 
+// Namespace for the page
 func (p Page) Namespace() string {
 	return fmt.Sprintf("%s/%s", p.Category, p.CodeName)
 }
 
+// CommandsConfig wrapper for command configuration for the page
 type CommandsConfig struct {
+	// Content command configuration content
 	Content CommandConfig `yaml:"content" json:"content"`
 }
 
+// CommandConfig command configuration for the page
 type CommandConfig struct {
-	Name string   `yaml:"name" json:"name"`
+	// Name of the command
+	Name string `yaml:"name" json:"name"`
+	// Args of the command
 	Args []string `yaml:"args" json:"args"`
 }
 
-type HtmlFilter struct {
-	TextOnly bool   `yaml:"textOnly"`
-	Tables   string `yaml:"tables"`
-}
-
+// FiltersConfig for the webpage
 type FiltersConfig struct {
-	Cut     CutFilter     `yaml:"cut"`
+	// Cut filter configuration
+	Cut CutFilter `yaml:"cut"`
+	// CutLine filter configuration
 	CutLine CutLineFilter `yaml:"cutLine"`
-	Day     DayFilter     `yaml:"day"`
-	Html    HtmlFilter    `yaml:"html"`
+	// Day filter configuration
+	Day DayFilter `yaml:"day"`
+	// HTML filter configuration
+	HTML HTMLFilter `yaml:"html"`
 }
 
+// HTMLFilter for the webpage
+type HTMLFilter struct {
+	// TextOnly - whether it should parse only the text
+	TextOnly bool `yaml:"textOnly"`
+	// Tables resolver
+	Tables string `yaml:"tables"`
+}
+
+// CutFilter for the webpage
 type CutFilter struct {
+	// Before which text the content should be cut
 	Before string `yaml:"before"`
-	After  string `yaml:"after"`
+	// After which text the content should be cut
+	After string `yaml:"after"`
 }
 
+// CutLineFilter for the webpage
 type CutLineFilter struct {
+	// StartsWith remove the line if it starts with the text
 	StartsWith string `yaml:"startsWith"`
-	Contains   string `yaml:"contains"`
-	CutAfter   string `yaml:"cutAfter"`
+	// Contains remove the line if it contains the text
+	Contains string `yaml:"contains"`
+	// CutAfter Cut the line after provided text
+	CutAfter string `yaml:"cutAfter"`
 }
 
+// DayFilter for the webpage
 type DayFilter struct {
-	Days    []string `yaml:"days"`
-	Enabled bool     `yaml:"enabled"`
+	// List of days to be used as separators, if empty - use default
+	Days []string `yaml:"days"`
+	// Whether the filter is enabled
+	Enabled bool `yaml:"enabled"`
 }
 
+// LoadCategories Load all categories from the app config
 func LoadCategories(cfg *AppConfig) []Category {
 	baseDir := "config/categories"
 	var categories []Category
@@ -90,7 +132,7 @@ func loadCategoryFile(baseDir string, catName string) (bool, Category) {
 	fp := filepath.Join(baseDir, catName+".yml")
 	log.Info().Str("file", fp).Msg("Loading file")
 
-	content, err := ioutil.ReadFile(fp)
+	content, err := ioutil.ReadFile(filepath.Clean(fp))
 	if err != nil {
 		log.Error().Err(err).Str("file", fp).Msg("Unable to open file")
 		return false, Category{}
@@ -119,9 +161,14 @@ func loadCategoryFile(baseDir string, catName string) (bool, Category) {
 	return true, cat
 }
 
+// RunSelector represents which pages should be selected
 type RunSelector struct {
-	Tags     []string
+	// Tags list of all tags to be selected
+	Tags []string
+	// Category name of the category
 	Category string
-	Page     string
-	Force    bool
+	// Page codename for the page
+	Page string
+	// Force load even if disabled
+	Force bool
 }

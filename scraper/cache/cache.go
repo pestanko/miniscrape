@@ -13,43 +13,66 @@ import (
 	"github.com/pestanko/miniscrape/scraper/config"
 )
 
+// DefaultContentFile contains the name of the file where to store processed
+// content
 const DefaultContentFile = "content.txt"
 
+// NamespacePath defines a generic interface for each type to have method
+// to return the namespace path
 type NamespacePath interface {
+	// Path return the path of the item
 	Path() string
 }
 
+// Item represents an unique item stored in the cache
 type Item struct {
-	Namespace   ItemNamespace
-	FileName    string
+	// Namespace of the item
+	Namespace ItemNamespace
+	// FileName of the file that will be/is stored in the cache
+	FileName string
+	// CachePolicy for the item - it can be nocache
 	CachePolicy string
 }
 
+// ItemNamespace contains tuple Category/Page
 type ItemNamespace struct {
-	Page     string
+	// Page codename
+	Page string
+	// Category codename
 	Category string
 }
 
+// Path returns the path representation of the namespace (OS specific)
 func (n *ItemNamespace) Path() string {
 	return path.Join(n.Category, n.Page)
 }
 
+// String returns the string representation of the namespace
 func (n ItemNamespace) String() string {
 	return fmt.Sprintf("%s/%s", n.Category, n.Page)
 }
 
+// NewNamespace creates a instance of the new ItemNamespace
 func NewNamespace(cat string, page string) ItemNamespace {
 	return ItemNamespace{Category: cat, Page: page}
 }
 
+// Cache interface
 type Cache interface {
+	// Store the item to the cache with provided content
 	Store(item Item, content []byte) error
+	// IsPageCached checks whether the page is in the cache
 	IsPageCached(nm ItemNamespace) bool
+	// IsItemCached checks whether the item is in the cache
+	// Deprecated: use IsPageCached instead
 	IsItemCached(item Item) bool
+	// GetContent returns the content for the item
 	GetContent(item Item) []byte
+	// Invalidate the cache content
 	Invalidate(sel config.RunSelector)
 }
 
+// NewCache creates an instance of the new cache
 func NewCache(cacheCfg config.CacheCfg, date time.Time) Cache {
 	if cacheCfg.Enabled {
 		root := cacheCfg.Root
@@ -57,34 +80,35 @@ func NewCache(cacheCfg config.CacheCfg, date time.Time) Cache {
 			root = path.Join(os.TempDir(), "mini-scrape")
 		}
 		return &cacheFs{
-			RootDir:     root,
-			ForceUpdate: cacheCfg.Update,
-			Date:        date,
+			rootDir:     root,
+			forceUpdate: cacheCfg.Update,
+			date:        date,
 		}
 	}
 	return nil
 }
 
+// cacheFs cache implemented over the filesystem
 type cacheFs struct {
-	BlockList   []string
-	RootDir     string
-	ForceUpdate bool
-	Date        time.Time
+	blockList   []string
+	rootDir     string
+	forceUpdate bool
+	date        time.Time
 }
 
 func (c *cacheFs) Invalidate(sel config.RunSelector) {
 	nm := NewNamespace(sel.Category, sel.Page)
 	pth := c.getNamespaceDir(nm.Path())
-	RemoveDir(pth)
+	removeDir(pth)
 }
 
 func (c *cacheFs) IsItemCached(item Item) bool {
-	return !c.ForceUpdate && IsPathExists(c.getFileForItem(item))
+	return !c.forceUpdate && isPathExists(c.getFileForItem(item))
 }
 
 func (c *cacheFs) GetContent(item Item) []byte {
 	fp := c.getFileForItem(item)
-	content, err := ioutil.ReadFile(fp)
+	content, err := ioutil.ReadFile(filepath.Clean(fp))
 
 	if err != nil {
 		log.Warn().
@@ -105,7 +129,7 @@ func (c *cacheFs) GetContent(item Item) []byte {
 }
 
 func (c *cacheFs) IsPageCached(nm ItemNamespace) bool {
-	return !c.ForceUpdate && IsPathExists(c.getNamespaceDir(nm.Path()))
+	return !c.forceUpdate && isPathExists(c.getNamespaceDir(nm.Path()))
 }
 
 func (c *cacheFs) Store(item Item, content []byte) error {
@@ -154,11 +178,11 @@ func (c *cacheFs) Store(item Item, content []byte) error {
 }
 
 func (c *cacheFs) GetDateDir() string {
-	return path.Join(c.RootDir, c.getDateDirName())
+	return path.Join(c.rootDir, c.getDateDirName())
 }
 
 func (c *cacheFs) getDateDirName() string {
-	return c.Date.Format("2006-01-02")
+	return c.date.Format("2006-01-02")
 }
 
 func (c *cacheFs) getNamespaceDir(namespace string) string {
@@ -174,13 +198,13 @@ func (c *cacheFs) getFileForItem(item Item) string {
 	return filepath.Join(c.getNamespaceDir(item.Namespace.Path()), fileName)
 }
 
-func IsPathExists(path string) bool {
+func isPathExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
 }
 
-func RemoveDir(pth string) {
-	if IsPathExists(pth) {
+func removeDir(pth string) {
+	if isPathExists(pth) {
 		if err := os.RemoveAll(pth); err != nil {
 			log.Error().
 				Err(err).

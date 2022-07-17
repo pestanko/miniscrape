@@ -8,11 +8,13 @@ import (
 	"github.com/pestanko/miniscrape/scraper/utils"
 )
 
+// Service main service representation
 type Service struct {
 	Cfg        config.AppConfig
 	categories utils.CachedContainer[[]config.Category]
 }
 
+// NewService create a new instance of the service
 func NewService(cfg *config.AppConfig) *Service {
 	categoriesLoader := func() *[]config.Category {
 		categories := config.LoadCategories(cfg)
@@ -25,15 +27,18 @@ func NewService(cfg *config.AppConfig) *Service {
 	}
 }
 
+// Scrape the pages based on selector
 func (s *Service) Scrape(selector config.RunSelector) []config.RunResult {
 	runner := NewAsyncRunner(&s.Cfg, s.GetCategories(), s.getCache())
 	return runner.Run(selector)
 }
 
+// InvalidateCache for the provided selector
 func (s *Service) InvalidateCache(sel config.RunSelector) {
 	s.getCache().Invalidate(sel)
 }
 
+// GetCategories get all categories
 func (s *Service) GetCategories() []config.Category {
 	return *s.categories.Get()
 }

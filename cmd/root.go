@@ -1,10 +1,8 @@
-/*
-	Copyright © 2022 Peter Stanko <peter.stanko0@gmail.com>
-*/
 package cmd
 
 import (
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -67,8 +65,12 @@ func initConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
-		viper.ReadInConfig()
-
+		if err := viper.ReadInConfig(); err != nil {
+			log.Error().
+				Str("config_file", cfgFile).
+				Err(err).
+				Msg("unable to load config")
+		}
 	} else {
 		viper.AddConfigPath("./config/")
 
@@ -81,5 +83,10 @@ func initConfig() {
 
 func loadConfig(name string) {
 	viper.SetConfigName(name)
-	viper.MergeInConfig()
+	if err := viper.MergeInConfig(); err != nil {
+		log.Error().
+			Str("config_name", name).
+			Err(err).
+			Msg("unable to load config")
+	}
 }

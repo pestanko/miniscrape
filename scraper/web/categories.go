@@ -7,7 +7,12 @@ import (
 	"github.com/pestanko/miniscrape/scraper/config"
 )
 
-func HandleCategories(scrapeService *scraper.Service, w http.ResponseWriter, req *http.Request) {
+// HandleCategories handler
+func HandleCategories(
+	scrapeService *scraper.Service,
+	w http.ResponseWriter,
+	_ *http.Request,
+) {
 	var dto []categoryDto
 	for _, cat := range scrapeService.GetCategories() {
 		catDto := categoryDto{
@@ -18,7 +23,7 @@ func HandleCategories(scrapeService *scraper.Service, w http.ResponseWriter, req
 		dto = append(dto, catDto)
 	}
 
-	WriteJsonResponse(w, http.StatusOK, dto)
+	WriteJSONResponse(w, http.StatusOK, dto)
 }
 
 func getPagesForCategory(pages []config.Page) []string {

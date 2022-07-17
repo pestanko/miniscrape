@@ -7,11 +7,21 @@ import (
 	"github.com/pestanko/miniscrape/scraper/config"
 )
 
-func HandlePages(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
-	WriteJsonResponse(w, http.StatusOK, service.GetCategories())
+// HandlePages handler
+func HandlePages(
+	service *scraper.Service,
+	w http.ResponseWriter,
+	_ *http.Request,
+) {
+	WriteJSONResponse(w, http.StatusOK, service.GetCategories())
 }
 
-func HandlePagesContent(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
+// HandlePagesContent handler
+func HandlePagesContent(
+	service *scraper.Service,
+	w http.ResponseWriter,
+	req *http.Request,
+) {
 	selector := makeSelectorFromRequest(req)
 
 	results := service.Scrape(selector)
@@ -32,7 +42,7 @@ func HandlePagesContent(service *scraper.Service, w http.ResponseWriter, req *ht
 		}
 	}
 
-	WriteJsonResponse(w, http.StatusOK, dto)
+	WriteJSONResponse(w, http.StatusOK, dto)
 }
 
 type pageContentDto struct {

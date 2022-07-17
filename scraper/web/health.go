@@ -4,9 +4,10 @@ import (
 	"net/http"
 )
 
-func HandleHealthStatus(w http.ResponseWriter, request *http.Request) {
+// HandleHealthStatus handler
+func HandleHealthStatus(w http.ResponseWriter, _ *http.Request) {
 	resp := make(map[string]string)
 	resp["status"] = "active"
 
-	WriteJsonResponse(w, 200, resp)
+	WriteJSONResponse(w, 200, resp)
 }

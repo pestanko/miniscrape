@@ -49,7 +49,7 @@ func (r *pageContentResolver) Resolve(_ context.Context) config.RunResult {
 	if err != nil {
 		log.Error().
 			Err(err).
-			Str("url", r.page.Url).
+			Str("url", r.page.URL).
 			Str("page", r.page.Namespace()).
 			Msg("Content parsing failed")
 		return makeErrorResult(r.page, err)
@@ -94,12 +94,13 @@ func getContentForWebPage(page *config.Page) (bodyContent []byte, err error) {
 
 func getContentByCommand(page *config.Page) ([]byte, error) {
 	// Use command
+	cmdContent := page.Command.Content
 	log.Debug().
-		Str("cmdName", page.Command.Content.Name).
-		Strs("cmdArgs", page.Command.Content.Args).
+		Str("cmdName", cmdContent.Name).
+		Strs("cmdArgs", cmdContent.Args).
 		Msg("Resolve using command")
 	var outb, errb bytes.Buffer
-	cmd := exec.Command(page.Command.Content.Name, page.Command.Content.Args...)
+	cmd := exec.Command(cmdContent.Name, cmdContent.Args...) // #nosec G204
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	err := cmd.Run()
@@ -107,13 +108,13 @@ func getContentByCommand(page *config.Page) ([]byte, error) {
 		log.Error().
 			Err(err).
 			Str("page", page.Namespace()).
-			Str("cmdName", page.Command.Content.Name).
-			Strs("cmdArgs", page.Command.Content.Args).
+			Str("cmdName", cmdContent.Name).
+			Strs("cmdArgs", cmdContent.Args).
 			Msg("Command error")
 		log.Trace().
 			Str("page", page.Namespace()).
-			Str("cmdName", page.Command.Content.Name).
-			Strs("cmdArgs", page.Command.Content.Args).
+			Str("cmdName", cmdContent.Name).
+			Strs("cmdArgs", cmdContent.Args).
 			Str("stderr", errb.String()).
 			Msg("Command error trace")
 	}
@@ -122,24 +123,24 @@ func getContentByCommand(page *config.Page) ([]byte, error) {
 }
 
 func getContentByRequest(page *config.Page) ([]byte, error) {
-	req, err := http.NewRequest("GET", page.Url, nil)
+	req, err := http.NewRequest("GET", page.URL, nil)
 	if err != nil {
 		log.Error().
 			Err(err).
-			Str("pageUrl", page.Url).
+			Str("pageUrl", page.URL).
 			Str("page", page.Namespace()).
 			Msg("Request initialization failed")
 		return []byte{}, err
 	}
 
-	randomUserAgent := userAgents[rand.Intn(len(userAgents))]
+	randomUserAgent := userAgents[rand.Intn(len(userAgents))] // #nosec G404
 	req.Header.Add("User-Agent", randomUserAgent)
 
 	res, err := httpClient.Do(req)
 	if err != nil {
 		log.Error().
 			Err(err).
-			Str("pageUrl", page.Url).
+			Str("pageUrl", page.URL).
 			Str("page", page.Namespace()).
 			Int("status", res.StatusCode).
 			Msg("Request failed")
@@ -156,7 +157,7 @@ func getContentByRequest(page *config.Page) ([]byte, error) {
 		if err := res.Body.Close(); err != nil {
 			log.Error().
 				Err(err).
-				Str("pageUrl", page.Url).
+				Str("pageUrl", page.URL).
 				Str("page", page.Namespace()).
 				Int("status", res.StatusCode).
 				Msg("Unable to close body")
@@ -167,7 +168,7 @@ func getContentByRequest(page *config.Page) ([]byte, error) {
 	if err != nil {
 		log.Error().
 			Err(err).
-			Str("pageUrl", page.Url).
+			Str("pageUrl", page.URL).
 			Str("page", page.Namespace()).
 			Int("status", res.StatusCode).
 			Msg("Failed to read a body")
@@ -179,7 +180,10 @@ func getContentByRequest(page *config.Page) ([]byte, error) {
 }
 
 func parseUsingXPathQuery(content []byte, xpath string) ([]string, error) {
-	log.Trace().Str("xpath", xpath).Msg("Parse using the the XPath")
+	log.Trace().
+		Str("xpath", xpath).
+		Msg("Parse using the the XPath")
+
 	root, err := htmlquery.Parse(bytes.NewReader(content))
 	if err != nil {
 		return []string{}, err
@@ -199,16 +203,19 @@ func parseUsingXPathQuery(content []byte, xpath string) ([]string, error) {
 	return result, nil
 }
 
-func parseWebPageContent(page *config.Page, bodyContent []byte) (contentArray []string, err error) {
+func parseWebPageContent(
+	page *config.Page,
+	bodyContent []byte,
+) (contentArray []string, err error) {
 	if page.Query != "" {
-		contentArray, err = parseUsingCssQuery(bodyContent, page.Query)
+		contentArray, err = parseUsingCSSQuery(bodyContent, page.Query)
 	} else {
 		contentArray, err = parseUsingXPathQuery(bodyContent, page.XPath)
 	}
 	return
 }
 
-func parseUsingCssQuery(bodyContent []byte, query string) ([]string, error) {
+func parseUsingCSSQuery(bodyContent []byte, query string) ([]string, error) {
 	log.Trace().Str("query", query).Msg("Parse using the the CSS query")
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
 	if err != nil {
@@ -293,7 +300,10 @@ func transformEncoding(content []byte) []byte {
 	return result
 }
 
-func DetermineEncodingFromReader(r io.Reader) (e encoding.Encoding, name string, certain bool, err error) {
+// DetermineEncodingFromReader based on the content
+func DetermineEncodingFromReader(
+	r io.Reader,
+) (e encoding.Encoding, name string, certain bool, err error) {
 	b, err := bufio.NewReader(r).Peek(1024)
 	if err != nil {
 		return

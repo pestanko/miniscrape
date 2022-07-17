@@ -7,6 +7,8 @@ import (
 	"github.com/pestanko/miniscrape/scraper/config"
 )
 
+// NewDayFilter a new instance of the filter that
+// cuts a content based on days
 func NewDayFilter(page *config.Page) PageFilter {
 	return &dayFilter{
 		page.Filters.Day,
@@ -36,19 +38,18 @@ func (f *dayFilter) Filter(content string) (string, error) {
 	if len(days) != 0 {
 		start, end := tryApplyDayFilter(upperContent, days, weekday)
 		return cutContent(content, start, end), nil
-	} else {
-		allVersions := [][]string{
-			{"Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle"},
-			{"Pondeli", "Uteri", "Streda", "Ctvrtek", "Patek", "Sobota", "Nedele"},
-			{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"},
+	}
+	allVersions := [][]string{
+		{"Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle"},
+		{"Pondeli", "Uteri", "Streda", "Ctvrtek", "Patek", "Sobota", "Nedele"},
+		{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"},
+	}
+	for _, days := range allVersions {
+		start, end := tryApplyDayFilter(upperContent, days, weekday)
+		if start == -1 && end == -1 {
+			continue
 		}
-		for _, days := range allVersions {
-			start, end := tryApplyDayFilter(upperContent, days, weekday)
-			if start == -1 && end == -1 {
-				continue
-			}
-			return cutContent(content, start, end), nil
-		}
+		return cutContent(content, start, end), nil
 	}
 	return content, nil
 }

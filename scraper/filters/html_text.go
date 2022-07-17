@@ -8,14 +8,16 @@ import (
 	"jaytaylor.com/html2text"
 )
 
+// NewHTMLConverter a new instance of the filter that
+// uses the html2text converter
 func NewHTMLConverter(page *config.Page) PageFilter {
 	return &htmlFilterTags{
-		page.Filters.Html,
+		page.Filters.HTML,
 	}
 }
 
 type htmlFilterTags struct {
-	html config.HtmlFilter
+	html config.HTMLFilter
 }
 
 // Filter implements PageFilter

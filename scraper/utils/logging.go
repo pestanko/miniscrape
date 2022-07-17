@@ -11,10 +11,12 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// MakeAccessLog creates an instance of the access logger
 func MakeAccessLog(logCfg *config.LogConfig) zerolog.Logger {
 	return makeLogger(logCfg, "access.log")
 }
 
+// InitGlobalLogger initializes the global logger
 func InitGlobalLogger(logCfg *config.LogConfig) {
 	mw := makeLogWritters(logCfg, "app.log")
 	log.Logger = log.Output(mw).

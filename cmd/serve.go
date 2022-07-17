@@ -1,6 +1,3 @@
-/*
-	Copyright © 2022 Peter Stanko <peter.stanko0@gmail.com>
-*/
 package cmd
 
 import (
@@ -20,7 +17,7 @@ var serveCmd = &cobra.Command{
 		cfg := config.GetAppConfig()
 		utils.InitGlobalLogger(&cfg.Log)
 
-		server := web.MakeServer(cfg)
+		server := web.NewServer(cfg)
 
 		server.Serve()
 	},
