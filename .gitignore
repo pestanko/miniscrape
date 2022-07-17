@@ -1,6 +1,7 @@
 .idea/
 target/
 *.tmp
+*.exe
 miniscrape
 config/local-config.*
 log/

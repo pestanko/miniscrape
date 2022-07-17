@@ -17,6 +17,10 @@ type TagsResolver struct {
 func (t *TagsResolver) IsMatch(expected []string) bool {
 	expSet := makeStringSet(expected)
 
+	if len(t.provided) == 0 {
+		return false
+	}
+
 	for key := range t.provided {
 		if !expSet[key] {
 			return false
