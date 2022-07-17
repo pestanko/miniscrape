@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/pestanko/miniscrape/scraper/config"
-	"github.com/pestanko/miniscrape/scraper/utils"
-	"github.com/pestanko/miniscrape/scraper/web"
+	"github.com/pestanko/miniscrape/pkg/config"
+	"github.com/pestanko/miniscrape/pkg/utils"
+	"github.com/pestanko/miniscrape/pkg/web"
 
 	"github.com/spf13/cobra"
 )
@@ -11,7 +11,7 @@ import (
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Serve a simple API for the scraper",
+	Short: "Serve a simple API for the pkg",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.GetAppConfig()

@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/pestanko/miniscrape/scraper"
-	"github.com/pestanko/miniscrape/scraper/config"
-	"github.com/pestanko/miniscrape/scraper/utils"
+	"github.com/pestanko/miniscrape/pkg"
+	"github.com/pestanko/miniscrape/pkg/config"
+	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ var scrapeCmd = &cobra.Command{
 			cfg.Cache.Update = true
 		}
 
-		scrapeService := scraper.NewService(cfg)
+		scrapeService := pkg.NewService(cfg)
 		results := scrapeService.Scrape(selector)
 		for _, r := range results {
 			fmt.Printf("Result[%s] for  \"%s (%s)\" (url: \"%s\")\n",

@@ -5,3 +5,5 @@ target/
 miniscrape
 config/local-config.*
 log/
+bin/
+!bin/.gitkeep

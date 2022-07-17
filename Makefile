@@ -4,16 +4,19 @@ YELLOW=\033[1;33m
 GOVERSION=$(shell go version | awk  '{print $$3}' )
 GOPATH=$(shell go env GOPATH)
 
+BINARY_NAME=miniscrape
+
 ## lint: check all sources for errors
 lint:
 	@printf "\n$(YELLOW)linting$(NC)\n"
 	revive -formatter friendly ./...
 	gosec ./...
 
-.PHONY: help lint test
+.PHONY: help lint test install-tools build run-serve
 
 all: help
 
+## help: show help
 help: Makefile
 	@echo
 	@echo " Choose a command run in:"
@@ -37,3 +40,17 @@ install-tools:
 	curl -sfL \
 		https://raw.githubusercontent.com/securego/gosec/master/install.sh | \
 		sh -s -- -b $(GOPATH)/bin
+
+## build: build all the binaries
+build:
+	mkdir -p bin/
+	go build -o bin/${BINARY_NAME} main.go
+
+## clean: clean all the binary files
+clean:
+	go clean
+	rm bin/*
+
+## run-serve: Run the server
+run-serve:
+	go run main.go serve
