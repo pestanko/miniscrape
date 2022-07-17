@@ -32,6 +32,9 @@ func (s *Server) Serve() {
 	log.Info().Str("addr", addr).Msg("Running server")
 
 	mds := []middlewares.Middleware{
+		func(handler http.Handler, _ *config.AppConfig) http.Handler {
+			return middlewares.RealIP(handler)
+		},
 		middlewares.RequestLogger,
 		middlewares.VisitorCookie,
 		middlewares.SetupCors,
