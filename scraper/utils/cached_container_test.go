@@ -14,7 +14,7 @@ func TestCachedContainerInstanceForInteger(t *testing.T) {
 	value := 0
 
 	fun := func() *int {
-		value += 1
+		value++
 		return &value
 	}
 
@@ -33,7 +33,7 @@ func TestCachedContainerInstanceExpiration(t *testing.T) {
 	value := 0
 
 	fun := func() *int {
-		value += 1
+		value++
 		return &value
 	}
 
@@ -52,7 +52,7 @@ func TestCachedContainerClear(t *testing.T) {
 	value := 0
 
 	fun := func() *int {
-		value += 1
+		value++
 		return &value
 	}
 
@@ -69,7 +69,7 @@ func TestCachedContainerUpdate(t *testing.T) {
 	value := 0
 
 	fun := func() *int {
-		value += 1
+		value++
 		return &value
 	}
 

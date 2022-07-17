@@ -1,16 +1,25 @@
 package config
 
+// RunResultStatus enum of runtime statuses
 type RunResultStatus string
 
 const (
+	// RunSuccess status OK
 	RunSuccess RunResultStatus = "ok"
-	RunError   RunResultStatus = "error"
-	RunEmpty   RunResultStatus = "empty"
+	// RunError status ERROR
+	RunError RunResultStatus = "error"
+	// RunEmpty status EMPTY
+	RunEmpty RunResultStatus = "empty"
 )
 
+// RunResult representation of the run result
 type RunResult struct {
-	Page    Page
+	// Page instance for which the result is
+	Page Page
+	// Content of the page
 	Content string
-	Status  RunResultStatus
-	Kind    string
+	// Status of run
+	Status RunResultStatus
+	// Kind of the result
+	Kind string
 }

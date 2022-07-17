@@ -18,12 +18,13 @@ type loginCredentials struct {
 	Password string `json:"password"`
 }
 
-func HandleAuthLogout(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
+// HandleAuthLogout logout handler
+func HandleAuthLogout(_ *scraper.Service, w http.ResponseWriter, req *http.Request) {
 	sessionManager := auth.GetSessionManager()
-	sessionId := GetSessionIdFromRequest(req)
-	if sessionId != "" {
-		sessionManager.InvalidateSession(sessionId)
-		WriteJsonResponse(w, http.StatusBadRequest, map[string]string{
+	sessionID := GetSessionIDFromRequest(req)
+	if sessionID != "" {
+		sessionManager.InvalidateSession(sessionID)
+		WriteJSONResponse(w, http.StatusBadRequest, map[string]string{
 			"status":  "ok",
 			"code":    "error_logout",
 			"message": "Unable to logout",
@@ -31,13 +32,14 @@ func HandleAuthLogout(service *scraper.Service, w http.ResponseWriter, req *http
 		return
 	}
 
-	WriteJsonResponse(w, http.StatusOK, map[string]string{
+	WriteJSONResponse(w, http.StatusOK, map[string]string{
 		"status":  "ok",
 		"code":    "success_logout",
 		"message": "You have been logged out!",
 	})
 }
 
+// HandleAuthLogin login handler
 func HandleAuthLogin(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
 	users := service.Cfg.Web.Users
 	if len(users) == 0 {
@@ -73,23 +75,24 @@ func HandleAuthLogin(service *scraper.Service, w http.ResponseWriter, req *http.
 
 	sessionCookie := http.Cookie{
 		Name:     sessionCookieName,
-		Value:    session.Id,
+		Value:    session.ID,
 		Domain:   "",
 		Expires:  session.Expiration,
 		HttpOnly: true,
 	}
 
 	http.SetCookie(w, &sessionCookie)
-	WriteJsonResponse(w, http.StatusCreated, map[string]string{
+	WriteJSONResponse(w, http.StatusCreated, map[string]string{
 		"status":     "created",
-		"session_id": session.Id,
+		"session_id": session.ID,
 	})
 }
 
-func HandleSessionStatus(service *scraper.Service, w http.ResponseWriter, req *http.Request) {
+// HandleSessionStatus session status handler
+func HandleSessionStatus(_ *scraper.Service, w http.ResponseWriter, req *http.Request) {
 	session := GetSessionFromRequest(req)
 	if session == nil {
-		WriteJsonResponse(w, http.StatusOK, map[string]string{
+		WriteJSONResponse(w, http.StatusOK, map[string]string{
 			"status": "unauthorized",
 		})
 		return
@@ -98,20 +101,21 @@ func HandleSessionStatus(service *scraper.Service, w http.ResponseWriter, req *h
 	sessionManager := auth.GetSessionManager()
 
 	if sessionManager.IsSessionValid(*session) {
-		WriteJsonResponse(w, http.StatusOK, map[string]interface{}{
+		WriteJSONResponse(w, http.StatusOK, map[string]interface{}{
 			"status":   "ok",
 			"userData": session.Data,
 		})
 		return
 	}
 
-	WriteJsonResponse(w, http.StatusOK, map[string]interface{}{
+	WriteJSONResponse(w, http.StatusOK, map[string]interface{}{
 		"status":  "invalid",
 		"expired": session.IsExpired(),
 	})
 }
 
-func GetSessionIdFromRequest(req *http.Request) string {
+// GetSessionIDFromRequest get session id
+func GetSessionIDFromRequest(req *http.Request) string {
 	sessCookie := getSessionCookieFromRequest(req)
 	if sessCookie == nil {
 		return ""
@@ -120,14 +124,15 @@ func GetSessionIdFromRequest(req *http.Request) string {
 	return sessCookie.Value
 }
 
+// GetSessionFromRequest get whole session with auth data
 func GetSessionFromRequest(req *http.Request) *auth.Session[auth.SessionData] {
 	sessionManager := auth.GetSessionManager()
-	sessionId := GetSessionIdFromRequest(req)
-	if sessionId == "" {
+	sessionID := GetSessionIDFromRequest(req)
+	if sessionID == "" {
 		return nil
 	}
 
-	return sessionManager.GetSession(sessionId)
+	return sessionManager.GetSession(sessionID)
 }
 
 func getSessionCookieFromRequest(req *http.Request) *http.Cookie {
@@ -142,6 +147,6 @@ func getSessionCookieFromRequest(req *http.Request) *http.Cookie {
 
 func findUser(users []config.User, cred loginCredentials) *config.User {
 	return utils.FindInSlice(users, func(u config.User) bool {
-		return u.Username == cred.Username && u.Password == u.Password
+		return u.Username == cred.Username && u.Password == cred.Password
 	})
 }

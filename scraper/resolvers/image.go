@@ -26,7 +26,7 @@ func (r *imageResolver) Resolve(ctx context.Context) config.RunResult {
 		log.Warn().
 			Err(err).
 			Str("page", r.page.Namespace()).
-			Str("pageUrl", r.page.Url).
+			Str("pageUrl", r.page.URL).
 			Msg("Content parsing failed")
 
 		return makeErrorResult(r.page, err)

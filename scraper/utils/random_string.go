@@ -15,6 +15,7 @@ const (
 
 var src = rand.NewSource(time.Now().UnixNano())
 
+// RandomString generates a random string of n characters
 func RandomString(n int) string {
 	sb := strings.Builder{}
 	sb.Grow(n)

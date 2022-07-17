@@ -12,6 +12,7 @@ import (
 	"github.com/pestanko/miniscrape/scraper/utils"
 )
 
+// NewAsyncRunner instance of the new asynchronous runner
 func NewAsyncRunner(
 	cfg *config.AppConfig,
 	cats []config.Category,
@@ -24,7 +25,10 @@ func NewAsyncRunner(
 	}
 }
 
+// Runner interface
 type Runner interface {
+	// Run the runner to get pages contant
+	// based on the selector
 	Run(selector config.RunSelector) []config.RunResult
 }
 
@@ -47,7 +51,7 @@ func (a *asyncRunner) Run(selector config.RunSelector) []config.RunResult {
 	channelWithResults := make(chan config.RunResult, numberOfPages)
 	ctx := context.Background()
 	// start async tasks
-	a.startAsyncRequests(channelWithResults, ctx, pages)
+	a.startAsyncRequests(ctx, channelWithResults, pages)
 	// collect results
 	resultsCollection := a.collectResults(channelWithResults, numberOfPages)
 	log.Debug().Msg("Runner Ended")
@@ -67,7 +71,11 @@ func (a *asyncRunner) collectResults(channelWithResults chan config.RunResult, n
 	return resultsCollection
 }
 
-func (a *asyncRunner) startAsyncRequests(resChan chan<- config.RunResult, ctx context.Context, pages []config.Page) {
+func (a *asyncRunner) startAsyncRequests(
+	ctx context.Context,
+	resChan chan<- config.RunResult,
+	pages []config.Page,
+) {
 	for idx, page := range pages {
 		idx := idx
 		page := page

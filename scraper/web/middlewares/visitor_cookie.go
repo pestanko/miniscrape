@@ -10,16 +10,17 @@ import (
 
 const visitorCookie = "VISITOR"
 
-func VisitorCookie(targetMux http.Handler, cfg *config.AppConfig) http.Handler {
+// VisitorCookie middleware
+func VisitorCookie(targetMux http.Handler, _ *config.AppConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		WrapWithVisitorCookie(w, r)
+		wrapWithVisitorCookie(w, r)
 
 		targetMux.ServeHTTP(w, r)
 	})
 }
 
-func WrapWithVisitorCookie(w http.ResponseWriter, r *http.Request) {
+func wrapWithVisitorCookie(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie(visitorCookie)
 
 	if err == http.ErrNoCookie {

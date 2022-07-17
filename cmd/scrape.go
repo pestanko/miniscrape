@@ -1,6 +1,3 @@
-/*
-	Copyright © 2022 Peter Stanko <peter.stanko0@gmail.com>
-*/
 package cmd
 
 import (

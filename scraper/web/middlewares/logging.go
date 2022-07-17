@@ -9,6 +9,7 @@ import (
 	"github.com/pestanko/miniscrape/scraper/utils"
 )
 
+// RequestLogger log all requests
 func RequestLogger(targetMux http.Handler, cfg *config.AppConfig) http.Handler {
 
 	accessLog := utils.MakeAccessLog(&cfg.Log)
@@ -38,6 +39,7 @@ type responseObserver struct {
 	wroteHeader bool
 }
 
+// Write using observer
 func (o *responseObserver) Write(p []byte) (n int, err error) {
 	if !o.wroteHeader {
 		o.WriteHeader(http.StatusOK)
@@ -47,6 +49,7 @@ func (o *responseObserver) Write(p []byte) (n int, err error) {
 	return
 }
 
+// WriteHeader using observer
 func (o *responseObserver) WriteHeader(code int) {
 	if o.wroteHeader {
 		return

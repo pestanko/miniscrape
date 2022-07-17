@@ -8,6 +8,8 @@ import (
 
 var normPattern = regexp.MustCompile("\n\n")
 
+// NewNewLineTrimConverter a new instance of the filter that
+// cuts the line of the content
 func NewNewLineTrimConverter(page *config.Page) PageFilter {
 	return &newLineTrimConverter{}
 }

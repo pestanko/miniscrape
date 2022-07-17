@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// NewGetCachedPageResolver a new instance of the cached resolver
 func NewGetCachedPageResolver(page config.Page, cacheInstance cache.Cache) PageResolver {
 	inner := NewPageResolver(page)
 	if cacheInstance == nil {

@@ -16,6 +16,7 @@ type errorDto struct {
 	ErrorDetail string `json:"error_detail"`
 }
 
+// WriteErrorResponse helper
 func WriteErrorResponse(w http.ResponseWriter, code int, err errorDto) {
 	log.Warn().
 		Str("error", err.Error).
@@ -23,10 +24,11 @@ func WriteErrorResponse(w http.ResponseWriter, code int, err errorDto) {
 		Int("code", code).
 		Msg("Returning the error response")
 
-	WriteJsonResponse(w, code, err)
+	WriteJSONResponse(w, code, err)
 }
 
-func WriteJsonResponse(w http.ResponseWriter, code int, resp interface{}) {
+// WriteJSONResponse helper
+func WriteJSONResponse(w http.ResponseWriter, code int, resp interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 
@@ -39,14 +41,20 @@ func WriteJsonResponse(w http.ResponseWriter, code int, resp interface{}) {
 	}
 }
 
-func WriteUnsupportedHttpMethod(w http.ResponseWriter, method string) {
+// WriteUnsupportedHTTPMethod helper
+func WriteUnsupportedHTTPMethod(w http.ResponseWriter, method string) {
 	WriteErrorResponse(w, http.StatusMethodNotAllowed, errorDto{
 		"unsupported_http_method",
-		"Unsuppored http method: " + method,
+		"Unsupported http method: " + method,
 	})
 }
 
-func requireAuthentication(service *scraper.Service, w http.ResponseWriter, req *http.Request, callable func()) {
+func requireAuthentication(
+	_ *scraper.Service,
+	w http.ResponseWriter,
+	req *http.Request,
+	callable func(),
+) {
 	session := GetSessionFromRequest(req)
 	if session != nil {
 		sessionManager := auth.GetSessionManager()
@@ -62,10 +70,10 @@ func requireAuthentication(service *scraper.Service, w http.ResponseWriter, req 
 	})
 }
 
-func requireHttpMethod(w http.ResponseWriter, req *http.Request, methods []string, callable func()) {
+func requireHTTPMethod(w http.ResponseWriter, req *http.Request, methods []string, callable func()) {
 	if utils.IsInSlice(methods, func(i string) bool { return strings.ToUpper(req.Method) == i }) {
 		callable()
 	} else {
-		WriteUnsupportedHttpMethod(w, req.Method)
+		WriteUnsupportedHTTPMethod(w, req.Method)
 	}
 }

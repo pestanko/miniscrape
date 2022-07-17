@@ -4,15 +4,11 @@ import (
 	"time"
 )
 
-type CachedContainer[T any] struct {
-	content *T
-
-	contentProvider func() *T
-	updateAt        time.Time
-	duration        time.Duration
-}
-
-func NewCachedContainer[T any](contentProvider func() *T, duration time.Duration) CachedContainer[T] {
+// NewCachedContainer create a new instance of the cached container
+func NewCachedContainer[T any](
+	contentProvider func() *T,
+	duration time.Duration,
+) CachedContainer[T] {
 	return CachedContainer[T]{
 		content:         nil,
 		contentProvider: contentProvider,
@@ -21,6 +17,17 @@ func NewCachedContainer[T any](contentProvider func() *T, duration time.Duration
 	}
 }
 
+// CachedContainer is a type of the container which contains a pointer
+// to a spec. type
+type CachedContainer[T any] struct {
+	content *T
+
+	contentProvider func() *T
+	updateAt        time.Time
+	duration        time.Duration
+}
+
+// Get a value inside the container
 func (c *CachedContainer[T]) Get() *T {
 	now := time.Now()
 	updatedPlusDuration := c.updateAt.Add(c.duration)
@@ -36,10 +43,12 @@ func (c *CachedContainer[T]) Get() *T {
 	return c.content
 }
 
+// Clear the value in the container
 func (c *CachedContainer[T]) Clear() {
 	c.content = nil
 }
 
+// Update the value in the container
 func (c *CachedContainer[T]) Update() {
 	c.content = c.contentProvider()
 	c.updateAt = time.Now()
