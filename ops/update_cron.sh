@@ -10,9 +10,9 @@ if [ ! -e "$project_dir" ]; then
 fi
 
 
-cd $project_dir
+cd "$project_dir"
 
 git pull
 go build
 
-cd old_dir
+cd "$old_dir"
