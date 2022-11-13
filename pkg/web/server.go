@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/pestanko/miniscrape/pkg"
 	"github.com/pestanko/miniscrape/pkg/config"
@@ -34,7 +35,7 @@ func (s *Server) Serve() {
 
 	log.Info().
 		Str("addr", addr).
-		Msg("Running server")
+		Msg("Starting a server")
 
 	mds := []middlewares.Middleware{
 		func(handler http.Handler, _ *config.AppConfig) http.Handler {
@@ -45,10 +46,14 @@ func (s *Server) Serve() {
 		middlewares.SetupCors,
 	}
 
-	if err := http.ListenAndServe(
-		addr,
-		middlewares.ApplyMiddlewares(mux, s.cfg, mds),
-	); err != nil {
+	server := http.Server{
+		Addr:              addr,
+		Handler:           middlewares.ApplyMiddlewares(mux, s.cfg, mds),
+		ReadHeaderTimeout: 3 * time.Second,
+		ReadTimeout:       5 * time.Second,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal().Err(err).Msg("Unable to serve")
 	}
 }

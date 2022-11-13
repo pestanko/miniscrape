@@ -2,7 +2,6 @@ package cache
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -107,7 +106,7 @@ func (c *cacheFs) IsItemCached(item Item) bool {
 
 func (c *cacheFs) GetContent(item Item) []byte {
 	fp := c.getFileForItem(item)
-	content, err := ioutil.ReadFile(filepath.Clean(fp))
+	content, err := os.ReadFile(filepath.Clean(fp))
 
 	if err != nil {
 		log.Warn().
@@ -164,7 +163,7 @@ func (c *cacheFs) Store(item Item, content []byte) error {
 		Str("type", "cache").
 		Msg("CACHE: Writing cache file")
 
-	if err := ioutil.WriteFile(fp, content, 0600); err != nil {
+	if err := os.WriteFile(fp, content, 0600); err != nil {
 		log.Error().
 			Err(err).
 			Str("file", fp).
