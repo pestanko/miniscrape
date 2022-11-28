@@ -14,12 +14,21 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        name: Checkout code
 
       - name: setup golang v1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.18
+          go-version: ^1.19
 
       - name: Unit test
-        run: make test
+        run: |
+          go install github.com/jstemmer/go-junit-report/v2@latest
+          make test
+
+      - name: Tests Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "./reports/*.xml"
+        if: always()
