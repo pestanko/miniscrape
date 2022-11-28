@@ -75,8 +75,11 @@ pages:
     name: "U Drevaka"
     tags: ["fi", "cz"]
     homepage: "https://udrevaka.cz/"
-    url: "https://udrevaka.cz/"
-    query: "#menu .special-menu"
+    url: "https://udrevaka.cz/denni-menu/"
+    query: "#menu"
+    filters:
+      day:
+        enabled: true
 
   - codename: "padagali"
     name: "Padagali"
