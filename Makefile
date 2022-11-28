@@ -24,14 +24,23 @@ help: Makefile
 	@sed -n 's/^##//p' $< | column -t -s ':' |  sed -e 's/^/ /'
 	@echo
 
-## test: run all unit tests
-test:
-	go test -coverprofile=coverage.out $$(go list ./... | grep -v -E '^github.com/CloudTalk-io/ctgo/services/|integration')
+.PHONY: test
+## test: run the tests in the Github pipeline
+test: unit-test
+
+.PHONY: unit-test
+## unit-test: run the all unit tests
+unit-test:
+	@printf '\n$(YELLOW)Unit tests:$(NC) $(APPNAME) \n'
+	mkdir -p reports/
+	go test -v -coverprofile=reports/coverage.out $$(go list ./... | grep -v integration | grep -v mocks) 2>&1 | tee reports/unit.out
+	cat reports/unit.out | go tool test2json > reports/unit.json
+	go-junit-report -in reports/unit.out -set-exit-code > reports/unit.xml
 
 ## test-coverage: show test coverage
 test-coverage: test
-	go tool cover -func=coverage.out
-	go tool cover -html=coverage.out
+	go tool cover -func=reports/coverage.out
+	go tool cover -html=reports/coverage.out
 
 ## install-tools: install all golang tools
 install-tools:
