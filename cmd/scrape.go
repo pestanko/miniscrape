@@ -12,6 +12,7 @@ import (
 var (
 	selector    config.RunSelector
 	noCache     bool
+	noContent   bool
 	updateCache bool
 )
 
@@ -20,7 +21,7 @@ var scrapeCmd = &cobra.Command{
 	Use:   "scrape",
 	Short: "Scrape the pages",
 	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg := config.GetAppConfig()
 		utils.InitGlobalLogger(&cfg.Log)
 		if noCache {
@@ -31,15 +32,19 @@ var scrapeCmd = &cobra.Command{
 		}
 
 		scrapeService := pkg.NewService(cfg)
-		results := scrapeService.Scrape(selector)
+		results := scrapeService.Scrape(cmd.Context(), selector)
 		for _, r := range results {
 			fmt.Printf("Result[%s] for  \"%s (%s)\" (url: \"%s\")\n",
 				r.Status,
 				r.Page.Name,
 				r.Page.CodeName,
 				r.Page.Homepage)
-			fmt.Printf("%s\n\n", r.Content)
+			if !noContent {
+				fmt.Printf("%s\n\n", r.Content)
+			}
 		}
+
+		return nil
 	},
 }
 
@@ -65,6 +70,9 @@ func init() {
 
 	scrapeCmd.PersistentFlags().BoolVarP(&selector.Force, "force", "f", false,
 		"Force scrape - ignore disabled")
+
+	scrapeCmd.PersistentFlags().BoolVar(&noContent, "no-content", false,
+		"Do not print out the content")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

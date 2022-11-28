@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"context"
 	"time"
 
 	"github.com/pestanko/miniscrape/pkg/cache"
@@ -28,9 +29,9 @@ func NewService(cfg *config.AppConfig) *Service {
 }
 
 // Scrape the pages based on selector
-func (s *Service) Scrape(selector config.RunSelector) []config.RunResult {
+func (s *Service) Scrape(ctx context.Context, selector config.RunSelector) []config.RunResult {
 	runner := NewAsyncRunner(&s.Cfg, s.GetCategories(), s.getCache())
-	return runner.Run(selector)
+	return runner.Run(ctx, selector)
 }
 
 // InvalidateCache for the provided selector

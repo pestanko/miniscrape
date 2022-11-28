@@ -24,7 +24,7 @@ func HandlePagesContent(
 ) {
 	selector := makeSelectorFromRequest(req)
 
-	results := service.Scrape(selector)
+	results := service.Scrape(req.Context(), selector)
 
 	dto := make([]pageContentDto, len(results))
 

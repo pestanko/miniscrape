@@ -29,7 +29,7 @@ func NewAsyncRunner(
 type Runner interface {
 	// Run the runner to get pages contant
 	// based on the selector
-	Run(selector config.RunSelector) []config.RunResult
+	Run(ctx context.Context, selector config.RunSelector) []config.RunResult
 }
 
 type asyncRunner struct {
@@ -38,7 +38,7 @@ type asyncRunner struct {
 	cache      cache.Cache
 }
 
-func (a *asyncRunner) Run(selector config.RunSelector) []config.RunResult {
+func (a *asyncRunner) Run(ctx context.Context, selector config.RunSelector) []config.RunResult {
 	log.Debug().Msg("Runner Started!")
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
@@ -54,7 +54,6 @@ func (a *asyncRunner) Run(selector config.RunSelector) []config.RunResult {
 
 	log.Debug().Int("numberOfPages", numberOfPages).Msg("Processing number of pages")
 	channelWithResults := make(chan config.RunResult, numberOfPages)
-	ctx := context.Background()
 	// start async tasks
 	a.startAsyncRequests(ctx, channelWithResults, pages)
 	// collect results
