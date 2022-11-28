@@ -42,7 +42,7 @@ type ItemNamespace struct {
 }
 
 // Path returns the path representation of the namespace (OS specific)
-func (n *ItemNamespace) Path() string {
+func (n ItemNamespace) Path() string {
 	return path.Join(n.Category, n.Page)
 }
 
@@ -78,6 +78,7 @@ func NewCache(cacheCfg config.CacheCfg, date time.Time) Cache {
 		if root == "" {
 			root = path.Join(os.TempDir(), "mini-scrape")
 		}
+		log.Info().Str("cache_root", root).Msg("cache is enabled")
 		return &cacheFs{
 			rootDir:     root,
 			forceUpdate: cacheCfg.Update,

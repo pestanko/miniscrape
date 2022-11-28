@@ -12,7 +12,7 @@ import (
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Serve a simple API for the pkg",
-	Long:  ``,
+	Long:  `Serve a simple API for the pkg`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.GetAppConfig()
 		utils.InitGlobalLogger(&cfg.Log)
