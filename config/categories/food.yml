@@ -193,21 +193,17 @@ pages:
 
   - codename: padowetz
     name: Padowetz
-    url: http://www.restaurant-padowetz.cz/poledni-menu.htm
+    url: http://www.restaurant-padowetz.cz/poledni-menu
     homepage: http://www.restaurant-padowetz.cz/
-    query: ".tydeniMenu"
+    query: ".content"
     tags: ["city", "cz", "ns"]
     filters:
-      day:
-        enabled: true
       cut:
-        after: "Nápoje k menu"
-      html:
-        tables: custom
+        after: "[stáhnout menu v PDF]"
 
   - codename: diva_bara
     name: Diva bara
-    url: http://www.restauracedivabara.cz/menu__trashed-2/
+    url: http://www.restauracedivabara.cz/menu/
     homepage: http://www.restauracedivabara.cz/
     query: "div.daily-menu"
     tags: ["fi", "cz"]
@@ -229,14 +225,13 @@ pages:
     name: "Spravne misto"
     url: https://spravnemisto.cz/denni-menu
     homepage: https://spravnemisto.cz/
-    query: ".elementor-widget-wrap i .elementor-widget-wrap"
+    query: ".elementor-widget-wrap"
     tags: ["rh", "cz"]
     filters:
       day:
         enabled: true
       cut:
-        before: "DENNÍ menu"
-        after: "u nás si necháte chutnat"
+        after: "Týdenní menu"
 
   - codename: ubaumanu
     name: U Baumanu

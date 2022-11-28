@@ -120,5 +120,12 @@ func findBoundaries(content string, start string, end string) (int, int) {
 		endIndex = strings.Index(content, end)
 	}
 
+	log.Debug().
+		Str("start", start).
+		Str("end", end).
+		Int("start_index", startIndex).
+		Int("end_index", endIndex).
+		Msg("found boundaries")
+
 	return startIndex, endIndex
 }
