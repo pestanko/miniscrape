@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os/exec"
@@ -290,7 +289,7 @@ func transformEncoding(content []byte) []byte {
 		Msg("Found encoding")
 
 	reader := transform.NewReader(bytesReader, e.NewDecoder())
-	result, err := ioutil.ReadAll(reader)
+	result, err := io.ReadAll(reader)
 	if err != nil {
 		log.Warn().
 			Err(err).

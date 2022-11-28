@@ -62,7 +62,7 @@ func GetAppConfig() *AppConfig {
 			Msg("Unable to load configuration")
 	}
 
-	log.Debug().Interface("config", config).Msg("loaded config")
+	log.Info().Interface("config", config).Msg("loaded config")
 
 	return &config
 }

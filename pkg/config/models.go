@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/rs/zerolog/log"
@@ -132,7 +132,7 @@ func loadCategoryFile(baseDir string, catName string) (bool, Category) {
 	fp := filepath.Join(baseDir, catName+".yml")
 	log.Info().Str("file", fp).Msg("Loading file")
 
-	content, err := ioutil.ReadFile(filepath.Clean(fp))
+	content, err := os.ReadFile(filepath.Clean(fp))
 	if err != nil {
 		log.Error().Err(err).Str("file", fp).Msg("Unable to open file")
 		return false, Category{}

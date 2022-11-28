@@ -84,6 +84,8 @@ func NewCache(cacheCfg config.CacheCfg, date time.Time) Cache {
 			forceUpdate: cacheCfg.Update,
 			date:        date,
 		}
+	} else {
+		log.Info().Msg("cache is disabled")
 	}
 	return nil
 }
