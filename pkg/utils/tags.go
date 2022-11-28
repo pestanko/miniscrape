@@ -18,7 +18,7 @@ func (t *TagsResolver) IsMatch(expected []string) bool {
 	expSet := makeStringSet(expected)
 
 	if len(t.provided) == 0 {
-		return false
+		return true
 	}
 
 	for key := range t.provided {

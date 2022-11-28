@@ -7,9 +7,9 @@ import (
 )
 
 func TestTagsResolverForEmpty(t *testing.T) {
-	assert := assert.New(t)
+	s := assert.New(t)
 
 	resolver := MakeTagsResolver([]string{})
 
-	assert.False(resolver.IsMatch([]string{"any"}))
+	s.True(resolver.IsMatch([]string{"any"}))
 }

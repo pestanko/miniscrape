@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
@@ -119,8 +120,20 @@ func LoadCategories(cfg *AppConfig) []Category {
 
 	for _, catName := range cfg.Categories {
 		ok, cat := loadCategoryFile(baseDir, catName)
+		ll := log.With().Str("category", cat.Name).Logger()
 		if ok {
-			log.Info().Str("category", cat.Name).Msg("Loaded category:")
+			ll.Info().
+				Str("category", cat.Name).
+				Int("number_of_pages", len(cat.Pages)).
+				Msg("Loaded category")
+
+			for _, page := range cat.Pages {
+				ll.Trace().
+					Dict("page", zerolog.Dict().
+						Str("codename", page.CodeName)).
+					Msg("loaded page")
+			}
+
 			categories = append(categories, cat)
 		}
 	}

@@ -16,6 +16,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/pestanko/miniscrape/pkg/filters"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
@@ -44,6 +45,15 @@ func (r *pageContentResolver) Resolve(_ context.Context) config.RunResult {
 		return makeErrorResult(r.page, err)
 	}
 
+	ll := log.With().
+		Dict("page", zerolog.Dict().
+			Str("namespace", r.page.Namespace()).
+			Str("url", r.page.URL).
+			Str("codename", r.page.CodeName)).
+		Logger()
+
+	ll.Trace().Bytes("body", bodyContent).Msg("page body")
+
 	contentArray, err := parseWebPageContent(&r.page, bodyContent)
 	if err != nil {
 		log.Error().
@@ -59,13 +69,11 @@ func (r *pageContentResolver) Resolve(_ context.Context) config.RunResult {
 
 	var status = config.RunSuccess
 	if content == "" {
-		log.Debug().
-			Str("page", r.page.Namespace()).
+		ll.Warn().
 			Msg("Content resolved but the content is empty")
 		status = config.RunEmpty
 	} else {
-		log.Debug().
-			Str("page", r.page.Namespace()).
+		ll.Debug().
 			Msg("Content resolved")
 	}
 

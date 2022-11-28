@@ -3,7 +3,7 @@ pages:
     name: "Alvin Week Menu"
     homepage: "https://www.alvinrestaurace.cz/"
     url: "https://www.alvinrestaurace.cz/obchod/"
-    query: ".content"
+    query: ".wnd-no-cols"
     filters:
       cut:
         after: "*Informace o alergenech získáte u obsluhy, nebo v rozvozovém menu.*"
@@ -247,7 +247,6 @@ pages:
       cut:
         before: "Cena za menu včetně polévky je 149 Kč."
         after: "Menu podáváme od 11 hod. do 14 hod. případně do vyprodání."
-
 
   - codename: garden_food_concept
     name: Garden Food Concept

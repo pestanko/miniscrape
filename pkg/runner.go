@@ -42,8 +42,13 @@ func (a *asyncRunner) Run(selector config.RunSelector) []config.RunResult {
 	log.Debug().Msg("Runner Started!")
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
+	ll := log.With().
+		Int("number_of_pages", numberOfPages).
+		Interface("selector", selector).
+		Logger()
+
 	if numberOfPages == 0 {
-		log.Warn().Msg("No pages available")
+		ll.Warn().Msg("No pages available")
 		return []config.RunResult{}
 	}
 
