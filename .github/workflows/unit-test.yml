@@ -18,17 +18,20 @@ jobs:
         name: Checkout code
 
       - name: setup golang v1.x
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ^1.19
+
+      - name: Install Task
+        uses: arduino/setup-task@v1
 
       - name: Unit test
         run: |
           go install github.com/jstemmer/go-junit-report/v2@latest
-          make test
+          task test
 
-      - name: Tests Summary
+      - name: Test Summary
         uses: test-summary/action@v2
         with:
-          paths: "./reports/*.xml"
+          paths: "reports/*.xml"
         if: always()
