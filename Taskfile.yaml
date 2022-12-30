@@ -1,0 +1,114 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  APPNAME: 'miniscrape'
+  GO_VERSION:
+    sh: go version | awk '{print $$3}'
+  GO_PATH:
+    sh: go env GOPATH
+  NC: '\033[0m'
+  YELLOW: '\033[1;33m'
+
+tasks:
+  default:
+    cmds:
+      - task: info
+    silent: true
+
+  info:
+    desc: "show the information"
+    cmds:
+      - 'echo "Name: {{.APPNAME}}"'
+      - "echo 'Go version: {{.GO_VERSION}}'"
+      - "echo 'Go path: {{.GO_PATH}}'"
+    silent: true
+
+  lint:
+    desc: "lint the code"
+    cmds:
+      - printf '\n*** {{.YELLOW}}Lint{{.NC}} ***\n'
+      - golangci-lint run
+    silent: true
+
+  build:
+    desc: "build for all platforms"
+    cmds:
+      - go build -o "./bin/$(APPNAME)" main.go
+
+  clean:
+    desc: "clean artifacts"
+    cmds:
+      - rm ./reports/*
+      - rm ./bin/*
+
+  # Run related tasks
+  run:serve:
+    desc: "run the http server"
+    cmds:
+      - go run main.go -- serve
+
+  # Tests related tasks
+  test:
+    desc: "Run all the tests"
+    cmds:
+      - task: test:unit
+#      - task: test:integ
+
+  test:unit:
+    desc: "run the unit tests for the project"
+    cmds:
+      - printf '\n*** {{.YELLOW}}Unit tests{{.NC}} ***\n'
+      - mkdir -p reports/
+      - go test -v -coverprofile={{.COVER_FILE}} $(go list ./... | grep -v -E 'integration|mocks') 2>&1 | tee {{.OUT_FILE}}
+      - cat {{.OUT_FILE}} | go tool test2json > reports/{{.KIND}}.json
+      - go-junit-report -in {{.OUT_FILE}} -set-exit-code > reports/{{.KIND}}.xml
+    vars:
+      KIND: unit
+      COVER_FILE: reports/{{.KIND}}.cover.out
+      OUT_FILE: reports/{{.KIND}}.out
+
+  test:integ:
+    desc: "init, run and cleanup for the integration tests"
+    cmds:
+      - task: test:integ:init
+      - task: test:integ:run
+      - task: test:integ:clean
+
+  test:integ:init:
+    desc: "init for the integration tests"
+    cmds:
+      - printf '\n*** {{.YELLOW}}Integration tests - init{{.NC}} ***\n'
+      - mkdir -p reports/
+      - docker compose up -d --wait
+
+  test:integ:clean:
+    desc: "clean up after the integration tests"
+    cmds:
+      - printf '\n*** {{.YELLOW}}Integration tests - cleanup{{.NC}} ***\n'
+      - docker compose down -v
+
+  test:integ:run:
+    desc: "run the integration tests for the project"
+    deps:
+      - task: test:integ:init
+    cmds:
+      - printf '\n*** {{.YELLOW}}Integration tests - run{{.NC}} ***\n'
+      - sleep {{.SLEEP}}
+      - go test -v -coverpkg=./... -coverprofile={{.COVER_FILE}} --tags=integration -timeout {{.TIMEOUT}} ./tests/integration/... 2>&1 | tee {{.OUT_FILE}}
+      - cat {{.OUT_FILE}} | go tool test2json > reports/{{.KIND}}.json
+      - go-junit-report -in {{.OUT_FILE}} -set-exit-code > reports/{{.KIND}}.xml
+    vars:
+      KIND: integ
+      COVER_FILE: reports/{{.KIND}}.cover.out
+      OUT_FILE: reports/{{.KIND}}.out
+      TIMEOUT: 300s
+      SLEEP: 10
+
+  tools:install:
+    desc: "install required golang tools"
+    cmds:
+      - go install github.com/jstemmer/go-junit-report/v2@latest
+      - "curl -sfL 'https://raw.githubusercontent.com/securego/gosec/master/install.sh' | sh -s -- -b {{.GO_PATH}}/bin"
+    silent: false
