@@ -73,8 +73,8 @@ tasks:
     desc: "init, run and cleanup for the integration tests"
     cmds:
       - task: test:integ:init
+      - defer: { task: test:integ:clean }
       - task: test:integ:run
-      - task: test:integ:clean
 
   test:integ:init:
     desc: "init for the integration tests"
