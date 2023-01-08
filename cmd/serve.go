@@ -1,10 +1,14 @@
 package cmd
 
 import (
-	"github.com/pestanko/miniscrape/pkg/config"
+	"context"
+	"time"
+
+	"github.com/pestanko/miniscrape/pkg/apprun"
+	"github.com/pestanko/miniscrape/pkg/deps"
 	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/pestanko/miniscrape/pkg/web"
-
+	"github.com/pestanko/miniscrape/pkg/web/chiapp"
 	"github.com/spf13/cobra"
 )
 
@@ -13,13 +17,34 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Serve a simple API for the pkg",
 	Long:  `Serve a simple API for the pkg`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cfg := config.GetAppConfig()
-		utils.InitGlobalLogger(&cfg.Log)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		run := apprun.NewAppRunner(
+			apprun.WithDepProvider(deps.InitAppDeps),
+		)
 
-		server := web.NewServer(cfg)
+		return run.Run(cmd.Context(), func(ctx context.Context, d *deps.Deps) error {
+			utils.InitGlobalLogger(&d.Cfg.Log)
 
-		server.Serve()
+			server := web.NewServer(d.Cfg)
+
+			ops := chiapp.RunOps{
+				ListenAddr:       ":8080",
+				ReadTimeout:      5 * time.Second,
+				GraceFullTimeout: 30 * time.Second,
+			}
+
+			errC, err := chiapp.RunWebServer(ctx, server, ops)
+			if err != nil {
+				return err
+			}
+
+			if err = <-errC; errC != nil {
+				return err
+			}
+
+			return nil
+		})
+
 	},
 }
 

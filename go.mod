@@ -6,10 +6,12 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown v1.3.4
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/antchfx/htmlquery v1.2.4
+	github.com/go-chi/chi/v5 v5.0.8
 	github.com/rs/zerolog v1.27.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.8.0
+	golang.org/x/exp v0.0.0-20230105202349-8879d0199aa3
 	golang.org/x/net v0.0.0-20210916014120-12bc252f5db8
 	golang.org/x/text v0.3.7
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
@@ -40,7 +42,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	golang.org/x/sys v0.0.0-20220708085239-5a0f0661e09d // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

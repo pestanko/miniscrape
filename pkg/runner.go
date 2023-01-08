@@ -27,7 +27,7 @@ func NewAsyncRunner(
 
 // Runner interface
 type Runner interface {
-	// Run the runner to get pages contant
+	// Run the runner to get pages content
 	// based on the selector
 	Run(ctx context.Context, selector config.RunSelector) []config.RunResult
 }
