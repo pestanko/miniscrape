@@ -1,29 +1,28 @@
-package web
+package handlers
 
 import (
 	"net/http"
 
 	"github.com/pestanko/miniscrape/pkg"
 	"github.com/pestanko/miniscrape/pkg/config"
+	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandleCategories handler
-func HandleCategories(
-	scrapeService *pkg.Service,
-	w http.ResponseWriter,
-	_ *http.Request,
-) {
-	var dto []categoryDto
-	for _, cat := range scrapeService.GetCategories() {
-		catDto := categoryDto{
-			Name:  cat.Name,
-			Tags:  getAllTagsForCategory(cat.Pages),
-			Pages: getPagesForCategory(cat.Pages),
+func HandleCategories(scrapeService *pkg.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		var dto []categoryDto
+		for _, cat := range scrapeService.GetCategories() {
+			catDto := categoryDto{
+				Name:  cat.Name,
+				Tags:  getAllTagsForCategory(cat.Pages),
+				Pages: getPagesForCategory(cat.Pages),
+			}
+			dto = append(dto, catDto)
 		}
-		dto = append(dto, catDto)
-	}
 
-	WriteJSONResponse(w, http.StatusOK, dto)
+		wutt.WriteJSONResponse(w, http.StatusOK, dto)
+	}
 }
 
 func getPagesForCategory(pages []config.Page) []string {

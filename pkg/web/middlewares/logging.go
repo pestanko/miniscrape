@@ -7,29 +7,44 @@ import (
 
 	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/pestanko/miniscrape/pkg/utils"
+	"github.com/rs/zerolog"
 )
 
-// RequestLogger log all requests
-func RequestLogger(targetMux http.Handler, cfg *config.AppConfig) http.Handler {
+// LogParams represents a logger params
+type LogParams struct {
+	LogCfg config.LogConfig
+	Log    zerolog.Logger
+}
 
-	accessLog := utils.MakeAccessLog(&cfg.Log)
+// Logger log all requests
+func Logger(params LogParams) func(targetMux http.Handler) http.Handler {
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
+	return func(targetMux http.Handler) http.Handler {
+		accessLog := utils.MakeAccessLog(&params.LogCfg)
 
-		o := &responseObserver{ResponseWriter: w}
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
 
-		targetMux.ServeHTTP(o, r)
+			o := &responseObserver{ResponseWriter: w}
 
-		// log request by who(IP address)
-		accessLog.Info().
-			Str("method", r.Method).
-			Str("requestUri", r.RequestURI).
-			Str("remoteAddr", r.RemoteAddr).
-			Str("duration", fmt.Sprintf("%v", time.Since(start))).
-			Int("statusCode", o.status).
-			Msg("Incoming request")
-	})
+			targetMux.ServeHTTP(o, r)
+
+			requestDict := zerolog.Dict().
+				Str("method", r.Method).
+				Str("requestUri", r.RequestURI).
+				Str("remoteAddr", r.RemoteAddr)
+
+			responseDict := zerolog.Dict().
+				Str("duration", fmt.Sprintf("%v", time.Since(start))).
+				Int("statusCode", o.status)
+
+			// log request by who(IP address)
+			accessLog.Info().
+				Dict("request", requestDict).
+				Dict("response", responseDict).
+				Msg("Incoming request")
+		})
+	}
 }
 
 type responseObserver struct {

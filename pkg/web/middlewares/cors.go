@@ -2,8 +2,6 @@ package middlewares
 
 import (
 	"net/http"
-
-	"github.com/pestanko/miniscrape/pkg/config"
 )
 
 const (
@@ -17,12 +15,14 @@ const (
 )
 
 // SetupCors middleware
-func SetupCors(targetMux http.Handler, cfg *config.AppConfig) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set(headerAccessControlAllowOrigin, allowedOrigin)
-		w.Header().Set(headerAccessControlAllowMethods, allowedMethods)
-		w.Header().Set(headerAccessControlAllowHeaders, allowedHeaders)
+func SetupCors() func(targetMux http.Handler) http.Handler {
+	return func(targetMux http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			w.Header().Set(headerAccessControlAllowOrigin, allowedOrigin)
+			w.Header().Set(headerAccessControlAllowMethods, allowedMethods)
+			w.Header().Set(headerAccessControlAllowHeaders, allowedHeaders)
 
-		targetMux.ServeHTTP(w, req)
-	})
+			targetMux.ServeHTTP(w, req)
+		})
+	}
 }

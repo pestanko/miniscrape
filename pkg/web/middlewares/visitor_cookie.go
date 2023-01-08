@@ -4,20 +4,21 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/pestanko/miniscrape/pkg/utils"
 )
 
 const visitorCookie = "VISITOR"
 
 // VisitorCookie middleware
-func VisitorCookie(targetMux http.Handler, _ *config.AppConfig) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func VisitorCookie() func(targetMux http.Handler) http.Handler {
+	return func(targetMux http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		wrapWithVisitorCookie(w, r)
+			wrapWithVisitorCookie(w, r)
 
-		targetMux.ServeHTTP(w, r)
-	})
+			targetMux.ServeHTTP(w, r)
+		})
+	}
 }
 
 func wrapWithVisitorCookie(w http.ResponseWriter, r *http.Request) {

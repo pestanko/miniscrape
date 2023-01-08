@@ -47,7 +47,7 @@ tasks:
   run:serve:
     desc: "run the http server"
     cmds:
-      - go run main.go -- serve
+      - go run main.go serve
 
   # Tests related tasks
   test:
