@@ -1,7 +1,8 @@
-package config
+package models
 
 import (
 	"fmt"
+	"github.com/pestanko/miniscrape/internal/config"
 	"os"
 	"path/filepath"
 
@@ -114,7 +115,7 @@ type DayFilter struct {
 }
 
 // LoadCategories Load all categories from the app config
-func LoadCategories(cfg *AppConfig) []Category {
+func LoadCategories(cfg *config.AppConfig) []Category {
 	baseDir := "config/categories"
 	var categories []Category
 

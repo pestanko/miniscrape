@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 
 	"github.com/pestanko/miniscrape/pkg"
 	"github.com/pestanko/miniscrape/pkg/utils"
@@ -10,7 +11,7 @@ import (
 )
 
 var (
-	selector    config.RunSelector
+	selector    models.RunSelector
 	noCache     bool
 	noContent   bool
 	updateCache bool

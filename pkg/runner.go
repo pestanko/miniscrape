@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -15,7 +16,7 @@ import (
 // NewAsyncRunner instance of the new asynchronous runner
 func NewAsyncRunner(
 	cfg *config.AppConfig,
-	cats []config.Category,
+	cats []models.Category,
 	cache cache.Cache,
 ) Runner {
 	return &asyncRunner{
@@ -29,16 +30,16 @@ func NewAsyncRunner(
 type Runner interface {
 	// Run the runner to get pages content
 	// based on the selector
-	Run(ctx context.Context, selector config.RunSelector) []config.RunResult
+	Run(ctx context.Context, selector models.RunSelector) []models.RunResult
 }
 
 type asyncRunner struct {
 	cfg        *config.AppConfig
-	categories []config.Category
+	categories []models.Category
 	cache      cache.Cache
 }
 
-func (a *asyncRunner) Run(ctx context.Context, selector config.RunSelector) []config.RunResult {
+func (a *asyncRunner) Run(ctx context.Context, selector models.RunSelector) []models.RunResult {
 	log.Debug().Msg("Runner Started!")
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
@@ -49,11 +50,11 @@ func (a *asyncRunner) Run(ctx context.Context, selector config.RunSelector) []co
 
 	if numberOfPages == 0 {
 		ll.Warn().Msg("No pages available")
-		return []config.RunResult{}
+		return []models.RunResult{}
 	}
 
 	log.Debug().Int("numberOfPages", numberOfPages).Msg("Processing number of pages")
-	channelWithResults := make(chan config.RunResult, numberOfPages)
+	channelWithResults := make(chan models.RunResult, numberOfPages)
 	// start async tasks
 	a.startAsyncRequests(ctx, channelWithResults, pages)
 	// collect results
@@ -63,8 +64,8 @@ func (a *asyncRunner) Run(ctx context.Context, selector config.RunSelector) []co
 	return resultsCollection
 }
 
-func (a *asyncRunner) collectResults(channelWithResults chan config.RunResult, numberOfPages int) []config.RunResult {
-	var resultsCollection []config.RunResult
+func (a *asyncRunner) collectResults(channelWithResults chan models.RunResult, numberOfPages int) []models.RunResult {
+	var resultsCollection []models.RunResult
 	for res := range channelWithResults {
 		resultsCollection = append(resultsCollection, res)
 		if len(resultsCollection) == numberOfPages {
@@ -77,8 +78,8 @@ func (a *asyncRunner) collectResults(channelWithResults chan config.RunResult, n
 
 func (a *asyncRunner) startAsyncRequests(
 	ctx context.Context,
-	resChan chan<- config.RunResult,
-	pages []config.Page,
+	resChan chan<- models.RunResult,
+	pages []models.Page,
 ) {
 	for idx, page := range pages {
 		idx := idx
@@ -91,8 +92,8 @@ func (a *asyncRunner) startAsyncRequests(
 	}
 }
 
-func (a *asyncRunner) filterPages(sel config.RunSelector) []config.Page {
-	var result []config.Page
+func (a *asyncRunner) filterPages(sel models.RunSelector) []models.Page {
+	var result []models.Page
 	tagsResolver := utils.MakeTagsResolver(sel.Tags)
 	for _, category := range a.categories {
 		// filter out the category

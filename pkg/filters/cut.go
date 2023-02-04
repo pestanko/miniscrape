@@ -1,31 +1,31 @@
 package filters
 
 import (
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"strings"
 
 	"github.com/rs/zerolog/log"
 )
 
 // NewCutFilter create a new instance of the cut filter
-func NewCutFilter(page *config.Page) PageFilter {
+func NewCutFilter(page *models.Page) PageFilter {
 	return &cutFilter{
 		page.Filters.Cut,
 	}
 }
 
 // NewCutLineFilter create a new instance of the cut line filter
-func NewCutLineFilter(page *config.Page) PageFilter {
+func NewCutLineFilter(page *models.Page) PageFilter {
 	return &cutLineFilter{
 		page.Filters.CutLine,
 	}
 }
 
 type cutFilter struct {
-	cut config.CutFilter
+	cut models.CutFilter
 }
 
-func (f *cutFilter) config() *config.CutFilter {
+func (f *cutFilter) config() *models.CutFilter {
 	return &f.cut
 }
 
@@ -44,7 +44,7 @@ func (f *cutFilter) Filter(content string) (string, error) {
 }
 
 type cutLineFilter struct {
-	cutLine config.CutLineFilter
+	cutLine models.CutLineFilter
 }
 
 func (c *cutLineFilter) Filter(content string) (string, error) {
@@ -76,7 +76,7 @@ func (c *cutLineFilter) IsEnabled() bool {
 	return cfg.Contains != "" || cfg.CutAfter != "" || cfg.StartsWith != ""
 }
 
-func (c *cutLineFilter) config() *config.CutLineFilter {
+func (c *cutLineFilter) config() *models.CutLineFilter {
 	return &c.cutLine
 }
 

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"net/http"
 
 	"github.com/pestanko/miniscrape/pkg"
@@ -25,7 +25,7 @@ func HandleCategories(scrapeService *pkg.Service) http.HandlerFunc {
 	}
 }
 
-func getPagesForCategory(pages []config.Page) []string {
+func getPagesForCategory(pages []models.Page) []string {
 	var pageNames = make([]string, len(pages))
 
 	for i, pg := range pages {
@@ -35,7 +35,7 @@ func getPagesForCategory(pages []config.Page) []string {
 	return pageNames
 }
 
-func getAllTagsForCategory(pages []config.Page) []string {
+func getAllTagsForCategory(pages []models.Page) []string {
 	tagsSet := make(map[string]bool)
 	for _, pg := range pages {
 		for _, pageTag := range pg.Tags {

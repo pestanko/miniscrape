@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"io"
 	"math/rand"
 	"net/http"
@@ -34,12 +34,12 @@ var httpClient = http.Client{
 }
 
 type pageContentResolver struct {
-	page    config.Page
+	page    models.Page
 	client  http.Client
-	filters []func(*config.Page) filters.PageFilter
+	filters []func(*models.Page) filters.PageFilter
 }
 
-func (r *pageContentResolver) Resolve(_ context.Context) config.RunResult {
+func (r *pageContentResolver) Resolve(_ context.Context) models.RunResult {
 	bodyContent, err := getContentForWebPage(&r.page)
 	if err != nil {
 		return makeErrorResult(r.page, err)
@@ -67,17 +67,17 @@ func (r *pageContentResolver) Resolve(_ context.Context) config.RunResult {
 	content := strings.Join(contentArray, "\n")
 	content = r.applyFilters(content)
 
-	var status = config.RunSuccess
+	var status = models.RunSuccess
 	if content == "" {
 		ll.Warn().
 			Msg("Content resolved but the content is empty")
-		status = config.RunEmpty
+		status = models.RunEmpty
 	} else {
 		ll.Debug().
 			Msg("Content resolved")
 	}
 
-	return config.RunResult{
+	return models.RunResult{
 		Page:    r.page,
 		Status:  status,
 		Content: content,
@@ -85,7 +85,7 @@ func (r *pageContentResolver) Resolve(_ context.Context) config.RunResult {
 	}
 }
 
-func getContentForWebPage(page *config.Page) (bodyContent []byte, err error) {
+func getContentForWebPage(page *models.Page) (bodyContent []byte, err error) {
 	if page.Command.Content.Name != "" {
 		bodyContent, err = getContentByCommand(page)
 	} else {
@@ -99,7 +99,7 @@ func getContentForWebPage(page *config.Page) (bodyContent []byte, err error) {
 	return
 }
 
-func getContentByCommand(page *config.Page) ([]byte, error) {
+func getContentByCommand(page *models.Page) ([]byte, error) {
 	// Use command
 	cmdContent := page.Command.Content
 	log.Debug().
@@ -129,7 +129,7 @@ func getContentByCommand(page *config.Page) ([]byte, error) {
 	return outb.Bytes(), err
 }
 
-func getContentByRequest(page *config.Page) ([]byte, error) {
+func getContentByRequest(page *models.Page) ([]byte, error) {
 	req, err := http.NewRequest("GET", page.URL, nil)
 	if err != nil {
 		log.Error().
@@ -211,7 +211,7 @@ func parseUsingXPathQuery(content []byte, xpath string) ([]string, error) {
 }
 
 func parseWebPageContent(
-	page *config.Page,
+	page *models.Page,
 	bodyContent []byte,
 ) (contentArray []string, err error) {
 	if page.Query != "" {

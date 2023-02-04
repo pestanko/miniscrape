@@ -1,7 +1,7 @@
 package filters
 
 import (
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -10,14 +10,14 @@ import (
 
 // NewHTMLConverter a new instance of the filter that
 // uses the html2text converter
-func NewHTMLConverter(page *config.Page) PageFilter {
+func NewHTMLConverter(page *models.Page) PageFilter {
 	return &htmlFilterTags{
 		page.Filters.HTML,
 	}
 }
 
 type htmlFilterTags struct {
-	html config.HTMLFilter
+	html models.HTMLFilter
 }
 
 // Filter implements PageFilter

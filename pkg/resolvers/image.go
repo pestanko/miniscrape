@@ -2,7 +2,7 @@ package resolvers
 
 import (
 	"context"
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"net/http"
 	"strings"
 
@@ -10,12 +10,12 @@ import (
 )
 
 type imageResolver struct {
-	page   config.Page
+	page   models.Page
 	client http.Client
 }
 
 // Resolve implements PageResolver
-func (r *imageResolver) Resolve(ctx context.Context) config.RunResult {
+func (r *imageResolver) Resolve(ctx context.Context) models.RunResult {
 	bodyContent, err := getContentForWebPage(&r.page)
 	if err != nil {
 		return makeErrorResult(r.page, err)
@@ -34,10 +34,10 @@ func (r *imageResolver) Resolve(ctx context.Context) config.RunResult {
 
 	content := strings.Join(contentArray, "")
 
-	return config.RunResult{
+	return models.RunResult{
 		Page:    r.page,
 		Content: content,
-		Status:  config.RunSuccess,
+		Status:  models.RunSuccess,
 		Kind:    "img",
 	}
 }

@@ -2,18 +2,18 @@ package resolvers
 
 import (
 	"context"
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 
 	"github.com/pestanko/miniscrape/pkg/filters"
 )
 
 // PageResolver is a main interface for page content resolvers
 type PageResolver interface {
-	Resolve(ctx context.Context) config.RunResult
+	Resolve(ctx context.Context) models.RunResult
 }
 
 // NewPageResolver creates a new instance of the page resovler
-func NewPageResolver(page config.Page) PageResolver {
+func NewPageResolver(page models.Page) PageResolver {
 	switch page.Resolver {
 	case "url_only", "urlonly", "url-only":
 		return &urlOnlyResolver{
@@ -30,7 +30,7 @@ func NewPageResolver(page config.Page) PageResolver {
 		return &pageContentResolver{
 			page:   page,
 			client: httpClient,
-			filters: []func(*config.Page) filters.PageFilter{
+			filters: []func(*models.Page) filters.PageFilter{
 				filters.NewHTMLToMdConverter,
 				filters.NewNewLineTrimConverter,
 				filters.NewCutFilter,

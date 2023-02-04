@@ -3,19 +3,19 @@ package filters
 import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/JohannesKaufmann/html-to-markdown/plugin"
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 )
 
 // NewHTMLToMdConverter a new instance of the filter that
 // converts html to markdown
-func NewHTMLToMdConverter(page *config.Page) PageFilter {
+func NewHTMLToMdConverter(page *models.Page) PageFilter {
 	return &htmlToMdConverter{
 		page.Filters.HTML,
 	}
 }
 
 type htmlToMdConverter struct {
-	html config.HTMLFilter
+	html models.HTMLFilter
 }
 
 // Filter implements PageFilter

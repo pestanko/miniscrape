@@ -1,7 +1,7 @@
 package filters
 
 import (
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"regexp"
 )
 
@@ -9,7 +9,7 @@ var normPattern = regexp.MustCompile("\n\n")
 
 // NewNewLineTrimConverter a new instance of the filter that
 // cuts the line of the content
-func NewNewLineTrimConverter(page *config.Page) PageFilter {
+func NewNewLineTrimConverter(page *models.Page) PageFilter {
 	return &newLineTrimConverter{}
 }
 

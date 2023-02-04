@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"net/http"
 
 	"github.com/pestanko/miniscrape/pkg"
@@ -56,12 +56,12 @@ type pageContentPageDto struct {
 	Category     string   `json:"category"`
 }
 
-func makeSelectorFromRequest(req *http.Request) config.RunSelector {
+func makeSelectorFromRequest(req *http.Request) models.RunSelector {
 	category := req.URL.Query().Get("c")
 	tags := req.URL.Query()["t"]
 	name := req.URL.Query().Get("n")
 
-	return config.RunSelector{
+	return models.RunSelector{
 		Tags:     tags,
 		Category: category,
 		Page:     name,

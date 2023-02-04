@@ -3,6 +3,7 @@ package cache
 import (
 	"fmt"
 	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"os"
 	"path"
 	"path/filepath"
@@ -67,7 +68,7 @@ type Cache interface {
 	// GetContent returns the content for the item
 	GetContent(item Item) []byte
 	// Invalidate the cache content
-	Invalidate(sel config.RunSelector)
+	Invalidate(sel models.RunSelector)
 }
 
 // NewCache creates an instance of the new cache
@@ -96,7 +97,7 @@ type cacheFs struct {
 	date        time.Time
 }
 
-func (c *cacheFs) Invalidate(sel config.RunSelector) {
+func (c *cacheFs) Invalidate(sel models.RunSelector) {
 	nm := NewNamespace(sel.Category, sel.Page)
 	pth := c.getNamespaceDir(nm.Path())
 	removeDir(pth)

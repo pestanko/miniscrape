@@ -1,21 +1,21 @@
 package filters
 
 import (
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
 	"strings"
 	"time"
 )
 
 // NewDayFilter a new instance of the filter that
 // cuts a content based on days
-func NewDayFilter(page *config.Page) PageFilter {
+func NewDayFilter(page *models.Page) PageFilter {
 	return &dayFilter{
 		page.Filters.Day,
 	}
 }
 
 type dayFilter struct {
-	day config.DayFilter
+	day models.DayFilter
 }
 
 func (f *dayFilter) IsEnabled() bool {
@@ -26,7 +26,7 @@ func (*dayFilter) Name() string {
 	return "day"
 }
 
-func (f *dayFilter) config() *config.DayFilter {
+func (f *dayFilter) config() *models.DayFilter {
 	return &f.day
 }
 

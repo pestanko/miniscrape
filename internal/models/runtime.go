@@ -1,4 +1,4 @@
-package config
+package models
 
 // RunResultStatus enum of runtime statuses
 type RunResultStatus string
