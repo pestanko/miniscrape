@@ -4,6 +4,8 @@ package apprun
 import (
 	"context"
 	"fmt"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"io"
 	"os"
 	"os/signal"
@@ -78,6 +80,11 @@ func (a *AppRunner[D]) Run(
 	ctx context.Context,
 	body func(ctx context.Context, d D) error,
 ) error {
+
+	if a.isTracingEnabled {
+		initTracing(ctx)
+	}
+
 	// we need to create dependency provider
 	// after that we can close them
 	deps, err := a.DependencyProvider(ctx)
@@ -106,4 +113,16 @@ func (a *AppRunner[D]) Run(
 
 	// run the inner application
 	return body(ctx, deps)
+}
+
+func initTracing(ctx context.Context) {
+	// initialize trace provider
+	tp := initTracerProvider(ctx)
+	// set global tracer provider & text propagators
+	otel.SetTracerProvider(tp)
+	propagator := propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	)
+	otel.SetTextMapPropagator(propagator)
 }

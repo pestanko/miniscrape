@@ -20,7 +20,9 @@ type LogConfig struct {
 
 // MakeAccessLog creates an instance of the access logger
 func MakeAccessLog(logCfg *LogConfig) zerolog.Logger {
-	return makeLogger(logCfg, "access.log")
+	return makeLogger(logCfg, "access.log").With().
+		Str("logger_kind", "access").
+		Logger()
 }
 
 // InitGlobalLogger initializes the global logger
@@ -28,8 +30,10 @@ func InitGlobalLogger(logCfg *LogConfig) {
 	mw := makeLogWriters(logCfg, "app.log")
 	log.Logger = log.Output(mw).
 		With().
+		Timestamp().
 		Str("compnent", "app").
 		Logger()
+	zerolog.DefaultContextLogger = &log.Logger
 }
 
 func makeLogger(logCfg *LogConfig, file string) zerolog.Logger {

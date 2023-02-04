@@ -244,6 +244,7 @@ func parseUsingCSSQuery(bodyContent []byte, query string) ([]string, error) {
 	return content, nil
 }
 
+// TODO: Pass context
 func (r *pageContentResolver) applyFilters(content string) string {
 	if strings.TrimSpace(content) == "" {
 		return ""
