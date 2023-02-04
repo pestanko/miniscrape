@@ -2,14 +2,14 @@ package resolvers
 
 import (
 	"context"
-	config2 "github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/config"
 
 	"github.com/pestanko/miniscrape/pkg/cache"
 	"github.com/rs/zerolog/log"
 )
 
 // NewGetCachedPageResolver a new instance of the cached resolver
-func NewGetCachedPageResolver(page config2.Page, cacheInstance cache.Cache) PageResolver {
+func NewGetCachedPageResolver(page config.Page, cacheInstance cache.Cache) PageResolver {
 	inner := NewPageResolver(page)
 	if cacheInstance == nil {
 		return inner
@@ -24,10 +24,10 @@ func NewGetCachedPageResolver(page config2.Page, cacheInstance cache.Cache) Page
 type cachedPageResolver struct {
 	resolver PageResolver
 	cache    cache.Cache
-	page     config2.Page
+	page     config.Page
 }
 
-func (c *cachedPageResolver) Resolve(ctx context.Context) config2.RunResult {
+func (c *cachedPageResolver) Resolve(ctx context.Context) config.RunResult {
 	namespace := cache.NewNamespace(c.page.Category, c.page.CodeName)
 	if c.cache.IsPageCached(namespace) {
 		log.Debug().Str("page", c.page.Namespace()).Msg("Loading content from cache")
@@ -35,15 +35,15 @@ func (c *cachedPageResolver) Resolve(ctx context.Context) config2.RunResult {
 		content := string(c.cache.GetContent(cache.Item{
 			Namespace: namespace,
 		}))
-		return config2.RunResult{
+		return config.RunResult{
 			Page:    c.page,
 			Content: content,
-			Status:  config2.RunSuccess,
+			Status:  config.RunSuccess,
 		}
 	}
 
 	res := c.resolver.Resolve(ctx)
-	if res.Status != config2.RunSuccess {
+	if res.Status != config.RunSuccess {
 		return res
 	}
 

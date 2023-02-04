@@ -2,7 +2,7 @@ package pkg
 
 import (
 	"context"
-	config2 "github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/config"
 	"time"
 
 	"github.com/pestanko/miniscrape/pkg/cache"
@@ -11,14 +11,14 @@ import (
 
 // Service main service representation
 type Service struct {
-	Cfg        config2.AppConfig
-	categories utils.CachedContainer[[]config2.Category]
+	Cfg        config.AppConfig
+	categories utils.CachedContainer[[]config.Category]
 }
 
 // NewService create a new instance of the service
-func NewService(cfg *config2.AppConfig) *Service {
-	categoriesLoader := func() *[]config2.Category {
-		categories := config2.LoadCategories(cfg)
+func NewService(cfg *config.AppConfig) *Service {
+	categoriesLoader := func() *[]config.Category {
+		categories := config.LoadCategories(cfg)
 		return &categories
 	}
 
@@ -29,18 +29,18 @@ func NewService(cfg *config2.AppConfig) *Service {
 }
 
 // Scrape the pages based on selector
-func (s *Service) Scrape(ctx context.Context, selector config2.RunSelector) []config2.RunResult {
+func (s *Service) Scrape(ctx context.Context, selector config.RunSelector) []config.RunResult {
 	runner := NewAsyncRunner(&s.Cfg, s.GetCategories(), s.getCache())
 	return runner.Run(ctx, selector)
 }
 
 // InvalidateCache for the provided selector
-func (s *Service) InvalidateCache(sel config2.RunSelector) {
+func (s *Service) InvalidateCache(sel config.RunSelector) {
 	s.getCache().Invalidate(sel)
 }
 
 // GetCategories get all categories
-func (s *Service) GetCategories() []config2.Category {
+func (s *Service) GetCategories() []config.Category {
 	return *s.categories.Get()
 }
 

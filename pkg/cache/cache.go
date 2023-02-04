@@ -2,7 +2,7 @@ package cache
 
 import (
 	"fmt"
-	config2 "github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/config"
 	"os"
 	"path"
 	"path/filepath"
@@ -67,11 +67,11 @@ type Cache interface {
 	// GetContent returns the content for the item
 	GetContent(item Item) []byte
 	// Invalidate the cache content
-	Invalidate(sel config2.RunSelector)
+	Invalidate(sel config.RunSelector)
 }
 
 // NewCache creates an instance of the new cache
-func NewCache(cacheCfg config2.CacheCfg, date time.Time) Cache {
+func NewCache(cacheCfg config.CacheCfg, date time.Time) Cache {
 	if cacheCfg.Enabled {
 		root := cacheCfg.Root
 		if root == "" {
@@ -96,7 +96,7 @@ type cacheFs struct {
 	date        time.Time
 }
 
-func (c *cacheFs) Invalidate(sel config2.RunSelector) {
+func (c *cacheFs) Invalidate(sel config.RunSelector) {
 	nm := NewNamespace(sel.Category, sel.Page)
 	pth := c.getNamespaceDir(nm.Path())
 	removeDir(pth)
