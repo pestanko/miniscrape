@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/pestanko/miniscrape/internal/deps"
 	"github.com/pestanko/miniscrape/pkg/apprun"
-	"github.com/pestanko/miniscrape/pkg/deps"
 	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/pestanko/miniscrape/pkg/web"
 	"github.com/pestanko/miniscrape/pkg/web/chiapp"
