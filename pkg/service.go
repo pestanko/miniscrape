@@ -2,11 +2,11 @@ package pkg
 
 import (
 	"context"
+	"github.com/pestanko/miniscrape/internal/cache"
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/models"
 	"time"
 
-	"github.com/pestanko/miniscrape/pkg/cache"
 	"github.com/pestanko/miniscrape/pkg/utils"
 )
 
