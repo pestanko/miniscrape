@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"github.com/pestanko/miniscrape/pkg/utils/applog"
+	"go.opentelemetry.io/otel/trace"
 	"net/http"
 	"time"
 
@@ -23,8 +24,23 @@ func Logger(params LogParams) func(targetMux http.Handler) http.Handler {
 
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
-
 			o := &responseObserver{ResponseWriter: w}
+
+			ctx := r.Context()
+			span := trace.SpanContextFromContext(ctx)
+
+			spanDict := zerolog.Dict().
+				Str("trace_id", span.TraceID().String()).
+				Str("span_id", span.SpanID().String())
+
+			ll := zerolog.Ctx(ctx).With().
+				Dict("otel", spanDict).
+				Logger()
+
+			accessLog := accessLog.With().Dict("otel", spanDict).Logger()
+
+			ctx = ll.WithContext(ctx)
+			r = r.WithContext(ctx)
 
 			targetMux.ServeHTTP(o, r)
 

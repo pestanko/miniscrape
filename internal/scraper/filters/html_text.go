@@ -21,6 +21,7 @@ type htmlFilterTags struct {
 }
 
 // Filter implements PageFilter
+// TODO: Pass context
 func (f *htmlFilterTags) Filter(content string) (string, error) {
 	if f.html.Tables != "pretty" {
 		content = useCustomHTMLTablesConverter(content)

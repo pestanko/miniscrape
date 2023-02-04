@@ -1,8 +1,9 @@
 package chiapp
 
 import (
-	middlewares2 "github.com/pestanko/miniscrape/internal/web/middlewares"
+	appmidlewares "github.com/pestanko/miniscrape/internal/web/middlewares"
 	"github.com/pestanko/miniscrape/pkg/utils/applog"
+	"github.com/riandyrn/otelchi"
 	"net/http"
 	"os"
 	"strconv"
@@ -93,11 +94,12 @@ func CreateChiApp(ops ...AppOpsFn) *chi.Mux {
 }
 
 func defaultMiddlewares(r chi.Router) {
-	r.Use(middlewares2.RealIP())
+	r.Use(otelchi.Middleware("miniscrape", otelchi.WithChiRoutes(r)))
+	r.Use(appmidlewares.RealIP())
 	r.Use(middleware.RequestID)
-	r.Use(middlewares2.SetupCors())
-	r.Use(middlewares2.VisitorCookie())
-	r.Use(middlewares2.Logger(middlewares2.LogParams{
+	r.Use(appmidlewares.SetupCors())
+	r.Use(appmidlewares.VisitorCookie())
+	r.Use(appmidlewares.Logger(appmidlewares.LogParams{
 		LogCfg: applog.LogConfig{},
 		Log:    zerolog.Logger{},
 	}))
