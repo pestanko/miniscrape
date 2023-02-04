@@ -33,12 +33,9 @@ var serveCmd = &cobra.Command{
 				GraceFullTimeout: 30 * time.Second,
 			}
 
-			errC, err := chiapp.RunWebServer(ctx, server, ops)
-			if err != nil {
-				return err
-			}
+			errC := chiapp.RunWebServer(ctx, server, ops)
 
-			if err = <-errC; errC != nil {
+			if err := <-errC; errC != nil {
 				return err
 			}
 

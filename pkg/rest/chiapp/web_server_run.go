@@ -2,10 +2,9 @@ package chiapp
 
 import (
 	"context"
+	"github.com/pestanko/miniscrape/pkg/asyncrun"
 	"net/http"
 	"time"
-
-	"github.com/pestanko/miniscrape/pkg/apprun"
 )
 
 // RunOps defines runtime options
@@ -15,21 +14,22 @@ type RunOps struct {
 	GraceFullTimeout time.Duration
 }
 
-func RunWebServer(appCtx context.Context, handler http.Handler, ops RunOps) (chan error, error) {
+func RunWebServer(appCtx context.Context, handler http.Handler, ops RunOps) chan error {
 	server := http.Server{
 		Addr:        ops.ListenAddr,
 		Handler:     handler,
 		ReadTimeout: ops.ReadTimeout,
 	}
 
-	params := apprun.StartParams{
-		Start: func(ctx context.Context) error {
+	params := asyncrun.Params{
+		Run: func(ctx context.Context) error {
 			return server.ListenAndServe()
 		},
-		Stop: func(ctx context.Context) error {
+		Shutdown: func(ctx context.Context) error {
 			return server.Shutdown(ctx)
 		},
 		GraceTimeout: ops.GraceFullTimeout,
 	}
-	return apprun.Start(appCtx, params)
+
+	return asyncrun.AsyncRun(appCtx, params)
 }
