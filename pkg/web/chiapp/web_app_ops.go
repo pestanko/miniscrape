@@ -1,6 +1,7 @@
 package chiapp
 
 import (
+	"github.com/pestanko/miniscrape/internal/config"
 	"net/http"
 	"os"
 	"strconv"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/pestanko/miniscrape/pkg/utils/collut"
 	"github.com/pestanko/miniscrape/pkg/web/middlewares"
 	"github.com/rs/zerolog"

@@ -1,10 +1,9 @@
 package filters
 
 import (
+	"github.com/pestanko/miniscrape/internal/config"
 	"strings"
 	"time"
-
-	"github.com/pestanko/miniscrape/pkg/config"
 )
 
 // NewDayFilter a new instance of the filter that

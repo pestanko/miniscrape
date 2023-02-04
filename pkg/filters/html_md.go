@@ -3,7 +3,7 @@ package filters
 import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/JohannesKaufmann/html-to-markdown/plugin"
-	"github.com/pestanko/miniscrape/pkg/config"
+	"github.com/pestanko/miniscrape/internal/config"
 )
 
 // NewHTMLToMdConverter a new instance of the filter that

@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/pestanko/miniscrape/pkg/config"
+	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/pkg/utils"
 )
 

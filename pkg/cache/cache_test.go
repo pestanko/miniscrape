@@ -1,10 +1,10 @@
 package cache
 
 import (
+	"github.com/pestanko/miniscrape/internal/config"
 	"testing"
 	"time"
 
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 

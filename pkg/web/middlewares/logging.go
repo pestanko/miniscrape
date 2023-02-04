@@ -2,10 +2,10 @@ package middlewares
 
 import (
 	"fmt"
+	"github.com/pestanko/miniscrape/internal/config"
 	"net/http"
 	"time"
 
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/rs/zerolog"
 )

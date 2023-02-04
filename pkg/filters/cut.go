@@ -1,9 +1,9 @@
 package filters
 
 import (
+	"github.com/pestanko/miniscrape/internal/config"
 	"strings"
 
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/rs/zerolog/log"
 )
 

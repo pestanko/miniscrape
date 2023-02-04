@@ -1,9 +1,8 @@
 package filters
 
 import (
+	"github.com/pestanko/miniscrape/internal/config"
 	"regexp"
-
-	"github.com/pestanko/miniscrape/pkg/config"
 )
 
 var normPattern = regexp.MustCompile("\n\n")

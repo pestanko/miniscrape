@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"github.com/pestanko/miniscrape/internal/config"
 	"net/http"
 
 	"github.com/pestanko/miniscrape/pkg"
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 

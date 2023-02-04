@@ -1,6 +1,8 @@
 package deps
 
-import "github.com/pestanko/miniscrape/pkg/config"
+import (
+	"github.com/pestanko/miniscrape/internal/config"
+)
 
 // Deps Represents an application dependencies
 type Deps struct {

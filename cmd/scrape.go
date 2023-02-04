@@ -2,15 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	config2 "github.com/pestanko/miniscrape/internal/config"
 
 	"github.com/pestanko/miniscrape/pkg"
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
 var (
-	selector    config.RunSelector
+	selector    config2.RunSelector
 	noCache     bool
 	noContent   bool
 	updateCache bool
@@ -22,7 +22,7 @@ var scrapeCmd = &cobra.Command{
 	Short: "Scrape the pages",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cfg := config.GetAppConfig()
+		cfg := config2.GetAppConfig()
 		utils.InitGlobalLogger(&cfg.Log)
 		if noCache {
 			cfg.Cache.Enabled = false

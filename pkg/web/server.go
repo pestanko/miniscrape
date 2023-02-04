@@ -2,8 +2,8 @@ package web
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/pkg"
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/pestanko/miniscrape/pkg/web/chiapp"
 	"github.com/pestanko/miniscrape/pkg/web/handlers"
 	"github.com/pestanko/miniscrape/pkg/web/middlewares"

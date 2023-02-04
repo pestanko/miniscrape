@@ -1,11 +1,11 @@
 package utils
 
 import (
+	"github.com/pestanko/miniscrape/internal/config"
 	"io"
 	"os"
 	"path"
 
-	"github.com/pestanko/miniscrape/pkg/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/natefinch/lumberjack.v2"

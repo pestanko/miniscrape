@@ -3,28 +3,27 @@ package resolvers
 import (
 	"context"
 	"fmt"
-
-	"github.com/pestanko/miniscrape/pkg/config"
+	config2 "github.com/pestanko/miniscrape/internal/config"
 )
 
 type urlOnlyResolver struct {
-	page config.Page
+	page config2.Page
 }
 
-func (u *urlOnlyResolver) Resolve(_ context.Context) config.RunResult {
-	return config.RunResult{
+func (u *urlOnlyResolver) Resolve(_ context.Context) config2.RunResult {
+	return config2.RunResult{
 		Page:    u.page,
 		Content: fmt.Sprintf("URL for %s menu: %s", u.page.Name, u.page.URL),
-		Status:  config.RunSuccess,
+		Status:  config2.RunSuccess,
 		Kind:    "url",
 	}
 }
 
-func makeErrorResult(page config.Page, err error) config.RunResult {
-	return config.RunResult{
+func makeErrorResult(page config2.Page, err error) config2.RunResult {
+	return config2.RunResult{
 		Page:    page,
 		Content: fmt.Sprintf("Error: %v\n", err),
-		Status:  config.RunError,
+		Status:  config2.RunError,
 		Kind:    "error",
 	}
 }
