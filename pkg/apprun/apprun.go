@@ -1,3 +1,4 @@
+// Package apprun represents a simple application runner with application dependencies
 package apprun
 
 import (
@@ -15,13 +16,13 @@ import (
 
 // NewAppRunner create a new application runner instance
 // Datadog Tracing can be enabled/disabled in 2 ways, you can either:
-// - set DD_APM_ENABLED env variable to true/false
+// - set TRACING_ENABLED env variable to true/false
 // - directly call WithForceTracingEnabled(true/false)
 // function WithForceTracingEnabled - has precedence and overrides env variable
 // it can be useful for testing
 func NewAppRunner[D io.Closer](ops ...func(a *AppRunner[D])) AppRunner[D] {
 	a := AppRunner[D]{}
-	a.isTracingEnabled, _ = strconv.ParseBool(os.Getenv("DD_APM_ENABLED"))
+	a.isTracingEnabled, _ = strconv.ParseBool(os.Getenv("TRACING_ENABLED"))
 	collut.OpsApplyAllRef(&a, ops...)
 
 	return a
@@ -51,7 +52,7 @@ func WithDepProviderCtx[D io.Closer](
 
 // WithForceTracingEnabled force tracing enabled/disabled
 // It overrides default behavior, where whether tracing is enabled
-// is based on DD_APM_ENABLED env var
+// is based on TRACING_ENABLED env var
 func WithForceTracingEnabled[D io.Closer](isEnabled bool) func(a *AppRunner[D]) {
 	return func(a *AppRunner[D]) {
 		a.isTracingEnabled = isEnabled
@@ -80,6 +81,7 @@ func (a *AppRunner[D]) Run(
 	// we need to create dependency provider
 	// after that we can close them
 	deps, err := a.DependencyProvider(ctx)
+
 	if err != nil {
 		log.Error().Err(err).
 			Msg("unable to initialize the application")
