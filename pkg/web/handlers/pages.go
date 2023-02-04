@@ -2,21 +2,21 @@ package handlers
 
 import (
 	"github.com/pestanko/miniscrape/internal/models"
+	"github.com/pestanko/miniscrape/internal/scraper"
 	"net/http"
 
-	"github.com/pestanko/miniscrape/pkg"
 	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandlePages handler
-func HandlePages(service *pkg.Service) http.HandlerFunc {
+func HandlePages(service *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wutt.WriteJSONResponse(w, http.StatusOK, service.GetCategories())
 	}
 }
 
 // HandlePagesContent handler
-func HandlePagesContent(service *pkg.Service) http.HandlerFunc {
+func HandlePagesContent(service *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		selector := makeSelectorFromRequest(req)
 

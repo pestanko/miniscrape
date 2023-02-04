@@ -1,14 +1,14 @@
 package handlers
 
 import (
+	"github.com/pestanko/miniscrape/internal/scraper"
 	"net/http"
 
-	"github.com/pestanko/miniscrape/pkg"
 	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandleCacheInvalidation handler to handle cache invalidation
-func HandleCacheInvalidation(service *pkg.Service) http.HandlerFunc {
+func HandleCacheInvalidation(service *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		selector := makeSelectorFromRequest(req)
 

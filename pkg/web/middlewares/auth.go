@@ -1,16 +1,16 @@
 package middlewares
 
 import (
+	"github.com/pestanko/miniscrape/internal/scraper"
 	"net/http"
 
-	"github.com/pestanko/miniscrape/pkg"
 	"github.com/pestanko/miniscrape/pkg/web/auth"
 	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // AuthRequired represents a authentication guard
 func AuthRequired(
-	_ *pkg.Service,
+	_ *scraper.Service,
 ) func(targetMux http.Handler) http.Handler {
 	return func(targetMux http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

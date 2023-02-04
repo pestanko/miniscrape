@@ -1,15 +1,16 @@
-package pkg
+// Package scraper represents a main application logic
+package scraper
 
 import (
 	"context"
 	"github.com/pestanko/miniscrape/internal/cache"
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/models"
+	"github.com/pestanko/miniscrape/internal/scraper/resolvers"
 	"strings"
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/pestanko/miniscrape/pkg/resolvers"
 	"github.com/pestanko/miniscrape/pkg/utils"
 )
 

@@ -3,7 +3,7 @@ package web
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/pestanko/miniscrape/internal/config"
-	"github.com/pestanko/miniscrape/pkg"
+	"github.com/pestanko/miniscrape/internal/scraper"
 	"github.com/pestanko/miniscrape/pkg/web/chiapp"
 	"github.com/pestanko/miniscrape/pkg/web/handlers"
 	"github.com/pestanko/miniscrape/pkg/web/middlewares"
@@ -11,7 +11,7 @@ import (
 
 // NewServer creates a new chi multiplexer instance
 func NewServer(cfg *config.AppConfig) *chi.Mux {
-	service := pkg.NewService(cfg)
+	service := scraper.NewService(cfg)
 	app := chiapp.CreateChiApp(
 		chiapp.WithServiceName("miniscrape"),
 		chiapp.WithPublicHealthEndpoints("/api/health"),
@@ -23,7 +23,7 @@ func NewServer(cfg *config.AppConfig) *chi.Mux {
 	return app
 }
 
-func registerRoutes(mux chi.Router, service *pkg.Service) {
+func registerRoutes(mux chi.Router, service *scraper.Service) {
 	mux.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", handlers.HandleHealthStatus())
 

@@ -3,8 +3,7 @@ package resolvers
 import (
 	"context"
 	"github.com/pestanko/miniscrape/internal/models"
-
-	"github.com/pestanko/miniscrape/pkg/filters"
+	"github.com/pestanko/miniscrape/internal/scraper/filters"
 )
 
 // PageResolver is a main interface for page content resolvers

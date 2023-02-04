@@ -3,15 +3,15 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pestanko/miniscrape/internal/scraper"
 	"net/http"
 
-	"github.com/pestanko/miniscrape/pkg"
 	"github.com/pestanko/miniscrape/pkg/web/auth"
 	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandleAuthLogout logout handler
-func HandleAuthLogout(_ *pkg.Service) http.HandlerFunc {
+func HandleAuthLogout(_ *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		sessionManager := auth.GetSessionManager()
 		sessionID := auth.GetSessionIDFromRequest(req)
@@ -34,7 +34,7 @@ func HandleAuthLogout(_ *pkg.Service) http.HandlerFunc {
 }
 
 // HandleAuthLogin login handler
-func HandleAuthLogin(service *pkg.Service) http.HandlerFunc {
+func HandleAuthLogin(service *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		users := service.Cfg.Web.Users
 		if len(users) == 0 {
@@ -79,7 +79,7 @@ func HandleAuthLogin(service *pkg.Service) http.HandlerFunc {
 }
 
 // HandleSessionStatus session status handler
-func HandleSessionStatus(_ *pkg.Service) http.HandlerFunc {
+func HandleSessionStatus(_ *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		session := auth.GetSessionFromRequest(req)
 		if session == nil {

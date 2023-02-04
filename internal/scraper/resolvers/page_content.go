@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/pestanko/miniscrape/internal/models"
+	"github.com/pestanko/miniscrape/internal/scraper/filters"
 	"io"
 	"math/rand"
 	"net/http"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/antchfx/htmlquery"
-	"github.com/pestanko/miniscrape/pkg/filters"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/html/charset"

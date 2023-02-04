@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"github.com/pestanko/miniscrape/internal/models"
+	"github.com/pestanko/miniscrape/internal/scraper"
 	"net/http"
 
-	"github.com/pestanko/miniscrape/pkg"
 	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandleCategories handler
-func HandleCategories(scrapeService *pkg.Service) http.HandlerFunc {
+func HandleCategories(scrapeService *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		var dto []categoryDto
 		for _, cat := range scrapeService.GetCategories() {
