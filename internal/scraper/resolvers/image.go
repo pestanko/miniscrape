@@ -3,10 +3,9 @@ package resolvers
 import (
 	"context"
 	"github.com/pestanko/miniscrape/internal/models"
+	"github.com/rs/zerolog"
 	"net/http"
 	"strings"
-
-	"github.com/rs/zerolog/log"
 )
 
 type imageResolver struct {
@@ -16,14 +15,15 @@ type imageResolver struct {
 
 // Resolve implements PageResolver
 func (r *imageResolver) Resolve(ctx context.Context) models.RunResult {
-	bodyContent, err := getContentForWebPage(&r.page)
+	bodyContent, err := getContentForWebPage(ctx, &r.page)
 	if err != nil {
 		return makeErrorResult(r.page, err)
 	}
 
-	contentArray, err := parseWebPageContent(&r.page, bodyContent)
+	contentArray, err := parseWebPageContent(ctx, &r.page, bodyContent)
 	if err != nil {
-		log.Warn().
+		zerolog.Ctx(ctx).
+			Warn().
 			Err(err).
 			Str("page", r.page.Namespace()).
 			Str("pageUrl", r.page.URL).

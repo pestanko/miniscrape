@@ -7,9 +7,8 @@ import (
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper/resolvers"
+	"github.com/rs/zerolog"
 	"strings"
-
-	"github.com/rs/zerolog/log"
 
 	"github.com/pestanko/miniscrape/pkg/utils"
 )
@@ -41,10 +40,11 @@ type asyncRunner struct {
 }
 
 func (a *asyncRunner) Run(ctx context.Context, selector models.RunSelector) []models.RunResult {
-	log.Debug().Msg("Runner Started!")
+	zerolog.Ctx(ctx).Debug().Msg("Runner Started!")
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
-	ll := log.With().
+	ll := zerolog.Ctx(ctx).
+		With().
 		Int("number_of_pages", numberOfPages).
 		Interface("selector", selector).
 		Logger()
@@ -54,13 +54,13 @@ func (a *asyncRunner) Run(ctx context.Context, selector models.RunSelector) []mo
 		return []models.RunResult{}
 	}
 
-	log.Debug().Int("numberOfPages", numberOfPages).Msg("Processing number of pages")
+	ll.Debug().Msg("Processing number of pages")
 	channelWithResults := make(chan models.RunResult, numberOfPages)
 	// start async tasks
 	a.startAsyncRequests(ctx, channelWithResults, pages)
 	// collect results
 	resultsCollection := a.collectResults(channelWithResults, numberOfPages)
-	log.Debug().Msg("Runner Ended")
+	ll.Debug().Msg("Runner Ended")
 
 	return resultsCollection
 }
@@ -86,7 +86,11 @@ func (a *asyncRunner) startAsyncRequests(
 		idx := idx
 		page := page
 		go func() {
-			log.Debug().Int("idx", idx).Str("codename", page.CodeName).Msg("Starting to Resolve")
+			zerolog.Ctx(ctx).
+				Debug().
+				Int("idx", idx).
+				Str("codename", page.CodeName).
+				Msg("Starting to Resolve")
 			resolver := resolvers.NewGetCachedPageResolver(page, a.cache)
 			resChan <- resolver.Resolve(ctx)
 		}()
