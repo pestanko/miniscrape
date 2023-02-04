@@ -2,9 +2,8 @@ package handlers
 
 import (
 	"github.com/pestanko/miniscrape/internal/scraper"
+	"github.com/pestanko/miniscrape/pkg/rest/webut"
 	"net/http"
-
-	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandleCacheInvalidation handler to handle cache invalidation
@@ -14,7 +13,7 @@ func HandleCacheInvalidation(service *scraper.Service) http.HandlerFunc {
 
 		service.InvalidateCache(selector)
 
-		wutt.WriteJSONResponse(w, http.StatusOK, map[string]string{
+		webut.WriteJSONResponse(w, http.StatusOK, map[string]string{
 			"status":  "invalidated",
 			"message": "cache bas been invalidated",
 		})

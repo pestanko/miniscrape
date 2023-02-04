@@ -3,9 +3,8 @@ package handlers
 import (
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper"
+	"github.com/pestanko/miniscrape/pkg/rest/webut"
 	"net/http"
-
-	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandleCategories handler
@@ -21,7 +20,7 @@ func HandleCategories(scrapeService *scraper.Service) http.HandlerFunc {
 			dto = append(dto, catDto)
 		}
 
-		wutt.WriteJSONResponse(w, http.StatusOK, dto)
+		webut.WriteJSONResponse(w, http.StatusOK, dto)
 	}
 }
 

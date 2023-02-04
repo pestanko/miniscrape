@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/pestanko/miniscrape/pkg/utils/applog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -14,15 +15,7 @@ type AppConfig struct {
 	// Web configuration
 	Web WebCfg `json:"web"`
 	// Log configuration
-	Log LogConfig `json:"log"`
-}
-
-// LogConfig logger configuration
-type LogConfig struct {
-	// Dir where to store log files
-	Dir string `json:"dir"`
-	// ConsoleLoggingEnabled whether logger should use console logging
-	ConsoleLoggingEnabled bool `json:"console_logging_enabled"`
+	Log applog.LogConfig `json:"log"`
 }
 
 // CacheCfg defines the configuration for the cache

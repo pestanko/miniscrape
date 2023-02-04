@@ -4,16 +4,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/scraper"
-	"github.com/pestanko/miniscrape/pkg/web/chiapp"
-	"github.com/pestanko/miniscrape/pkg/web/handlers"
-	"github.com/pestanko/miniscrape/pkg/web/middlewares"
+	"github.com/pestanko/miniscrape/internal/web/handlers"
+	"github.com/pestanko/miniscrape/internal/web/middlewares"
+	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
 )
 
 // NewServer creates a new chi multiplexer instance
 func NewServer(cfg *config.AppConfig) *chi.Mux {
 	service := scraper.NewService(cfg)
 	app := chiapp.CreateChiApp(
-		chiapp.WithServiceName("miniscrape"),
+		chiapp.WithServiceName("mini-scrape"),
 		chiapp.WithPublicHealthEndpoints("/api/health"),
 		chiapp.WithPrometheus(true),
 	)

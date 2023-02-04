@@ -5,8 +5,8 @@ import (
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper"
+	"github.com/pestanko/miniscrape/pkg/utils/applog"
 
-	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ var scrapeCmd = &cobra.Command{
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg := config.GetAppConfig()
-		utils.InitGlobalLogger(&cfg.Log)
+		applog.InitGlobalLogger(&cfg.Log)
 		if noCache {
 			cfg.Cache.Enabled = false
 		}

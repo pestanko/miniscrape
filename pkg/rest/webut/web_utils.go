@@ -1,4 +1,4 @@
-package wutt
+package webut
 
 import (
 	"encoding/json"

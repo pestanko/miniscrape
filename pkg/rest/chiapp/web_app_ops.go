@@ -1,7 +1,8 @@
 package chiapp
 
 import (
-	"github.com/pestanko/miniscrape/internal/config"
+	middlewares2 "github.com/pestanko/miniscrape/internal/web/middlewares"
+	"github.com/pestanko/miniscrape/pkg/utils/applog"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,7 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/pestanko/miniscrape/pkg/utils/collut"
-	"github.com/pestanko/miniscrape/pkg/web/middlewares"
 	"github.com/rs/zerolog"
 )
 
@@ -93,12 +93,12 @@ func CreateChiApp(ops ...AppOpsFn) *chi.Mux {
 }
 
 func defaultMiddlewares(r chi.Router) {
-	r.Use(middlewares.RealIP())
+	r.Use(middlewares2.RealIP())
 	r.Use(middleware.RequestID)
-	r.Use(middlewares.SetupCors())
-	r.Use(middlewares.VisitorCookie())
-	r.Use(middlewares.Logger(middlewares.LogParams{
-		LogCfg: config.LogConfig{},
+	r.Use(middlewares2.SetupCors())
+	r.Use(middlewares2.VisitorCookie())
+	r.Use(middlewares2.Logger(middlewares2.LogParams{
+		LogCfg: applog.LogConfig{},
 		Log:    zerolog.Logger{},
 	}))
 }

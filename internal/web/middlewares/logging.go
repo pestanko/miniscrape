@@ -2,17 +2,16 @@ package middlewares
 
 import (
 	"fmt"
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/pkg/utils/applog"
 	"net/http"
 	"time"
 
-	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/rs/zerolog"
 )
 
 // LogParams represents a logger params
 type LogParams struct {
-	LogCfg config.LogConfig
+	LogCfg applog.LogConfig
 	Log    zerolog.Logger
 }
 
@@ -20,7 +19,7 @@ type LogParams struct {
 func Logger(params LogParams) func(targetMux http.Handler) http.Handler {
 
 	return func(targetMux http.Handler) http.Handler {
-		accessLog := utils.MakeAccessLog(&params.LogCfg)
+		accessLog := applog.MakeAccessLog(&params.LogCfg)
 
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()

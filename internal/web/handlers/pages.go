@@ -3,15 +3,14 @@ package handlers
 import (
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper"
+	"github.com/pestanko/miniscrape/pkg/rest/webut"
 	"net/http"
-
-	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandlePages handler
 func HandlePages(service *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		wutt.WriteJSONResponse(w, http.StatusOK, service.GetCategories())
+		webut.WriteJSONResponse(w, http.StatusOK, service.GetCategories())
 	}
 }
 
@@ -38,7 +37,7 @@ func HandlePagesContent(service *scraper.Service) http.HandlerFunc {
 			}
 		}
 
-		wutt.WriteJSONResponse(w, http.StatusOK, dto)
+		webut.WriteJSONResponse(w, http.StatusOK, dto)
 	}
 }
 

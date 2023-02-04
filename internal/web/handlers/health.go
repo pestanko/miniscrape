@@ -1,9 +1,8 @@
 package handlers
 
 import (
+	"github.com/pestanko/miniscrape/pkg/rest/webut"
 	"net/http"
-
-	"github.com/pestanko/miniscrape/pkg/web/wutt"
 )
 
 // HandleHealthStatus handler
@@ -12,6 +11,6 @@ func HandleHealthStatus() http.HandlerFunc {
 		resp := make(map[string]string)
 		resp["status"] = "ok"
 
-		wutt.WriteJSONResponse(w, http.StatusOK, resp)
+		webut.WriteJSONResponse(w, http.StatusOK, resp)
 	}
 }
