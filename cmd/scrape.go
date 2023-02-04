@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/models"
+	"github.com/pestanko/miniscrape/internal/scraper"
+	"github.com/pestanko/miniscrape/pkg/utils/applog"
 
-	"github.com/pestanko/miniscrape/pkg"
-	"github.com/pestanko/miniscrape/pkg/config"
-	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
 var (
-	selector    config.RunSelector
+	selector    models.RunSelector
 	noCache     bool
 	noContent   bool
 	updateCache bool
@@ -23,7 +24,7 @@ var scrapeCmd = &cobra.Command{
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg := config.GetAppConfig()
-		utils.InitGlobalLogger(&cfg.Log)
+		applog.InitGlobalLogger(&cfg.Log)
 		if noCache {
 			cfg.Cache.Enabled = false
 		}
@@ -31,7 +32,7 @@ var scrapeCmd = &cobra.Command{
 			cfg.Cache.Update = true
 		}
 
-		scrapeService := pkg.NewService(cfg)
+		scrapeService := scraper.NewService(cfg)
 		results := scrapeService.Scrape(cmd.Context(), selector)
 		for _, r := range results {
 			fmt.Printf("Result[%s] for  \"%s (%s)\" (url: \"%s\")\n",

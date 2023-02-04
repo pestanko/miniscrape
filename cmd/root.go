@@ -58,9 +58,8 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 		if err := viper.ReadInConfig(); err != nil {
-			log.Error().
+			log.Err(err).
 				Str("config_file", cfgFile).
-				Err(err).
 				Msg("unable to load config")
 		}
 	} else {
@@ -76,7 +75,7 @@ func initConfig() {
 func loadConfig(name string) {
 	viper.SetConfigName(name)
 	if err := viper.MergeInConfig(); err != nil {
-		log.Error().
+		log.Debug().
 			Str("config_name", name).
 			Err(err).
 			Msg("unable to load config")

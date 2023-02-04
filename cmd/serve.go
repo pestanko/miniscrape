@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"context"
+	"github.com/pestanko/miniscrape/internal/web"
+	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
+	"github.com/pestanko/miniscrape/pkg/utils/applog"
 	"time"
 
+	"github.com/pestanko/miniscrape/internal/deps"
 	"github.com/pestanko/miniscrape/pkg/apprun"
-	"github.com/pestanko/miniscrape/pkg/deps"
-	"github.com/pestanko/miniscrape/pkg/utils"
-	"github.com/pestanko/miniscrape/pkg/web"
-	"github.com/pestanko/miniscrape/pkg/web/chiapp"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ var serveCmd = &cobra.Command{
 		)
 
 		return run.Run(cmd.Context(), func(ctx context.Context, d *deps.Deps) error {
-			utils.InitGlobalLogger(&d.Cfg.Log)
+			applog.InitGlobalLogger(&d.Cfg.Log)
 
 			server := web.NewServer(d.Cfg)
 

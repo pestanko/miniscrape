@@ -30,12 +30,12 @@ func TestCreateAppRunner(t *testing.T) {
 	ctx := context.TODO()
 	deps := &emptyDeps{isCloseCalled: false}
 
-	t.Setenv("DD_APM_ENABLED", "false")
+	t.Setenv("TRACING_ENABLED", "false")
 
 	t.Run("run without error", func(t *testing.T) {
 		s := assert.New(t)
 
-		runner := NewAppRunner[*emptyDeps](WithDepProvider(func() (*emptyDeps, error) {
+		runner := NewAppRunner(WithDepProvider(func() (*emptyDeps, error) {
 			return deps, nil
 		}))
 
@@ -51,9 +51,9 @@ func TestCreateAppRunner(t *testing.T) {
 	t.Run("run tracing enabled using env", func(t *testing.T) {
 		s := assert.New(t)
 
-		t.Setenv("DD_APM_ENABLED", "true")
+		t.Setenv("TRACING_ENABLED", "true")
 
-		runner := NewAppRunner[*emptyDeps](WithDepProvider(func() (*emptyDeps, error) {
+		runner := NewAppRunner(WithDepProvider(func() (*emptyDeps, error) {
 			return deps, nil
 		}))
 
@@ -69,9 +69,9 @@ func TestCreateAppRunner(t *testing.T) {
 	t.Run("run tracing explicit disabled ignoring env", func(t *testing.T) {
 		s := assert.New(t)
 
-		t.Setenv("DD_APM_ENABLED", "true")
+		t.Setenv("TRACING_ENABLED", "true")
 
-		runner := NewAppRunner[*emptyDeps](WithDepProvider(func() (*emptyDeps, error) {
+		runner := NewAppRunner(WithDepProvider(func() (*emptyDeps, error) {
 			return deps, nil
 		}), WithForceTracingEnabled[*emptyDeps](false))
 
@@ -87,7 +87,7 @@ func TestCreateAppRunner(t *testing.T) {
 	t.Run("run tracing enabled using with", func(t *testing.T) {
 		s := assert.New(t)
 
-		runner := NewAppRunner[*emptyDeps](
+		runner := NewAppRunner(
 			WithDepProvider(func() (*emptyDeps, error) {
 				return deps, nil
 			}),
@@ -106,7 +106,7 @@ func TestCreateAppRunner(t *testing.T) {
 	t.Run("run with error while running it", func(t *testing.T) {
 		s := assert.New(t)
 
-		runner := NewAppRunner[*emptyDeps](WithDepProvider(func() (*emptyDeps, error) {
+		runner := NewAppRunner(WithDepProvider(func() (*emptyDeps, error) {
 			return deps, nil
 		}))
 
@@ -122,7 +122,7 @@ func TestCreateAppRunner(t *testing.T) {
 	t.Run("run with error while creating deps", func(t *testing.T) {
 		s := assert.New(t)
 
-		runner := NewAppRunner[*emptyDeps](WithDepProvider(func() (*emptyDeps, error) {
+		runner := NewAppRunner(WithDepProvider(func() (*emptyDeps, error) {
 			return nil, errors.New("error while creating deps")
 		}))
 
@@ -137,7 +137,7 @@ func TestCreateAppRunner(t *testing.T) {
 	t.Run("run with error while closing deps", func(t *testing.T) {
 		s := assert.New(t)
 
-		runner := NewAppRunner[*emptyDepsErr](WithDepProvider(func() (*emptyDepsErr, error) {
+		runner := NewAppRunner(WithDepProvider(func() (*emptyDepsErr, error) {
 			return &emptyDepsErr{}, nil
 		}))
 
