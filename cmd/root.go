@@ -39,10 +39,15 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
+	defaultLogLevel := os.Getenv("LOG_LEVEL")
+	if defaultLogLevel == "" {
+		defaultLogLevel = "info"
+	}
+
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config-file", "",
 		"config file (default is ./config/food.yml)")
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log", "L",
-		"info", "Set log level")
+		defaultLogLevel, "Set log level")
 }
 
 // initConfig reads in config file and ENV variables if set.
