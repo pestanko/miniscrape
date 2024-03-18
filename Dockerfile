@@ -21,6 +21,8 @@ WORKDIR /app
 COPY --from=build /app/bin ./bin
 COPY --from=build /app/config ./config
 
+RUN apk add --no-cache curl
+
 EXPOSE 8080
 
 ENTRYPOINT ["/app/bin/miniscrape", "serve"]
