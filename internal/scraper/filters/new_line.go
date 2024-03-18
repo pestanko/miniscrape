@@ -1,15 +1,16 @@
 package filters
 
 import (
-	"github.com/pestanko/miniscrape/internal/models"
 	"regexp"
+
+	"github.com/pestanko/miniscrape/internal/models"
 )
 
-var normPattern = regexp.MustCompile("\n\n")
+var normPattern = regexp.MustCompile("[\n]+")
 
 // NewNewLineTrimConverter a new instance of the filter that
 // cuts the line of the content
-func NewNewLineTrimConverter(page *models.Page) PageFilter {
+func NewNewLineTrimConverter(_ *models.Page) PageFilter {
 	return &newLineTrimConverter{}
 }
 

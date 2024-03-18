@@ -5,7 +5,7 @@ version: '3'
 vars:
   APPNAME: 'miniscrape'
   GO_VERSION:
-    sh: go version | awk '{print $$3}'
+    sh: go version | awk '{print $3}'
   GO_PATH:
     sh: go env GOPATH
   NC: '\033[0m'
