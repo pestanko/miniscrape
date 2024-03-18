@@ -264,3 +264,15 @@ pages:
         enabled: true
       html:
         tables: custom
+
+  - codename: sagram
+    name: sagram
+    homepage: https://sargamrestaurace.cz/
+    tags: ["ns", "india", "asia"]
+    url: https://sargamrestaurace.cz/DMenuItems
+    query: "main div.row:nth-child(n+5)"
+    filters:
+      day:
+        enabled: true
+      cut:
+        after: "#Sunday"
