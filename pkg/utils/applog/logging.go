@@ -12,8 +12,9 @@ import (
 
 // LogConfig logger configuration
 type LogConfig struct {
+	Level string `json:"level" env:"LOG_LEVEL,default=info"`
 	// Dir where to store log files
-	Dir string `json:"dir"`
+	Dir string `json:"dir" env:"LOG_OUT_DIR,default=./log"`
 	// ConsoleLoggingEnabled whether logger should use console logging
 	ConsoleLoggingEnabled bool `json:"console_logging_enabled"`
 }
