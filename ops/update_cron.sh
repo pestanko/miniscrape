@@ -16,8 +16,7 @@ git stash
 git pull
 git stash apply
 
-go clean
-make build
 
+docker compose up --build -d --wait
 
 cd "$old_dir" || die "Unable to return the $old_dir"
