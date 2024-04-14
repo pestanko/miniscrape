@@ -3,7 +3,7 @@ services:
     image: miniscrape
     build: .
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       LOG_LEVEL: info
     restart: on-failure
@@ -13,14 +13,17 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    volumes:
+      - miniscrape-run:/app/runtime
   
   miniscrape-ui:
     image: miniscrape-ui
     build: ./miniscrape-ui
     ports:
-      - 3000:3000
+      - "127.0.0.1:3000:3000"
     restart: on-failure
     environment:
+      LOG_LEVEL: info
       SERVICE_MINISCRAPE_URL: "http://miniscrape:8080"
     healthcheck:
       test: ["CMD", 'node', '-e', 'fetch("http://localhost:3000/healthz").then(r => process.exit(r.ok ? 0 : 1))']
@@ -29,3 +32,5 @@ services:
       retries: 3
       start_period: 10s
   
+volumes:
+  miniscrape-run:

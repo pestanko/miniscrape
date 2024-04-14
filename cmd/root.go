@@ -1,9 +1,11 @@
+// Package cmd is main commands packages
 package cmd
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"os"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
@@ -39,10 +41,15 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
+	var defaultLogLevel = "info"
+	if envLogLevel := os.Getenv("LOG_LEVEL"); envLogLevel != "" {
+		defaultLogLevel = envLogLevel
+	}
+
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config-file", "",
 		"config file (default is ./config/food.yml)")
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log", "L",
-		"info", "Set log level")
+		defaultLogLevel, "Set log level")
 }
 
 // initConfig reads in config file and ENV variables if set.

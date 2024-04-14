@@ -1,8 +1,9 @@
 package filters
 
 import (
-	"github.com/pestanko/miniscrape/internal/models"
 	"strings"
+
+	"github.com/pestanko/miniscrape/internal/models"
 
 	"github.com/rs/zerolog/log"
 )
@@ -93,14 +94,19 @@ func cutContent(content string, startIndex int, endIndex int) string {
 		endIndex = len(content) - 1
 	}
 
+	ll := log.With().Int("startIndex", startIndex).Int("endIndex", endIndex).Logger()
+
 	if content == "" {
 		return ""
 	}
 
-	log.Debug().
-		Int("from", startIndex).
-		Int("to", endIndex).
-		Msg("Content range")
+	if startIndex > endIndex {
+		ll.Warn().Msg("The start index is greater then end - cannot cut content")
+		return ""
+	}
+
+	ll.Debug().
+		Msg("Cutting the content")
 
 	return content[startIndex:endIndex]
 }
