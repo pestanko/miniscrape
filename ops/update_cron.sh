@@ -17,6 +17,6 @@ git pull
 git stash apply
 
 
-docker compose up --profile full --build -d --wait
+docker compose up --build -d --wait
 
 cd "$old_dir" || die "Unable to return the $old_dir"
