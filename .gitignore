@@ -9,3 +9,7 @@ bin/
 !bin/.gitkeep
 
 reports/
+
+.DS_Store
+node_modules
+/build

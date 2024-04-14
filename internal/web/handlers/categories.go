@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper"
 	"github.com/pestanko/miniscrape/pkg/rest/webut"
-	"net/http"
 )
 
 // HandleCategories handler

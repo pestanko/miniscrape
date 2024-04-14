@@ -1,0 +1,116 @@
+/*====================================*\
+  Design Tokens
+
+  Design tokens — or tokens, for short — are design decisions, translated into data.   Design token represent small, repeatable visual design decision and they act as a single source of truth.
+  They’re ultimately a communication tool: a shared language between design and engineering for communicating detailed information about how to build user interfaces.
+\*====================================*/
+
+/**
+ * 01. Core tokens
+ * 02. Semantic tokens
+ * 03. Component tokens
+ */
+
+/* ========================================================================= *\
+ * 01. Core tokens
+
+  Core tokens are primitive values (static values like color HEX code, font size, spacing, etc.).
+  They can either be directly used or referenced by other token types (alias/semantic or component-specific)
+\* ========================================================================= */
+
+:root {
+	/* BASE COLOR PALLETE */
+	--dt-color-white: #fff;
+	--dt-color-black: #000;
+
+	--dt-color-base-100: #f5fafe;
+	--dt-color-base-200: #dfeffb;
+	--dt-color-base-300: #d4ebfc;
+	--dt-color-base-400: #c8e5fb;
+	--dt-color-base-500: #90caf8;
+	--dt-color-base-600: #58b0f5;
+	--dt-color-base-700: #2196f2;
+	--dt-color-base-800: #1e86d9;
+	--dt-color-base-900: #0a68b2;
+
+	--dt-color-neutral-50: #f9f9fb;
+	--dt-color-neutral-100: #f3f4f7;
+	--dt-color-neutral-200: #eaecf0;
+	--dt-color-neutral-300: #e0e4e8;
+	--dt-color-neutral-400: #cfd3d9;
+	--dt-color-neutral-500: #97a1ae;
+	--dt-color-neutral-600: #7e8a9b;
+	--dt-color-neutral-700: #636d7b;
+	--dt-color-neutral-800: #3a4048;
+	--dt-color-neutral-900: #212629;
+
+	--dt-color-blue-100: #f5fafe;
+	--dt-color-blue-200: #dfeffb;
+	--dt-color-blue-400: #c8e5fb;
+	--dt-color-blue-700: #2196f2;
+	--dt-color-blue-900: #0a68b2;
+
+	--dt-color-green-100: #f3fcf5;
+	--dt-color-green-200: #e3f7e8;
+	--dt-color-green-400: #bfeeca;
+	--dt-color-green-700: #32ba53;
+	--dt-color-green-900: #1f7534;
+
+	--dt-color-orange-100: #fff7eb;
+	--dt-color-orange-200: #ffeed7;
+	--dt-color-orange-400: #fed9a4;
+	--dt-color-orange-700: #fc9a0d;
+	--dt-color-orange-900: #a16002;
+
+	--dt-color-red-100: #fff5f6;
+	--dt-color-red-200: #ffe6e7;
+	--dt-color-red-400: #fecdd0;
+	--dt-color-red-700: #fc3d47;
+	--dt-color-red-900: #9c030b;
+
+	/* BORDER RADIUS */
+	--dt-border-radius-sm: 0.5rem;
+}
+
+/* ========================================================================= *\
+ * 02. Semantic tokens
+
+  Semantic/Alias tokens are context-specific and reference global tokens.
+  Each alias token has a specific intent of use (i.e., the background color of a button).
+\* ========================================================================= */
+
+/* COLOR
+
+  - Informative
+  - Positive
+  - Notice
+  - Negative
+*/
+
+:root {
+	--informative-background-color-default: var(--dt-color-blue-100);
+	--informative-border-color-default: var(--dt-color-blue-400);
+	--informative-icon-color-default: var(--dt-color-blue-700);
+	--informative-text-color-default: var(--dt-color-blue-900);
+
+	--positive-background-color-default: var(--dt-color-green-100);
+	--positive-border-color-default: var(--dt-color-green-400);
+	--positive-icon-color-default: var(--dt-color-green-700);
+	--positive-text-color-default: var(--dt-color-green-900);
+
+	--notice-background-color-default: var(--dt-color-orange-100);
+	--notice-border-color-default: var(--dt-color-orange-400);
+	--notice-icon-color-default: var(--dt-color-orange-700);
+	--notice-text-color-default: var(--dt-color-orange-900);
+
+	--negative-background-color-default: var(--dt-color-red-100);
+	--negative-border-color-default: var(--dt-color-red-400);
+	--negative-icon-color-default: var(--dt-color-red-700);
+	--negative-text-color-default: var(--dt-color-red-900);
+}
+
+/* ========================================================================= *\
+ * 03. Component tokens
+
+ Component-specific tokens represent unique and specific design decisions associated with a particular component.
+\* ========================================================================= */
