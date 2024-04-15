@@ -4,8 +4,8 @@
 </script>
 
 <svelte:head>
-	<title>Miniscrape UI</title>
-	<meta name="description" content="CloudTalk Admin" />
+	<title>MiniScrape UI</title>
+	<meta name="description" content="MiniScrape UI" />
 </svelte:head>
 
 <slot />

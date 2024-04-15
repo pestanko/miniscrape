@@ -3,6 +3,7 @@ import type { BaseDeps } from '@src/server/deps';
 import { createHttpClient, type HttpClient } from './client.http';
 import type { Logger } from 'pino';
 
+
 export type PageSelector ={
     category: string;
     tags: string[];
@@ -12,6 +13,22 @@ export type CategoryResponse = {
     name: string;
     pages: string[];
     tags: string[];
+};
+
+export type PageDetail = {
+    name: string;
+    category: string;
+    tags: string[];
+    codename: string;
+    homepage: string;
+};
+
+type ContentStatus = 'ok' | 'empty' | 'error';
+
+export type PageContentResponse = {
+    content: string;
+    status: ContentStatus;
+    page: PageDetail;
 };
 
 export class MiniScrapeHttpClient {
@@ -38,7 +55,7 @@ export class MiniScrapeHttpClient {
         const foodCategory = categories.find(c => c.name === 'food');
         const tags = foodCategory?.tags ?? [];
         this.log.debug({  tags }, 'Tags loaded');
-        return tags;
+        return tags.sort();
     }
 
     async getPages(sel: PageSelector) {
@@ -50,13 +67,20 @@ export class MiniScrapeHttpClient {
         return pages;
     }
 
-    async getContent(sel: PageSelector) {
+    async getContent(sel: PageSelector): Promise<PageContentResponse[]> {
         const queryBuilder = this.createQueryBuilder(sel);
         const fullUrl = this.baseUrl + '/api/v1/content?' + queryBuilder;
-        const response = await this.httpClient.get(fullUrl);
+        const response = await this.httpClient.get<PageContentResponse[]>(fullUrl);
         const pages = response.data;
-        this.log.debug({ pages }, 'Pages loaded');
-        return pages;
+        this.log.debug({ pages }, 'Pages content loaded');
+        return pages.sort((fst, snd) => {
+            const status = compareStatus(fst.status, snd.status);
+            if(status !== 0) {
+                return status;
+            }
+
+            return fst.page.codename.localeCompare(snd.page.codename);
+        });
     }
 
     private createQueryBuilder(sel: PageSelector): URLSearchParams {
@@ -73,3 +97,21 @@ export class MiniScrapeHttpClient {
         return qb;
     }
 }
+
+const compareStatus = (fst: ContentStatus, snd: ContentStatus) => {
+    const fstNum = statusToNumber(fst);
+    const sndNum = statusToNumber(snd);
+
+    return fstNum - sndNum;
+};
+
+const statusToNumber = (status: ContentStatus) => {
+    switch(status) {
+        case 'ok':
+            return 0;
+        case 'empty':
+            return 1;
+        case 'error':
+            return 2;
+    }
+};

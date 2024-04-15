@@ -9,7 +9,7 @@
 	<h1 class="text-3xl mb-5">Pages</h1>
 
 	<div>
-		<Accordion>
+		<Accordion color="light" multiple>
 			{#each data.pages as page}
 				<AccordionItem>
 					<span slot="header">
