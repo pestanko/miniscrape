@@ -20,6 +20,7 @@
 					</span>
 					<div class="flex flex-row gap-3 mb-2">
 						<Badge color="green" target="_blank" href={page.page.homepage}>Home Page</Badge>
+						<Badge color="blue" target="_blank" href={page.page.url}>Daily Menu URL</Badge>
 						<span>Tags:</span>
 						{#each page.page.tags as tag}
 							<Badge href="/pages?t={tag}" color="yellow">{tag}</Badge>
@@ -28,9 +29,15 @@
 
 					<h3 class="text-xl mb-2">Daily Menu</h3>
 					{#if page.status === 'ok'}
+						{#if page.resolver === 'pdf'}
+						<embed src={page.content} type="application/pdf" width="100%" height="600px" />
+						{:else}
 						<pre>
-                        {page.content}
-                    </pre>
+                        	{page.content}
+                    	</pre>
+						{/if}
+
+						
 					{:else}
 						<p>
 							Unable to load daily menu for the restaurant {page.page.name}. Please visit

@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper"
 	"github.com/pestanko/miniscrape/pkg/rest/webut"
-	"net/http"
 )
 
 // HandlePages handler
@@ -25,11 +26,13 @@ func HandlePagesContent(service *scraper.Service) http.HandlerFunc {
 
 		for i, result := range results {
 			dto[i] = pageContentDto{
-				Content: result.Content,
-				Status:  string(result.Status),
+				Content:  result.Content,
+				Status:   string(result.Status),
+				Resolver: result.Page.Resolver,
 				Page: pageContentPageDto{
 					PageName:     result.Page.Name,
 					PageCodeName: result.Page.CodeName,
+					URL:          result.Page.URL,
 					HomePage:     result.Page.Homepage,
 					Tags:         result.Page.Tags,
 					Category:     result.Page.Category,
@@ -42,15 +45,17 @@ func HandlePagesContent(service *scraper.Service) http.HandlerFunc {
 }
 
 type pageContentDto struct {
-	Content string             `json:"content"`
-	Status  string             `json:"status"`
-	Page    pageContentPageDto `json:"page"`
+	Content  string             `json:"content"`
+	Status   string             `json:"status"`
+	Resolver string             `json:"resolver"`
+	Page     pageContentPageDto `json:"page"`
 }
 
 type pageContentPageDto struct {
 	PageName     string   `json:"name"`
 	PageCodeName string   `json:"codename"`
 	HomePage     string   `json:"homepage"`
+	URL          string   `json:"url"`
 	Tags         []string `json:"tags"`
 	Category     string   `json:"category"`
 }

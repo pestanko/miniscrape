@@ -21,12 +21,14 @@ export type PageDetail = {
     tags: string[];
     codename: string;
     homepage: string;
+    url: string;
 };
 
 type ContentStatus = 'ok' | 'empty' | 'error';
 
 export type PageContentResponse = {
     content: string;
+    resolver: string;
     status: ContentStatus;
     page: PageDetail;
 };

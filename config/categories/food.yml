@@ -23,16 +23,17 @@ pages:
     name: "Himalaya"
     homepage: "https://www.himalayarestaurace.cz/"
     url: "https://www.himalayarestaurace.cz/denni-menu/"
-    resolver: "url-only"
-    cache_policy: "no-cache"
-    tags: ["ns", "india", "city"]
+    resolver: "img"
+    query: "#menu > img"
+    cache_policy: "no-cache" 
+    tags: ["ns", "vlnena", "india", "city"]
 
   - codename: "charlies_square"
     name: "Charlie's square"
     homepage: "https://www.charliessquare.cz/"
     url: "https://www.charliessquare.cz/menu"
     xpath: "//div[@class='entry-content']//table[not(contains(@class, 'menu-bar'))]"
-    tags: ["ns", "city", "cz"]
+    tags: ["ns", "vlnena", "city", "cz"]
     filters:
       html:
         tables: custom
@@ -50,26 +51,16 @@ pages:
   - codename: "jean_pauls"
     name: "Jean Pauls Behounska"
     homepage: "http://jpbistro.cz/"
-    url: "http://jpbistro.cz/menu/index.php"
-    query: "div.denni-menu"
-    tags: ["ns", "gd", "ita", "city"]
-    filters:
-      day:
-        enabled: true
-      cut:
-        after: "TÝDENNÍ MENU"
+    url: "https://jpbistro.cz/assets/menu/obed-menu/obed-behounska.pdf"
+    resolver: "pdf"
+    tags: ["ns", "vlnena", "gd", "ita", "city"]
 
   - codename: "jean_pauls_techpark"
     name: "Jean Pauls Technologicky park"
     homepage: "http://jpbistro.cz/"
-    url: "https://jpbistro.cz/menu-technopark/index.php"
-    query: "div.denni-menu"
+    url: "https://jpbistro.cz/assets/menu/obed-menu/obed-technopark.pdf"
+    resolver: "pdf"
     tags: ["ita", "tp", "medlanky", "rh"]
-    filters:
-      day:
-        enabled: true
-      cut:
-        after: "TÝDENNÍ MENU"
 
   - codename: "drevak"
     name: "U Drevaka"
@@ -128,7 +119,7 @@ pages:
     homepage: "http://www.indicka-restaurace-annapurna.cz/"
     url: "http://www.indicka-restaurace-annapurna.cz/"
     query: "div#T_menu"
-    tags: ["city", "ns", "india", "asia"]
+    tags: ["city", "ns", "vlnena", "india", "asia"]
     filters:
       day:
         enabled: true
@@ -140,7 +131,7 @@ pages:
     homepage: "https://www.monte-bu.cz/"
     url: "https://www.monte-bu.cz/menu.php#poledni-section"
     query: ".menu-details .today"
-    tags: ["rh", "ns", "cz", "steak"]
+    tags: ["rh", "ns", "vlnena", "cz", "steak"]
     filters:
       day:
         enabled: true
@@ -172,7 +163,7 @@ pages:
     url: http://www.tripolivankovka.cz/denni-menu
     homepage: http://www.tripolivankovka.cz/
     query: "div.menu-for-one-day"
-    tags: ["city", "ita", "pizza", "vankovka", "ns"]
+    tags: ["city", "ita", "pizza", "vankovka", "ns", "vlnena"]
     filters:
       day:
         enabled: true
@@ -184,7 +175,7 @@ pages:
     url: https://www.potrefenahusabrno.cz/menu/
     homepage: https://www.potrefenahusabrno.cz/
     query: "div.menu-for-one-day"
-    tags: ["city", "cz", "vankovka", "ns"]
+    tags: ["city", "cz", "vankovka", "ns", "vlnena"]
     filters:
       day:
         enabled: true
@@ -196,7 +187,7 @@ pages:
     url: http://www.restaurant-padowetz.cz/poledni-menu
     homepage: http://www.restaurant-padowetz.cz/
     query: ".content"
-    tags: ["city", "cz", "ns"]
+    tags: ["city", "cz", "ns", "vlnena"]
     filters:
       cut:
         after: "[stáhnout menu v PDF]"
@@ -256,9 +247,9 @@ pages:
   - codename: stopkova
     name: Stopkova Plzenska Pivnice
     homepage: https://www.kolkovna.cz/cs/stopkova-plzenska-pivnice-16
-    tags: ["cz", "gd", "ns", "city"]
-    url: https://www.kolkovna.cz/cs/stopkova-plzenska-pivnice-16/denni-menu
-    query: '.dailyMenuWeek'
+    tags: ["cz", "gd", "ns", "vlnena", "city"]
+    url: https://stopkova.kolkovna.cz/#poledni-menu
+    query: "div.op-menu.active"
     filters:
       day:
         enabled: true
@@ -266,9 +257,9 @@ pages:
         tables: custom
 
   - codename: sagram
-    name: sagram
+    name: Sagram
     homepage: https://sargamrestaurace.cz/
-    tags: ["ns", "india", "asia"]
+    tags: ["ns", "vlnena", "india", "asia"]
     url: https://sargamrestaurace.cz/DMenuItems
     query: "main div.row:nth-child(n+5)"
     filters:
@@ -276,3 +267,50 @@ pages:
         enabled: true
       cut:
         after: "#Sunday"
+
+  - codename: masny_ruzek
+    name: Masny ruzek
+    tags: ["city", "cz", "ns", "vlnena"]
+    homepage: https://www.masnyruzek.cz/
+    url: https://www.menicka.cz/api/iframe/?id=6956
+    query: "body"
+    filters:
+      day:
+        enabled: true
+      
+  - codename: fansipan
+    name: FANSIPAN
+    tags: ["medlanky", "asia", "vietnam"]
+    homepage: https://www.facebook.com/profile.php?id=61552598167979
+    url: https://www.facebook.com/profile.php?id=61552598167979
+    resolver: url_only
+
+  - codename: happy-tea-house
+    name: Happy Tea House (Vesela Cajovna)
+    tags: ["city", "india"]
+    homepage: https://www.veselacajovna.cz/
+    url: https://www.veselacajovna.cz/tydenni-nabidka/
+    resolver: url_only
+
+  - codename: nova-chaloupka
+    name: Nova Chaloupka
+    tags: ["medlanky", "cz"]
+    homepage: https://restauracechaloupka.cz/
+    url: https://restauracechaloupka.cz/index.php?show=poledni-menu
+    query: "body div.container"
+    filters:
+      day:
+        enabled: true
+
+  - codename: grand-kitchen-vlnena
+    name: Grand Kitchen Vlnena
+    tags: ["ns", "vlnena", "city"]
+    homepage: https://www.grandkitchenvlnena.cz/
+    url: https://www.grandkitchenvlnena.cz/menu/
+    query: "section.fly-dish-menu.jidel"
+    resolver: url_only
+    filters:
+      day:
+        enabled: true
+
+

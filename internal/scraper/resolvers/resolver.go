@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper/filters"
 )
@@ -22,6 +23,10 @@ func NewPageResolver(page models.Page) PageResolver {
 		return &imageResolver{
 			page:   page,
 			client: httpClient,
+		}
+	case "pdf":
+		return &pdfResolver{
+			page: page,
 		}
 	case "get", "default":
 		fallthrough
