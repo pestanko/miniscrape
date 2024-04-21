@@ -35,7 +35,7 @@ tasks:
   build:
     desc: "build for all platforms"
     cmds:
-      - go build -o "./bin/$(APPNAME)" main.go
+      - go build -o "./bin/{{.APPNAME}}" main.go
 
   clean:
     desc: "clean artifacts"

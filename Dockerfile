@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS build
+FROM golang:1.22 AS build
 
 WORKDIR /app
 
@@ -14,14 +14,29 @@ COPY . ./
 # Build the binary.
 RUN go build -v -o bin/miniscrape
 
-FROM alpine:latest
+FROM debian:stable-slim
 
+# Create a non-root user.
+RUN adduser -u 1000 --system --group --no-create-home user
+
+# Install curl for healthcheck.
+RUN apt update && \
+    apt install -y curl && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Change the working directory.
 WORKDIR /app
 
-COPY --from=build /app/bin ./bin
-COPY --from=build /app/config ./config
+RUN chown -R user:user /app
 
-RUN apk add --no-cache curl
+# Use an unprivileged user.
+USER user
+
+COPY --chown=user:user --from=build /app/bin ./bin
+COPY --chown=user:user --from=build /app/config ./config
+
+RUN mkdir -p /app/runtime
 
 EXPOSE 8080
 
