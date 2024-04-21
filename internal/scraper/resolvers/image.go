@@ -2,10 +2,10 @@ package resolvers
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/rs/zerolog"
-	"net/http"
-	"strings"
 )
 
 type imageResolver struct {
@@ -15,12 +15,25 @@ type imageResolver struct {
 
 // Resolve implements PageResolver
 func (r *imageResolver) Resolve(ctx context.Context) models.RunResult {
+
+	ll := zerolog.Ctx(ctx).With().
+		Interface("page",
+			zerolog.Dict().
+				Str("codename", r.page.CodeName).
+				Str("url", r.page.URL).
+				Str("namespace", r.page.Namespace()).
+				Str("resolver", r.page.Resolver),
+		).
+		Logger()
+
+	ll.Debug().Msg("Resolving manu")
+
 	bodyContent, err := getContentForWebPage(ctx, &r.page)
 	if err != nil {
 		return makeErrorResult(r.page, err)
 	}
 
-	contentArray, err := parseWebPageContent(ctx, &r.page, bodyContent)
+	contentArray, err := ParseWebPageContent(ctx, &r.page, bodyContent)
 	if err != nil {
 		zerolog.Ctx(ctx).
 			Warn().
@@ -32,7 +45,13 @@ func (r *imageResolver) Resolve(ctx context.Context) models.RunResult {
 		return makeErrorResult(r.page, err)
 	}
 
-	content := strings.Join(contentArray, "")
+	if len(contentArray) == 0 {
+		ll.Warn().Msg("No content found")
+		return makeEmptyResult(r.page, "img")
+	}
+
+	// Pick the first image
+	content := getAttrValue(contentArray[0].Attrs, "src")
 
 	return models.RunResult{
 		Page:    r.page,

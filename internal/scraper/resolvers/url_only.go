@@ -28,3 +28,12 @@ func makeErrorResult(page models.Page, err error) models.RunResult {
 		Kind:    "error",
 	}
 }
+
+func makeEmptyResult(page models.Page, kind string) models.RunResult {
+	return models.RunResult{
+		Page:    page,
+		Content: "",
+		Status:  models.RunEmpty,
+		Kind:    kind,
+	}
+}

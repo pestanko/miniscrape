@@ -31,6 +31,10 @@
 					{#if page.status === 'ok'}
 						{#if page.resolver === 'pdf'}
 						<embed src={page.content} type="application/pdf" width="100%" height="600px" />
+						{:else if page.resolver === 'img'}
+						<img src={page.content} alt="Daily Menu: {page.page.name}" />
+						{:else if page.resolver === 'url_only'}
+						<iframe src={page.content} width="100%" height="600px" title="Daily Menu: {page.page.name}" />
 						{:else}
 						<pre>
                         	{page.content}

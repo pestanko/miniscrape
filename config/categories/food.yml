@@ -24,7 +24,7 @@ pages:
     homepage: "https://www.himalayarestaurace.cz/"
     url: "https://www.himalayarestaurace.cz/denni-menu/"
     resolver: "img"
-    query: "#menu > img"
+    query: "div#menu img"
     cache_policy: "no-cache" 
     tags: ["ns", "vlnena", "india", "city"]
 
@@ -100,17 +100,13 @@ pages:
 
   - codename: "globus"
     name: "Globus Brno"
-    url: "https://www.globus.cz/brno/nabidka/restaurace.html"
-    command:
-      content:
-        name: python
-        args:
-          - "-c"
-          - 'import requests; import sys; sys.stdout.buffer.write(requests.get("https://www.globus.cz/brno/nabidka/restaurace.html").content)'
+    url: "https://www.globus.cz/brno/sluzby-a-produkty/restaurace"
     homepage: "https://www.globus.cz/brno/"
     tags: ["rh", "fast"]
-    query: ".restaurant__menu-table-row--active"
+    xpath: "/html/body/div[2]/div/div[2]/div[1]/div/div/div"
     filters:
+      day:
+        enabled: true
       html:
         tables: custom
 
@@ -118,7 +114,7 @@ pages:
     name: "Annapurna"
     homepage: "http://www.indicka-restaurace-annapurna.cz/"
     url: "http://www.indicka-restaurace-annapurna.cz/"
-    query: "div#T_menu"
+    query: "div.TJStrana"
     tags: ["city", "ns", "vlnena", "india", "asia"]
     filters:
       day:

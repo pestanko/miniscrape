@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/pestanko/miniscrape/internal/models"
-	"github.com/pestanko/miniscrape/internal/scraper/filters"
 	"io"
 	"math/rand"
 	"net/http"
@@ -14,8 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
-	"github.com/antchfx/htmlquery"
+	"github.com/pestanko/miniscrape/internal/models"
+	"github.com/pestanko/miniscrape/internal/scraper/filters"
+
 	"github.com/rs/zerolog"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
@@ -53,7 +52,7 @@ func (r *pageContentResolver) Resolve(ctx context.Context) models.RunResult {
 
 	ll.Trace().Bytes("body", bodyContent).Msg("page body")
 
-	contentArray, err := parseWebPageContent(ctx, &r.page, bodyContent)
+	contentArray, err := ParseWebPageContent(ctx, &r.page, bodyContent)
 	if err != nil {
 		ll.
 			Err(err).
@@ -62,7 +61,11 @@ func (r *pageContentResolver) Resolve(ctx context.Context) models.RunResult {
 		return makeErrorResult(r.page, err)
 	}
 
-	content := strings.Join(contentArray, "\n")
+	if len(contentArray) == 0 {
+		return makeEmptyResult(r.page, "content")
+	}
+
+	content := concatContent(contentArray)
 	content = r.applyFilters(ctx, content)
 
 	var status = models.RunSuccess
@@ -176,66 +179,6 @@ func getContentByRequest(ctx context.Context, page *models.Page) ([]byte, error)
 	}
 
 	return bodyContent, err
-}
-
-func parseUsingXPathQuery(ctx context.Context, content []byte, xpath string) ([]string, error) {
-	zerolog.Ctx(ctx).Trace().
-		Str("xpath", xpath).
-		Msg("Parse using the the XPath")
-
-	root, err := htmlquery.Parse(bytes.NewReader(content))
-	if err != nil {
-		return []string{}, err
-	}
-	nodes, err := htmlquery.QueryAll(root, xpath)
-	if err != nil {
-		return []string{}, err
-	}
-
-	var result []string
-
-	for _, node := range nodes {
-		html := htmlquery.OutputHTML(node, true)
-		result = append(result, html)
-	}
-
-	return result, nil
-}
-
-func parseWebPageContent(
-	ctx context.Context,
-	page *models.Page,
-	bodyContent []byte,
-) (contentArray []string, err error) {
-	if page.Query != "" {
-		contentArray, err = parseUsingCSSQuery(ctx, bodyContent, page.Query)
-	} else {
-		contentArray, err = parseUsingXPathQuery(ctx, bodyContent, page.XPath)
-	}
-	return
-}
-
-func parseUsingCSSQuery(ctx context.Context, bodyContent []byte, query string) ([]string, error) {
-	ll := zerolog.Ctx(ctx).With().Str("css_query", query).Logger()
-	ll.Trace().Msg("Parse using the the CSS query")
-	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyContent))
-	if err != nil {
-		return []string{}, err
-	}
-
-	var content []string
-	doc.Find(query).Each(func(idx int, selection *goquery.Selection) {
-		htmlContent, err := selection.Html()
-		if err != nil {
-			ll.Warn().
-				Err(err).
-				Msg("Text extraction failed")
-			return
-		}
-		content = append(content, htmlContent)
-	})
-
-	return content, nil
 }
 
 func (r *pageContentResolver) applyFilters(ctx context.Context, content string) string {
