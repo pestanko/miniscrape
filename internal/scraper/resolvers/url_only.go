@@ -3,6 +3,7 @@ package resolvers
 import (
 	"context"
 	"fmt"
+
 	"github.com/pestanko/miniscrape/internal/models"
 )
 
@@ -13,7 +14,7 @@ type urlOnlyResolver struct {
 func (u *urlOnlyResolver) Resolve(_ context.Context) models.RunResult {
 	return models.RunResult{
 		Page:    u.page,
-		Content: fmt.Sprintf("URL for %s menu: %s", u.page.Name, u.page.URL),
+		Content: u.page.URL,
 		Status:  models.RunSuccess,
 		Kind:    "url",
 	}
