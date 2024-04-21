@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/pestanko/miniscrape/pkg/utils/applog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -56,6 +58,11 @@ func GetAppConfig() *AppConfig {
 	}
 
 	log.Info().Interface("config", config).Msg("loaded config")
+
+	if noCache := os.Getenv("APP_NO_CACHE"); noCache == "true" {
+		log.Info().Msg("Cache is explictelly disabled")
+		config.Cache.Enabled = false
+	}
 
 	return &config
 }

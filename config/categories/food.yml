@@ -238,7 +238,8 @@ pages:
     homepage: https://www.gardenfoodconcept.cz/
     tags: ["city", "gd"]
     url: https://www.gardenfoodconcept.cz/poledni-menu/
-    resolver: url_only
+    resolver: img
+    query: ".b-img picture img"
 
   - codename: stopkova
     name: Stopkova Plzenska Pivnice
