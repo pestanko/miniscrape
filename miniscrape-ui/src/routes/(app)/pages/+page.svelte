@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import type { PageContentResponse } from '@src/libs/clients/miniscrape.http';
+	import { strToBool } from '@src/libs/string.utils';
 	import { Accordion, AccordionItem, Badge, Button } from 'flowbite-svelte';
 	import { BookOpenIcon } from 'svelte-feather-icons';
 
@@ -21,13 +23,19 @@
 		return acc;
 	}, {  });
 
-	console.log("States", states);
-
 	const setStateAll = (isOpen: boolean) => {
 		Object.keys(states).forEach((key) => {
 			states[key].isOpen = isOpen;
 		});
 	}
+
+	// Expand all if the expand query param is set to true
+	(() => {
+		const expandValue = $page.url.searchParams.get('expand') ?? undefined;
+		if(strToBool(expandValue) === true) {
+			setStateAll(true);
+		}
+	})()
 
 </script>
 
