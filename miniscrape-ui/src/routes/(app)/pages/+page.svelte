@@ -1,17 +1,48 @@
 <script lang="ts">
-	import { Accordion, AccordionItem, Badge } from 'flowbite-svelte';
+	import type { PageContentResponse } from '@src/libs/clients/miniscrape.http';
+	import { Accordion, AccordionItem, Badge, Button } from 'flowbite-svelte';
 	import { BookOpenIcon } from 'svelte-feather-icons';
 
-	export let data;
+	export let data: {
+		pages: PageContentResponse[] 
+	} = {
+		pages: []
+	};
+
+	type AccordionState = {
+		isOpen: boolean;
+	};
+
+	type StateObj = { [key: string]: AccordionState };
+
+
+	let states: { [key: string]: AccordionState } = data.pages.reduce((acc: StateObj, page) => {
+		acc[page.page.codename as string] = { isOpen: false };
+		return acc;
+	}, {  });
+
+	console.log("States", states);
+
+	const setStateAll = (isOpen: boolean) => {
+		Object.keys(states).forEach((key) => {
+			states[key].isOpen = isOpen;
+		});
+	}
+
 </script>
 
 <main>
 	<h1 class="text-3xl mb-5">Pages</h1>
 
-	<div>
+	<div id="pages-menu" class="menu flex gap-4">
+		<Button color="green" on:click={() => setStateAll(true)}>Expand All</Button>
+		<Button color="yellow" on:click={() => setStateAll(false)}>Collapse All</Button>
+	</div>
+
+	<div id="pages-list">
 		<Accordion color="light" multiple>
 			{#each data.pages as page}
-				<AccordionItem>
+				<AccordionItem bind:open={states[page.page.codename].isOpen}>
 					<span slot="header">
 						<div class="flex flex-row gap-3 hover:underline">
 							<BookOpenIcon size="17"/>{page.page.name}
