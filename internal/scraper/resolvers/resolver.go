@@ -19,6 +19,10 @@ func NewPageResolver(page models.Page) PageResolver {
 		return &urlOnlyResolver{
 			page: page,
 		}
+	case "url", "iframe":
+		return &iframeResolver{
+			page: page,
+		}
 	case "image", "img":
 		return &imageResolver{
 			page:   page,

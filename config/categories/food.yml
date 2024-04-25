@@ -25,7 +25,7 @@ pages:
     url: "https://www.himalayarestaurace.cz/denni-menu/"
     resolver: "img"
     query: "div#menu img"
-    cache_policy: "no-cache" 
+    cache_policy: "no-cache"
     tags: ["ns", "vlnena", "india", "city"]
 
   - codename: "charlies_square"
@@ -35,6 +35,8 @@ pages:
     xpath: "//div[@class='entry-content']//table[not(contains(@class, 'menu-bar'))]"
     tags: ["ns", "vlnena", "city", "cz"]
     filters:
+      day:
+        enabled: false
       html:
         tables: custom
 
@@ -45,6 +47,8 @@ pages:
     xpath: "//div[@class='entry-content']//table[not(contains(@class, 'menu-bar'))]"
     tags: ["cz"]
     filters:
+      day:
+        enabled: true
       html:
         tables: custom
 
@@ -66,23 +70,18 @@ pages:
     name: "U Drevaka"
     tags: ["fi", "cz"]
     homepage: "https://udrevaka.cz/"
-    url: "https://udrevaka.cz/denni-menu/"
-    query: "#menu"
-    filters:
-      day:
-        enabled: true
+    url: "https://udrevaka.cz/pages/poledni-menu"
+    # TODO: https://udrevaka.cz/api/public/custom-page/poledni-menu
+    resolver: url_only
+    xpath: '//div[1]/div[1]/div[1]/div[2]/div[1]/div[2]/div'
 
   - codename: "padagali"
     name: "Padagali"
     homepage: "https://padagali.cz/"
-    url: "https://padagali.cz/denni-menu/"
+    url: "https://padagali.choiceqr.com/"
     tags: ["fi", "india", "asia"]
-    query: ".glf-mor-restaurant-menu-wrapper"
-    filters:
-      day:
-        enabled: true
-      cut:
-        after: "PŘÍLOHA NAVÍC"
+    query: "#mobile-section-menu"
+    resolver: "iframe"
 
   - codename: "nepal"
     name: "Nepal"
@@ -187,6 +186,8 @@ pages:
     filters:
       cut:
         after: "[stáhnout menu v PDF]"
+      cutLine:
+        minLen: 10
 
   - codename: diva_bara
     name: Diva bara
@@ -210,9 +211,9 @@ pages:
 
   - codename: spravne_misto
     name: "Spravne misto"
-    url: https://spravnemisto.cz/denni-menu
+    url: https://spravnemisto.cz/cs-cz
     homepage: https://spravnemisto.cz/
-    query: ".elementor-widget-wrap"
+    query: "#menu_dialog table"
     tags: ["rh", "cz"]
     filters:
       day:
@@ -274,10 +275,10 @@ pages:
     filters:
       day:
         enabled: true
-      
+
   - codename: fansipan
     name: FANSIPAN
-    tags: ["medlanky", "asia", "vietnam"]
+    tags: ["medlanky", "asia", "vietnam", "fb"]
     homepage: https://www.facebook.com/profile.php?id=61552598167979
     url: https://www.facebook.com/profile.php?id=61552598167979
     resolver: url_only
@@ -287,7 +288,7 @@ pages:
     tags: ["city", "india"]
     homepage: https://www.veselacajovna.cz/
     url: https://www.veselacajovna.cz/tydenni-nabidka/
-    resolver: url_only
+    resolver: iframe
 
   - codename: nova-chaloupka
     name: Nova Chaloupka
@@ -305,9 +306,7 @@ pages:
     homepage: https://www.grandkitchenvlnena.cz/
     url: https://www.grandkitchenvlnena.cz/menu/
     query: "section.fly-dish-menu.jidel"
-    resolver: url_only
+    resolver: iframe
     filters:
       day:
         enabled: true
-
-

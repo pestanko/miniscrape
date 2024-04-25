@@ -16,7 +16,20 @@ func (u *urlOnlyResolver) Resolve(_ context.Context) models.RunResult {
 		Page:    u.page,
 		Content: u.page.URL,
 		Status:  models.RunSuccess,
-		Kind:    "url",
+		Kind:    "url_only",
+	}
+}
+
+type iframeResolver struct {
+	page models.Page
+}
+
+func (u *iframeResolver) Resolve(_ context.Context) models.RunResult {
+	return models.RunResult{
+		Page:    u.page,
+		Content: u.page.URL,
+		Status:  models.RunSuccess,
+		Kind:    "iframe",
 	}
 }
 

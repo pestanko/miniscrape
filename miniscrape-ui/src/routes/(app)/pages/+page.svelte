@@ -33,8 +33,10 @@
 						<embed src={page.content} type="application/pdf" width="100%" height="600px" />
 						{:else if page.resolver === 'img'}
 						<img src={page.content} alt="Daily Menu: {page.page.name}" />
-						{:else if page.resolver === 'url_only'}
+						{:else if page.resolver === 'iframe'}
 						<iframe src={page.content} width="100%" height="600px" title="Daily Menu: {page.page.name}" />
+						{:else if page.resolver === 'url_only'}
+						<Badge color="blue" target="_blank" href={page.page.url}>Daily Menu URL</Badge>
 						{:else}
 						<pre>
                         	{page.content}

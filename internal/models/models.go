@@ -2,9 +2,10 @@ package models
 
 import (
 	"fmt"
-	"github.com/pestanko/miniscrape/internal/config"
 	"os"
 	"path/filepath"
+
+	"github.com/pestanko/miniscrape/internal/config"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -104,6 +105,8 @@ type CutLineFilter struct {
 	Contains string `yaml:"contains"`
 	// CutAfter Cut the line after provided text
 	CutAfter string `yaml:"cutAfter"`
+	// MinLen minimum length of the line
+	MinLen int `yaml:"minLen"`
 }
 
 // DayFilter for the webpage

@@ -64,6 +64,9 @@ func (c *cutLineFilter) Filter(content string) (string, error) {
 			start, end := findBoundaries(line, "", cfg.CutAfter)
 			line = cutContent(line, start, end)
 		}
+		if cfg.MinLen != 0 && len(line) < cfg.MinLen {
+			continue
+		}
 		if line != "" {
 			result = append(result, line)
 		}
@@ -74,7 +77,7 @@ func (c *cutLineFilter) Filter(content string) (string, error) {
 
 func (c *cutLineFilter) IsEnabled() bool {
 	cfg := c.config()
-	return cfg.Contains != "" || cfg.CutAfter != "" || cfg.StartsWith != ""
+	return cfg.Contains != "" || cfg.CutAfter != "" || cfg.StartsWith != "" || cfg.MinLen != 0
 }
 
 func (c *cutLineFilter) config() *models.CutLineFilter {
