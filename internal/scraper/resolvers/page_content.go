@@ -146,6 +146,12 @@ func getContentByRequest(ctx context.Context, page *models.Page) ([]byte, error)
 	req.Header.Add("User-Agent", randomUserAgent)
 
 	res, err := httpClient.Do(req)
+	if res == nil {
+		ll.Error().
+			Err(err).
+			Msg("Request failed - empty response")
+		return []byte{}, err
+	}
 	if err != nil {
 		ll.Error().
 			Err(err).
