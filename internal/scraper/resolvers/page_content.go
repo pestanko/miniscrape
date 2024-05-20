@@ -43,12 +43,7 @@ func (r *pageContentResolver) Resolve(ctx context.Context) models.RunResult {
 		return makeErrorResult(r.page, err)
 	}
 
-	ll := zerolog.Ctx(ctx).With().
-		Dict("page", zerolog.Dict().
-			Str("namespace", r.page.Namespace()).
-			Str("url", r.page.URL).
-			Str("codename", r.page.CodeName)).
-		Logger()
+	ll := zerolog.Ctx(ctx)
 
 	ll.Trace().Bytes("body", bodyContent).Msg("page body")
 
@@ -106,7 +101,7 @@ func getContentByCommand(ctx context.Context, page *models.Page) ([]byte, error)
 
 	ll := zerolog.Ctx(ctx).
 		With().
-		Str("page", page.Namespace()).
+		Str("pageNamespace", page.Namespace()).
 		Str("cmdName", cmdContent.Name).
 		Strs("cmdArgs", cmdContent.Args).
 		Logger()
@@ -133,25 +128,27 @@ func getContentByRequest(ctx context.Context, page *models.Page) ([]byte, error)
 	req, err := http.NewRequest(http.MethodGet, page.URL, nil)
 	ll := zerolog.Ctx(ctx).With().
 		Str("pageUrl", page.URL).
-		Str("page", page.Namespace()).
+		Str("pageNamespace", page.Namespace()).
 		Logger()
 
 	if err != nil {
 		ll.Err(err).
 			Msg("Request initialization failed")
-		return []byte{}, err
+		return nil, err
 	}
 
 	randomUserAgent := userAgents[rand.Intn(len(userAgents))] // #nosec G404
 	req.Header.Add("User-Agent", randomUserAgent)
 
 	res, err := httpClient.Do(req)
+
 	if res == nil {
 		ll.Error().
 			Err(err).
 			Msg("Request failed - empty response")
-		return []byte{}, err
+		return nil, err
 	}
+
 	if err != nil {
 		ll.Error().
 			Err(err).
@@ -162,7 +159,7 @@ func getContentByRequest(ctx context.Context, page *models.Page) ([]byte, error)
 			Err(err).
 			Str("content", fmt.Sprintf("%v", res)).
 			Msg("Error response content")
-		return []byte{}, err
+		return nil, err
 	}
 
 	defer func() {

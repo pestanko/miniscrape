@@ -38,7 +38,7 @@ func (r *imageResolver) Resolve(ctx context.Context) models.RunResult {
 		zerolog.Ctx(ctx).
 			Warn().
 			Err(err).
-			Str("page", r.page.Namespace()).
+			Str("pageNamespace", r.page.Namespace()).
 			Str("pageUrl", r.page.URL).
 			Msg("Content parsing failed")
 

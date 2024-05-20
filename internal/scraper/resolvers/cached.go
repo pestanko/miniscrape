@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+
 	"github.com/pestanko/miniscrape/internal/cache"
 	"github.com/pestanko/miniscrape/internal/models"
 
@@ -30,7 +31,7 @@ type cachedPageResolver struct {
 func (c *cachedPageResolver) Resolve(ctx context.Context) models.RunResult {
 	namespace := cache.NewNamespace(c.page.Category, c.page.CodeName)
 	if c.cache.IsPageCached(namespace) {
-		log.Debug().Str("page", c.page.Namespace()).Msg("Loading content from cache")
+		log.Debug().Str("pageNamespace", c.page.Namespace()).Msg("Loading content from cache")
 
 		content := string(c.cache.GetContent(cache.Item{
 			Namespace: namespace,

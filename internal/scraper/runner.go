@@ -3,12 +3,13 @@ package scraper
 
 import (
 	"context"
+	"strings"
+
 	"github.com/pestanko/miniscrape/internal/cache"
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper/resolvers"
 	"github.com/rs/zerolog"
-	"strings"
 
 	"github.com/pestanko/miniscrape/pkg/utils"
 )
@@ -86,11 +87,11 @@ func (a *asyncRunner) startAsyncRequests(
 		idx := idx
 		page := page
 		go func() {
-			zerolog.Ctx(ctx).
-				Debug().
-				Int("idx", idx).
-				Str("codename", page.CodeName).
-				Msg("Starting to Resolve")
+			llPage := zerolog.Dict().Str("codename", page.CodeName).Str("namespace", page.Namespace()).Str("url", page.URL)
+			ll := zerolog.Ctx(ctx).With().
+				Dict("page", llPage).Logger()
+			ll.Debug().Int("idx", idx).Msg("Starting to Resolve")
+			ctx := ll.WithContext(ctx)
 			resolver := resolvers.NewGetCachedPageResolver(page, a.cache)
 			resChan <- resolver.Resolve(ctx)
 		}()
