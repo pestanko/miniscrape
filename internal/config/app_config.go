@@ -1,3 +1,4 @@
+// Package config provides the configuration for the application.
 package config
 
 import (
@@ -18,6 +19,8 @@ type AppConfig struct {
 	Web WebCfg `json:"web"`
 	// Log configuration
 	Log applog.LogConfig `json:"log"`
+	// Otel OpenTelemetry configuration
+	Otel OtelConfig `json:"otel" yaml:"otel"`
 }
 
 // CacheCfg defines the configuration for the cache
@@ -36,6 +39,14 @@ type WebCfg struct {
 	Addr string `json:"addr" yaml:"addr"`
 	// Users list of available users
 	Users []User `json:"user" yaml:"user"`
+}
+
+// OtelConfig holds the OpenTelemetry configuration
+type OtelConfig struct {
+	Enabled  bool   `env:"OTEL_ENABLED,default=true" json:"enabled" yaml:"enabled"`
+	Endpoint string `env:"OTEL_EXPORTER_OTLP_ENDPOINT,default=localhost:4317" json:"endpoint" yaml:"endpoint"`
+	Protocol string `env:"OTEL_EXPORTER_OTLP_PROTOCOL,default=grpc" json:"protocol" yaml:"protocol"`
+	Insecure bool   `env:"OTEL_INSECURE,default=true" json:"insecure" yaml:"insecure"`
 }
 
 // User definition in the system

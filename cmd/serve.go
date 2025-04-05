@@ -2,10 +2,15 @@ package cmd
 
 import (
 	"context"
+	"time"
+
+	"github.com/joho/godotenv"
+	"github.com/rs/zerolog/log"
+
+	"github.com/pestanko/miniscrape/internal/instrumentation"
 	"github.com/pestanko/miniscrape/internal/web"
 	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
 	"github.com/pestanko/miniscrape/pkg/utils/applog"
-	"time"
 
 	"github.com/pestanko/miniscrape/internal/deps"
 	"github.com/pestanko/miniscrape/pkg/apprun"
@@ -15,20 +20,34 @@ import (
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Serve a simple API for the pkg",
-	Long:  `Serve a simple API for the pkg`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Short: "Serve a simple API for the miniscrape",
+	Long:  `Serve a simple API for the miniscrape`,
+	RunE: func(cmd *cobra.Command, _ []string) error {
+		if err := godotenv.Load(); err != nil {
+			log.Debug().Msg("No .env file found, using environment variables only")
+		}
+
 		run := apprun.NewAppRunner(
 			apprun.WithDepProvider(deps.InitAppDeps),
 		)
 
 		return run.Run(cmd.Context(), func(ctx context.Context, d *deps.Deps) error {
 			applog.InitGlobalLogger(&d.Cfg.Log)
+			if d.Cfg.Otel.Enabled {
+				if _, err := instrumentation.SetupTracing(ctx, d.Cfg); err != nil {
+					log.Error().Err(err).Msg("Failed to setup tracing")
+				}
+			}
 
 			server := web.NewServer(d.Cfg)
 
+			listenAddr := d.Cfg.Web.Addr
+			if listenAddr == "" {
+				listenAddr = ":8080"
+			}
+
 			ops := chiapp.RunOps{
-				ListenAddr:       ":8080",
+				ListenAddr:       listenAddr,
 				ReadTimeout:      5 * time.Second,
 				GraceFullTimeout: 30 * time.Second,
 			}

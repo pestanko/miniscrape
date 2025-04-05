@@ -1,3 +1,6 @@
+include:
+  - compose.otel.yaml
+
 services:
   miniscrape:
     image: miniscrape
@@ -6,9 +9,14 @@ services:
       - "127.0.0.1:8080:8080"
     environment:
       LOG_LEVEL: info
+      OTEL_ENABLED: true
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_INSECURE: true
+      ENV_NAME: dev
     restart: on-failure
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -31,6 +39,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-  
+
 volumes:
   miniscrape-run:

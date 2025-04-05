@@ -14,3 +14,9 @@ web:
 log:
   dir: ./runtime/log
   level: info
+
+otel:
+  enabled: true
+  endpoint: 'localhost:4317'
+  protocol: 'grpc'
+  insecure: true

@@ -1,0 +1,8 @@
+### Health check endpoint
+# Simple GET request to check if the service is healthy
+GET http://localhost:8080/health/live
+Accept: application/json
+
+### Health check with cURL
+# @name health-check
+# @command curl -X GET http://localhost:8080/health -H "Accept: application/json"
