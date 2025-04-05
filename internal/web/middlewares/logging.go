@@ -1,11 +1,11 @@
 package middlewares
 
 import (
-	"fmt"
-	"github.com/pestanko/miniscrape/pkg/utils/applog"
-	"go.opentelemetry.io/otel/trace"
 	"net/http"
 	"time"
+
+	"github.com/pestanko/miniscrape/pkg/utils/applog"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rs/zerolog"
 )
@@ -44,19 +44,17 @@ func Logger(params LogParams) func(targetMux http.Handler) http.Handler {
 
 			targetMux.ServeHTTP(o, r)
 
-			requestDict := zerolog.Dict().
-				Str("method", r.Method).
-				Str("requestUri", r.RequestURI).
-				Str("remoteAddr", r.RemoteAddr)
-
-			responseDict := zerolog.Dict().
-				Str("duration", fmt.Sprintf("%v", time.Since(start))).
-				Int("statusCode", o.status)
-
 			// log request by who(IP address)
 			accessLog.Info().
-				Dict("request", requestDict).
-				Dict("response", responseDict).
+				Interface("req", map[string]any{
+					"method":      r.Method,
+					"uri":         r.RequestURI,
+					"source_addr": r.RemoteAddr,
+				}).
+				Interface("res", map[string]any{
+					"duration": time.Since(start),
+					"status":   o.status,
+				}).
 				Msg("Incoming request")
 		})
 	}

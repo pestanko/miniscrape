@@ -112,3 +112,23 @@ tasks:
       - go install github.com/jstemmer/go-junit-report/v2@latest
       - "curl -sfL 'https://raw.githubusercontent.com/securego/gosec/master/install.sh' | sh -s -- -b {{.GO_PATH}}/bin"
     silent: false
+
+  docker:compose:up:
+    desc: "up the docker compose"
+    cmds:
+      - docker compose -f compose.yaml up -d --wait --profile "full"
+  
+  docker:compose:down:
+    desc: "down the docker compose"
+    cmds:
+      - docker compose -f compose.yaml down -v
+    
+  docker:compose:otel:up:
+    desc: "run only the monitoring services"
+    cmds:
+      - docker compose -f compose.otel.yaml up -d --wait
+
+  docker:compose:otel:down:
+    desc: "down the monitoring services"
+    cmds:
+      - docker compose -f compose.otel.yaml down -v

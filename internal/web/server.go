@@ -1,3 +1,4 @@
+// Package web provides a web server for the miniscrape application.
 package web
 
 import (
@@ -24,9 +25,9 @@ func NewServer(cfg *config.AppConfig) *chi.Mux {
 }
 
 func registerRoutes(mux chi.Router, service *scraper.Service) {
+	registerHealthRoutes(mux)
+	// Register API routes
 	mux.Route("/api/v1", func(r chi.Router) {
-		r.Get("/health", handlers.HandleHealthStatus())
-
 		r.Get("/categories", handlers.HandleCategories(service))
 		r.Get("/pages", handlers.HandlePages(service))
 		r.Get("/content", handlers.HandlePagesContent(service))
@@ -42,4 +43,11 @@ func registerRoutes(mux chi.Router, service *scraper.Service) {
 			r.Post("/", handlers.HandleCacheInvalidation(service))
 		})
 	})
+}
+
+func registerHealthRoutes(mux chi.Router) {
+	// Register health routes
+	mux.Get("/health/live", handlers.HandleHealthStatus())
+	mux.Get("/health/ready", handlers.HandleHealthStatus())
+	mux.Get("/health", handlers.HandleHealthStatus())
 }
