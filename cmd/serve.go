@@ -33,7 +33,11 @@ var serveCmd = &cobra.Command{
 
 		return run.Run(cmd.Context(), func(ctx context.Context, d *deps.Deps) error {
 			applog.InitGlobalLogger(&d.Cfg.Log)
-			instrumentation.SetupTracing(ctx, d.Cfg)
+			if d.Cfg.Otel.Enabled {
+				if _, err := instrumentation.SetupTracing(ctx, d.Cfg); err != nil {
+					log.Error().Err(err).Msg("Failed to setup tracing")
+				}
+			}
 
 			server := web.NewServer(d.Cfg)
 
