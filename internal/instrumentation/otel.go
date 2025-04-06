@@ -3,9 +3,12 @@ package instrumentation
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/rs/zerolog/log"
@@ -13,16 +16,25 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
 	otellog "go.opentelemetry.io/otel/sdk/log"
+	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
+)
+
+const (
+	// ServiceName is the name of the service
+	ServiceName = "miniscrape"
+	// ServiceVersion is the version of the service
+	ServiceVersion = "v1.0.0"
 )
 
 // TracerProvider Global tracer provider
@@ -30,6 +42,9 @@ var TracerProvider *sdktrace.TracerProvider
 
 // LoggerProvider Global logger provider
 var LoggerProvider *otellog.LoggerProvider
+
+// MeterProvider Global meter provider
+var MeterProvider *metric.MeterProvider
 
 // SetupTracing initializes OpenTelemetry tracing
 func SetupTracing(ctx context.Context, cfg *config.AppConfig) (func(), error) {
@@ -51,11 +66,12 @@ func SetupTracing(ctx context.Context, cfg *config.AppConfig) (func(), error) {
 	// Create a resource with the service name
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
-			semconv.ServiceNameKey.String("miniscrape"),
-			semconv.ServiceVersionKey.String("v1.0.0"),
+			semconv.ServiceNameKey.String(ServiceName),
+			semconv.ServiceVersionKey.String(ServiceVersion),
 			semconv.DeploymentEnvironmentKey.String(os.Getenv("ENV_NAME")),
 		),
 	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
@@ -109,6 +125,11 @@ func SetupTracing(ctx context.Context, cfg *config.AppConfig) (func(), error) {
 		return nil, fmt.Errorf("failed to setup OpenTelemetry logging: %w", err)
 	}
 
+	// Setup the metrics
+	if err := setupOTELMetrics(ctx, &otelCfg, res); err != nil {
+		return nil, fmt.Errorf("failed to setup OpenTelemetry metrics: %w", err)
+	}
+
 	ll.Info().
 		Msg("OpenTelemetry tracing initialized")
 
@@ -118,6 +139,30 @@ func SetupTracing(ctx context.Context, cfg *config.AppConfig) (func(), error) {
 			log.Error().Err(err).Msg("Failed to shutdown tracer provider")
 		}
 	}, nil
+}
+
+// Shutdown shuts down the OpenTelemetry tracing
+func Shutdown(ctx context.Context) error {
+	var err error
+	if TracerProvider != nil {
+		if err = TracerProvider.Shutdown(ctx); err != nil {
+			err = errors.Join(err, fmt.Errorf("failed to shutdown tracer provider: %w", err))
+		}
+	}
+
+	if LoggerProvider != nil {
+		if err = LoggerProvider.Shutdown(ctx); err != nil {
+			err = errors.Join(err, fmt.Errorf("failed to shutdown logger provider: %w", err))
+		}
+	}
+
+	if MeterProvider != nil {
+		if err = MeterProvider.Shutdown(ctx); err != nil {
+			err = errors.Join(err, fmt.Errorf("failed to shutdown meter provider: %w", err))
+		}
+	}
+
+	return err
 }
 
 // Tracer returns a tracer from the global provider
@@ -140,6 +185,7 @@ func setupOTELLogging(ctx context.Context, otelCfg *config.OtelConfig) error {
 	logExporter, err := otlploggrpc.New(
 		ctx,
 		otlploggrpc.WithEndpoint(otelCfg.Endpoint),
+		otlploggrpc.WithCompressor("gzip"),
 		otlploggrpc.WithInsecure(),
 	)
 
@@ -158,9 +204,44 @@ func setupOTELLogging(ctx context.Context, otelCfg *config.OtelConfig) error {
 	global.SetLoggerProvider(LoggerProvider)
 
 	// Instantiate a new slog logger
-	logger := otelslog.NewLogger("miniscrape")
+	logger := otelslog.NewLogger(
+		ServiceName,
+		otelslog.WithSource(true),
+	)
+
+	slog.SetDefault(logger)
 
 	logger.InfoContext(ctx, "OpenTelemetry logging initialized")
+
+	return nil
+}
+
+// setupOTELMetrics initializes OpenTelemetry metrics
+func setupOTELMetrics(ctx context.Context, otelCfg *config.OtelConfig, res *resource.Resource) error {
+	// Interval which the metrics will be reported to the collector
+	interval := 5 * time.Second
+	metricExporter, err := otlpmetricgrpc.New(
+		ctx,
+		otlpmetricgrpc.WithEndpoint(otelCfg.Endpoint),
+		otlpmetricgrpc.WithInsecure(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create metric exporter: %w", err)
+	}
+
+	periodicReader := metric.NewPeriodicReader(
+		metricExporter,
+		metric.WithInterval(interval),
+	)
+
+	MeterProvider = metric.NewMeterProvider(
+		metric.WithResource(res),
+		metric.WithReader(periodicReader),
+	)
+
+	otel.SetMeterProvider(MeterProvider)
+
+	slog.Default().InfoContext(ctx, "OpenTelemetry metrics initialized")
 
 	return nil
 }

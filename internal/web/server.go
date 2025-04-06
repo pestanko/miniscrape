@@ -4,19 +4,35 @@ package web
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/internal/instrumentation"
 	"github.com/pestanko/miniscrape/internal/scraper"
 	"github.com/pestanko/miniscrape/internal/web/handlers"
 	"github.com/pestanko/miniscrape/internal/web/middlewares"
 	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
+	"github.com/riandyrn/otelchi"
+	otelchimetric "github.com/riandyrn/otelchi/metric"
 )
 
 // NewServer creates a new chi multiplexer instance
 func NewServer(cfg *config.AppConfig) *chi.Mux {
 	service := scraper.NewService(cfg)
+
+	baseCfg := otelchimetric.NewBaseConfig(
+		instrumentation.ServiceName,
+		otelchimetric.WithMeterProvider(instrumentation.MeterProvider),
+	)
+
 	app := chiapp.CreateChiApp(
-		chiapp.WithServiceName("mini-scrape"),
+		chiapp.WithServiceName(baseCfg.ServerName),
 		chiapp.WithPublicHealthEndpoints("/api/health"),
 		chiapp.WithPrometheus(true),
+	)
+
+	app.Use(
+		otelchi.Middleware(baseCfg.ServerName, otelchi.WithChiRoutes(app)),
+		otelchimetric.NewRequestDurationMillis(baseCfg),
+		otelchimetric.NewRequestInFlight(baseCfg),
+		otelchimetric.NewResponseSizeBytes(baseCfg),
 	)
 
 	registerRoutes(app, service)
