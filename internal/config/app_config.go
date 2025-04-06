@@ -3,6 +3,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/pestanko/miniscrape/pkg/applog"
 	"github.com/pestanko/miniscrape/pkg/instrument"
@@ -82,6 +83,12 @@ func GetAppConfig() *AppConfig {
 	if config.ServiceInfo.Env == "" {
 		config.ServiceInfo.Env = utils.GetEnvOrDefault("ENV_NAME", "dev")
 	}
+
+	// override config from env
+	config.Otel.Enabled = utils.GetEnvOrDefault("OTEL_ENABLED", strconv.FormatBool(config.Otel.Enabled)) == "true"
+	config.Otel.Endpoint = utils.GetEnvOrDefault("OTEL_EXPORTER_OTLP_ENDPOINT", config.Otel.Endpoint)
+	config.Otel.Protocol = utils.GetEnvOrDefault("OTEL_EXPORTER_OTLP_PROTOCOL", config.Otel.Protocol)
+	config.Otel.Insecure = utils.GetEnvOrDefault("OTEL_INSECURE", "true") == "true"
 
 	return &config
 }
