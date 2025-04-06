@@ -8,9 +8,9 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     environment:
-      LOG_LEVEL: info
+      LOG_LEVEL: debug
       OTEL_ENABLED: true
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: host.docker.internal:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_INSECURE: true
       ENV_NAME: dev

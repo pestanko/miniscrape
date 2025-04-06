@@ -65,8 +65,6 @@ func GetAppConfig() *AppConfig {
 			Msg("Unable to load configuration")
 	}
 
-	log.Info().Interface("config", config).Msg("loaded config")
-
 	if noCache := os.Getenv("APP_NO_CACHE"); noCache == "true" {
 		log.Info().Msg("Cache is explictelly disabled")
 		config.Cache.Enabled = false
@@ -88,7 +86,9 @@ func GetAppConfig() *AppConfig {
 	config.Otel.Enabled = utils.GetEnvOrDefault("OTEL_ENABLED", strconv.FormatBool(config.Otel.Enabled)) == "true"
 	config.Otel.Endpoint = utils.GetEnvOrDefault("OTEL_EXPORTER_OTLP_ENDPOINT", config.Otel.Endpoint)
 	config.Otel.Protocol = utils.GetEnvOrDefault("OTEL_EXPORTER_OTLP_PROTOCOL", config.Otel.Protocol)
-	config.Otel.Insecure = utils.GetEnvOrDefault("OTEL_INSECURE", "true") == "true"
+	config.Otel.Insecure = utils.GetEnvOrDefault("OTEL_INSECURE", strconv.FormatBool(config.Otel.Insecure)) == "true"
+
+	log.Info().Interface("config", config).Msg("loaded config")
 
 	return &config
 }
