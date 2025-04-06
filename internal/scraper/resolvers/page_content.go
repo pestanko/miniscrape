@@ -14,6 +14,9 @@ import (
 
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper/filters"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rs/zerolog"
 	"golang.org/x/net/html/charset"
@@ -29,6 +32,11 @@ var userAgents = []string{
 
 var httpClient = http.Client{
 	Timeout: 30 * time.Second,
+	Transport: otelhttp.NewTransport(http.DefaultTransport,
+		otelhttp.WithSpanNameFormatter(func(_ string, r *http.Request) string {
+			return fmt.Sprintf("HTTP %s %s", r.Method, r.URL.Path)
+		}),
+	),
 }
 
 type pageContentResolver struct {
@@ -38,6 +46,14 @@ type pageContentResolver struct {
 }
 
 func (r *pageContentResolver) Resolve(ctx context.Context) models.RunResult {
+	span := trace.SpanFromContext(ctx)
+	span.SetAttributes(attribute.String("page.namespace", r.page.Namespace()))
+	span.SetAttributes(attribute.String("page.url", r.page.URL))
+
+	defer func() {
+		span.End()
+	}()
+
 	bodyContent, err := getContentForWebPage(ctx, &r.page)
 	if err != nil {
 		return makeErrorResult(r.page, err)
@@ -99,11 +115,20 @@ func getContentByCommand(ctx context.Context, page *models.Page) ([]byte, error)
 	// Use command
 	cmdContent := page.Command.Content
 
+	span := trace.SpanFromContext(ctx)
+	span.SetAttributes(attribute.String("page.namespace", page.Namespace()))
+	span.SetAttributes(attribute.String("cmd.name", cmdContent.Name))
+	span.SetAttributes(attribute.StringSlice("cmd.args", cmdContent.Args))
+
+	defer func() {
+		span.End()
+	}()
+
 	ll := zerolog.Ctx(ctx).
 		With().
-		Str("pageNamespace", page.Namespace()).
-		Str("cmdName", cmdContent.Name).
-		Strs("cmdArgs", cmdContent.Args).
+		Str("page_namespace", page.Namespace()).
+		Str("cmd_name", cmdContent.Name).
+		Strs("cmd_args", cmdContent.Args).
 		Logger()
 
 	ll.Debug().Msg("Resolve using command")
@@ -125,10 +150,17 @@ func getContentByCommand(ctx context.Context, page *models.Page) ([]byte, error)
 }
 
 func getContentByRequest(ctx context.Context, page *models.Page) ([]byte, error) {
-	req, err := http.NewRequest(http.MethodGet, page.URL, nil)
+	span := trace.SpanFromContext(ctx)
+	span.SetAttributes(attribute.String("page.url", page.URL))
+
+	defer func() {
+		span.End()
+	}()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, page.URL, nil)
 	ll := zerolog.Ctx(ctx).With().
-		Str("pageUrl", page.URL).
-		Str("pageNamespace", page.Namespace()).
+		Str("page_url", page.URL).
+		Str("page_namespace", page.Namespace()).
 		Logger()
 
 	if err != nil {
