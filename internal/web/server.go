@@ -2,6 +2,9 @@
 package web
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/scraper"
@@ -34,6 +37,10 @@ func NewServer(cfg *config.AppConfig) *chi.Mux {
 			otelchi.WithChiRoutes(app),
 			otelchi.WithRequestMethodInSpanName(true),
 			otelchi.WithTraceResponseHeaders(otelchi.TraceHeaderConfig{}),
+			otelchi.WithFilter(func(r *http.Request) bool {
+				return !strings.HasPrefix(r.URL.Path, "/health") &&
+					!strings.HasPrefix(r.URL.Path, "/metrics")
+			}),
 		),
 		otelchimetric.NewRequestDurationMillis(baseCfg),
 		otelchimetric.NewRequestInFlight(baseCfg),
@@ -46,7 +53,9 @@ func NewServer(cfg *config.AppConfig) *chi.Mux {
 }
 
 func registerRoutes(mux chi.Router, service *scraper.Service) {
+	// Health check routes don't need to be instrumented
 	registerHealthRoutes(mux)
+
 	// Register API routes
 	mux.Route("/api/v1", func(r chi.Router) {
 		r.Get("/categories", handlers.HandleCategories(service))
