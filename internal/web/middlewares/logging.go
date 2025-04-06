@@ -53,12 +53,12 @@ func Logger(params LogParams) func(targetMux http.Handler) http.Handler {
 					"source_addr": r.RemoteAddr,
 				}).
 				Interface("res", map[string]any{
-					"duration": time.Since(start),
+					"duration": time.Since(start).String(),
 					"status":   o.status,
 				}).
 				Msg("Incoming request")
 
-			slog.Default().InfoContext(ctx, "Incoming request",
+			slog.Default().DebugContext(ctx, "incoming request",
 				slog.String("htt_method", r.Method),
 				slog.String("request_uri", r.RequestURI),
 				slog.String("source_addr", r.RemoteAddr),

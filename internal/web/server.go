@@ -37,10 +37,7 @@ func NewServer(cfg *config.AppConfig) *chi.Mux {
 			otelchi.WithChiRoutes(app),
 			otelchi.WithRequestMethodInSpanName(true),
 			otelchi.WithTraceResponseHeaders(otelchi.TraceHeaderConfig{}),
-			otelchi.WithFilter(func(r *http.Request) bool {
-				return !strings.HasPrefix(r.URL.Path, "/health") &&
-					!strings.HasPrefix(r.URL.Path, "/metrics")
-			}),
+			otelchi.WithFilter(excludeHTTPPathPrefixes("/health", "/metrics")),
 		),
 		otelchimetric.NewRequestDurationMillis(baseCfg),
 		otelchimetric.NewRequestInFlight(baseCfg),
@@ -82,4 +79,15 @@ func registerHealthRoutes(mux chi.Router) {
 	mux.Get("/health/live", handlers.HandleHealthStatus())
 	mux.Get("/health/ready", handlers.HandleHealthStatus())
 	mux.Get("/health", handlers.HandleHealthStatus())
+}
+
+func excludeHTTPPathPrefixes(prefixes ...string) func(r *http.Request) bool {
+	return func(r *http.Request) bool {
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(r.URL.Path, prefix) {
+				return false
+			}
+		}
+		return true
+	}
 }
