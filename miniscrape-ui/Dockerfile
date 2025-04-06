@@ -2,7 +2,7 @@
 # syntax=docker/dockerfile:1
 # https://docs.docker.com/develop/develop-images/multistage-build/
 
-ARG NODE_VERSION=20-slim
+ARG NODE_VERSION=22-slim
 
 # BASE
 FROM node:$NODE_VERSION AS base
