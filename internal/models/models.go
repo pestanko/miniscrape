@@ -1,11 +1,15 @@
+// Package models contains the models for the application
 package models
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/pestanko/miniscrape/internal/config"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -118,12 +122,20 @@ type DayFilter struct {
 }
 
 // LoadCategories Load all categories from the app config
-func LoadCategories(cfg *config.AppConfig) []Category {
+func LoadCategories(ctx context.Context, cfg *config.AppConfig) []Category {
 	baseDir := "config/categories"
 	var categories []Category
 
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent("start load categories")
+	span.SetAttributes(attribute.String("base_dir", baseDir))
+	defer func() {
+		span.AddEvent("end load categories")
+		span.End()
+	}()
+
 	for _, catName := range cfg.Categories {
-		ok, cat := loadCategoryFile(baseDir, catName)
+		ok, cat := loadCategoryFile(ctx, baseDir, catName)
 		ll := log.With().Str("category", cat.Name).Logger()
 		if ok {
 			ll.Info().
@@ -145,8 +157,18 @@ func LoadCategories(cfg *config.AppConfig) []Category {
 	return categories
 }
 
-func loadCategoryFile(baseDir string, catName string) (bool, Category) {
+func loadCategoryFile(ctx context.Context, baseDir string, catName string) (bool, Category) {
 	fp := filepath.Join(baseDir, catName+".yml")
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent("start load category file")
+	span.SetAttributes(attribute.String("category", catName))
+	span.SetAttributes(attribute.String("file", fp))
+
+	defer func() {
+		span.AddEvent("end load category file")
+		span.End()
+	}()
+
 	log.Info().Str("file", fp).Msg("Loading file")
 
 	content, err := os.ReadFile(filepath.Clean(fp))

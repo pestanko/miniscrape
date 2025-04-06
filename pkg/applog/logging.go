@@ -1,3 +1,4 @@
+// Package applog provides logging functionality for the application
 package applog
 
 import (

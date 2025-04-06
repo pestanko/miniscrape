@@ -14,6 +14,8 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_INSECURE: true
       ENV_NAME: dev
+      SERVICE_NAME: miniscrape
+      SERVICE_VERSION: v1.0.0
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]

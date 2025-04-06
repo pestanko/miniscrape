@@ -11,7 +11,7 @@ import (
 // HandlePages handler
 func HandlePages(service *scraper.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		webut.WriteJSONResponse(w, http.StatusOK, service.GetCategories())
+		webut.WriteJSONResponse(w, http.StatusOK, service.GetCategories(r.Context()))
 	}
 }
 

@@ -1,13 +1,15 @@
+// Package chiapp provides a chi application
 package chiapp
 
 import (
-	appmidlewares "github.com/pestanko/miniscrape/internal/web/middlewares"
-	"github.com/pestanko/miniscrape/pkg/utils/applog"
-	"github.com/riandyrn/otelchi"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	appmidlewares "github.com/pestanko/miniscrape/internal/web/middlewares"
+	"github.com/pestanko/miniscrape/pkg/applog"
+	"github.com/riandyrn/otelchi"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -75,10 +77,11 @@ func CreateChiApp(ops ...AppOpsFn) *chi.Mux {
 		PrometheusEnabled:     isPrometheusEnabled,
 		PrometheusSetupFunc:   nil,
 		PublicHealthEndpoints: []string{},
-		DefaultMiddlewares:    defaultMiddlewares,
 	}
 
 	appOps = collut.OpsApplyAll(appOps, ops...)
+
+	appOps.DefaultMiddlewares = defaultMiddlewares(&appOps)
 
 	app := chi.NewRouter()
 
@@ -93,14 +96,16 @@ func CreateChiApp(ops ...AppOpsFn) *chi.Mux {
 	return app
 }
 
-func defaultMiddlewares(r chi.Router) {
-	r.Use(otelchi.Middleware("miniscrape", otelchi.WithChiRoutes(r)))
-	r.Use(appmidlewares.RealIP())
-	r.Use(middleware.RequestID)
-	r.Use(appmidlewares.SetupCors())
-	r.Use(appmidlewares.VisitorCookie())
-	r.Use(appmidlewares.Logger(appmidlewares.LogParams{
-		LogCfg: applog.LogConfig{},
-		Log:    zerolog.Logger{},
-	}))
+func defaultMiddlewares(ops *AppOps) func(r chi.Router) {
+	return func(r chi.Router) {
+		r.Use(otelchi.Middleware(ops.Name, otelchi.WithChiRoutes(r)))
+		r.Use(appmidlewares.RealIP())
+		r.Use(middleware.RequestID)
+		r.Use(appmidlewares.SetupCors())
+		r.Use(appmidlewares.VisitorCookie())
+		r.Use(appmidlewares.Logger(appmidlewares.LogParams{
+			LogCfg: applog.LogConfig{},
+			Log:    *zerolog.DefaultContextLogger,
+		}))
+	}
 }

@@ -10,11 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
-
-	"github.com/pestanko/miniscrape/internal/config"
-	"github.com/pestanko/miniscrape/internal/instrumentation"
 	"github.com/pestanko/miniscrape/pkg/utils/collut"
 	"github.com/rs/zerolog/log"
 )
@@ -120,18 +115,4 @@ func (a *AppRunner[D]) Run(
 
 	// run the inner application
 	return body(ctx, deps)
-}
-
-func initTracing(ctx context.Context, cfg *config.AppConfig) {
-	if cfg.Otel.Enabled {
-		if _, err := instrumentation.SetupTracing(ctx, cfg); err != nil {
-			log.Error().Err(err).Msg("Failed to setup tracing")
-		}
-	}
-
-	propagator := propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	)
-	otel.SetTextMapPropagator(propagator)
 }

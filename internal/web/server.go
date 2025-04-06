@@ -4,10 +4,10 @@ package web
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/pestanko/miniscrape/internal/config"
-	"github.com/pestanko/miniscrape/internal/instrumentation"
 	"github.com/pestanko/miniscrape/internal/scraper"
 	"github.com/pestanko/miniscrape/internal/web/handlers"
 	"github.com/pestanko/miniscrape/internal/web/middlewares"
+	"github.com/pestanko/miniscrape/pkg/instrument"
 	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
 	"github.com/riandyrn/otelchi"
 	otelchimetric "github.com/riandyrn/otelchi/metric"
@@ -18,8 +18,8 @@ func NewServer(cfg *config.AppConfig) *chi.Mux {
 	service := scraper.NewService(cfg)
 
 	baseCfg := otelchimetric.NewBaseConfig(
-		instrumentation.ServiceName,
-		otelchimetric.WithMeterProvider(instrumentation.MeterProvider),
+		cfg.ServiceInfo.Name,
+		otelchimetric.WithMeterProvider(instrument.MeterProvider),
 	)
 
 	app := chiapp.CreateChiApp(
@@ -29,7 +29,12 @@ func NewServer(cfg *config.AppConfig) *chi.Mux {
 	)
 
 	app.Use(
-		otelchi.Middleware(baseCfg.ServerName, otelchi.WithChiRoutes(app)),
+		otelchi.Middleware(
+			baseCfg.ServerName,
+			otelchi.WithChiRoutes(app),
+			otelchi.WithRequestMethodInSpanName(true),
+			otelchi.WithTraceResponseHeaders(otelchi.TraceHeaderConfig{}),
+		),
 		otelchimetric.NewRequestDurationMillis(baseCfg),
 		otelchimetric.NewRequestInFlight(baseCfg),
 		otelchimetric.NewResponseSizeBytes(baseCfg),
@@ -59,6 +64,8 @@ func registerRoutes(mux chi.Router, service *scraper.Service) {
 			r.Post("/", handlers.HandleCacheInvalidation(service))
 		})
 	})
+
+	chiapp.LogChiRoutes(mux)
 }
 
 func registerHealthRoutes(mux chi.Router) {

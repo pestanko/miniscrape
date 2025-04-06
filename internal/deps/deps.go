@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/pestanko/miniscrape/internal/config"
-	"github.com/pestanko/miniscrape/internal/instrumentation"
+	"github.com/pestanko/miniscrape/pkg/instrument"
 	"github.com/rs/zerolog/log"
 )
 
@@ -17,7 +17,7 @@ type Deps struct {
 // Close the dependencies
 func (d Deps) Close(ctx context.Context) error {
 	if d.Cfg.Otel.Enabled {
-		if err := instrumentation.Shutdown(ctx); err != nil {
+		if err := instrument.Shutdown(ctx); err != nil {
 			log.Error().Err(err).Msg("Failed to shutdown OpenTelemetry")
 		}
 	}
@@ -29,7 +29,7 @@ func InitAppDeps() (*Deps, error) {
 	cfg := config.GetAppConfig()
 
 	if cfg.Otel.Enabled {
-		if _, err := instrumentation.SetupTracing(context.Background(), cfg); err != nil {
+		if _, err := instrument.SetupOTEL(context.Background(), &cfg.Otel); err != nil {
 			log.Error().Err(err).Msg("Failed to setup tracing")
 		}
 	}

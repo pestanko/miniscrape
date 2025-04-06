@@ -1,12 +1,13 @@
 package utils
 
 import (
+	"context"
 	"time"
 )
 
 // NewCachedContainer create a new instance of the cached container
 func NewCachedContainer[T any](
-	contentProvider func() *T,
+	contentProvider func(ctx context.Context) *T,
 	duration time.Duration,
 ) CachedContainer[T] {
 	return CachedContainer[T]{
@@ -22,13 +23,13 @@ func NewCachedContainer[T any](
 type CachedContainer[T any] struct {
 	content *T
 
-	contentProvider func() *T
+	contentProvider func(ctx context.Context) *T
 	updateAt        time.Time
 	duration        time.Duration
 }
 
 // Get a value inside the container
-func (c *CachedContainer[T]) Get() *T {
+func (c *CachedContainer[T]) Get(ctx context.Context) *T {
 	now := time.Now()
 	updatedPlusDuration := c.updateAt.Add(c.duration)
 
@@ -37,7 +38,7 @@ func (c *CachedContainer[T]) Get() *T {
 	}
 
 	if c.content == nil {
-		c.Update()
+		c.Update(ctx)
 	}
 
 	return c.content
@@ -49,7 +50,7 @@ func (c *CachedContainer[T]) Clear() {
 }
 
 // Update the value in the container
-func (c *CachedContainer[T]) Update() {
-	c.content = c.contentProvider()
+func (c *CachedContainer[T]) Update(ctx context.Context) {
+	c.content = c.contentProvider(ctx)
 	c.updateAt = time.Now()
 }

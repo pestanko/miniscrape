@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/pestanko/miniscrape/internal/web"
+	"github.com/pestanko/miniscrape/pkg/applog"
 	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
-	"github.com/pestanko/miniscrape/pkg/utils/applog"
 
 	"github.com/pestanko/miniscrape/internal/deps"
 	"github.com/pestanko/miniscrape/pkg/apprun"

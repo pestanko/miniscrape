@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pestanko/miniscrape/pkg/utils/applog"
+	"github.com/pestanko/miniscrape/pkg/applog"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rs/zerolog"

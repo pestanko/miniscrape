@@ -1,5 +1,5 @@
-// Package instrumentation provides OpenTelemetry instrumentation for the application.
-package instrumentation
+// Package instrument provides OpenTelemetry instrumentation for the application.
+package instrument
 
 import (
 	"context"
@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/pestanko/miniscrape/internal/config"
+	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -30,13 +29,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const (
-	// ServiceName is the name of the service
-	ServiceName = "miniscrape"
-	// ServiceVersion is the version of the service
-	ServiceVersion = "v1.0.0"
-)
-
 // TracerProvider Global tracer provider
 var TracerProvider *sdktrace.TracerProvider
 
@@ -46,9 +38,8 @@ var LoggerProvider *otellog.LoggerProvider
 // MeterProvider Global meter provider
 var MeterProvider *metric.MeterProvider
 
-// SetupTracing initializes OpenTelemetry tracing
-func SetupTracing(ctx context.Context, cfg *config.AppConfig) (func(), error) {
-	otelCfg := cfg.Otel
+// SetupOTEL initializes OTEL
+func SetupOTEL(ctx context.Context, otelCfg *OtelConfig) (func(), error) {
 	ll := log.With().Interface("otel", otelCfg).Logger()
 	// If OTEL is not enabled, return a no-op function
 	if !otelCfg.Enabled {
@@ -58,79 +49,32 @@ func SetupTracing(ctx context.Context, cfg *config.AppConfig) (func(), error) {
 
 	ll.Debug().Msg("OpenTelemetry tracing enabled")
 
-	if os.Getenv("ENV_NAME") == "" {
-		ll.Warn().Msg("ENV_NAME is not set, using 'prod' as default")
-		os.Setenv("ENV_NAME", "prod")
-	}
+	serviceInfo := getServiceInfo(ctx, otelCfg)
 
 	// Create a resource with the service name
-	res, err := resource.New(ctx,
-		resource.WithAttributes(
-			semconv.ServiceNameKey.String(ServiceName),
-			semconv.ServiceVersionKey.String(ServiceVersion),
-			semconv.DeploymentEnvironmentKey.String(os.Getenv("ENV_NAME")),
-		),
-	)
+	res, err := getResourceFromServiceInfo(ctx, serviceInfo)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	// Create OTLP exporter
-	var exporter *otlptrace.Exporter
-	if otelCfg.Protocol == "http" {
-		// HTTP exporter
-		opts := []otlptracehttp.Option{
-			otlptracehttp.WithEndpoint(otelCfg.Endpoint),
-		}
-		if otelCfg.Insecure {
-			opts = append(opts, otlptracehttp.WithInsecure())
-		}
-		exporter, err = otlptracehttp.New(ctx, opts...)
-		ll.Debug().Msg("OTLP HTTP exporter created")
-	} else {
-		// Default to gRPC exporter
-		opts := []otlptracegrpc.Option{
-			otlptracegrpc.WithEndpoint(otelCfg.Endpoint),
-		}
-		if otelCfg.Insecure {
-			opts = append(opts, otlptracegrpc.WithInsecure())
-		}
-		exporter, err = otlptracegrpc.New(ctx, opts...)
-		ll.Debug().Msg("OTLP gRPC exporter created")
+	// Setup the tracing
+	if err := SetupOTELTracing(ctx, otelCfg, res); err != nil {
+		return nil, fmt.Errorf("failed to setup OpenTelemetry tracing: %w", err)
 	}
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to create OTLP exporter: %w", err)
-	}
-
-	// Create TracerProvider
-	TracerProvider = sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(exporter),
-		sdktrace.WithResource(res),
-		sdktrace.WithSampler(sdktrace.AlwaysSample()),
-	)
-
-	// Set global TracerProvider
-	otel.SetTracerProvider(TracerProvider)
-
-	// Set global propagator
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	))
 
 	// Setup the logging
-	if err := setupOTELLogging(ctx, &otelCfg); err != nil {
+	if err := SetupOTELLogging(ctx, otelCfg, serviceInfo); err != nil {
 		return nil, fmt.Errorf("failed to setup OpenTelemetry logging: %w", err)
 	}
 
 	// Setup the metrics
-	if err := setupOTELMetrics(ctx, &otelCfg, res); err != nil {
+	if err := SetupOTELMetrics(ctx, otelCfg, res); err != nil {
 		return nil, fmt.Errorf("failed to setup OpenTelemetry metrics: %w", err)
 	}
 
 	ll.Info().
+		Interface("service_info", serviceInfo).
 		Msg("OpenTelemetry tracing initialized")
 
 	// Return a cleanup function
@@ -180,8 +124,58 @@ func TracingMiddleware(next http.Handler, serviceName string) http.Handler {
 	return otelhttp.NewHandler(next, serviceName)
 }
 
-// setupOTELLogging initializes OpenTelemetry logging
-func setupOTELLogging(ctx context.Context, otelCfg *config.OtelConfig) error {
+// SetupOTELTracing initializes OTEL tracing
+func SetupOTELTracing(ctx context.Context, otelCfg *OtelConfig, res *resource.Resource) error {
+	ll := log.With().Interface("otel", otelCfg).Logger()
+	var err error
+	// Create OTLP exporter
+	var exporter *otlptrace.Exporter
+	if otelCfg.Protocol == "http" {
+		// HTTP exporter
+		opts := []otlptracehttp.Option{
+			otlptracehttp.WithEndpoint(otelCfg.Endpoint),
+		}
+		if otelCfg.Insecure {
+			opts = append(opts, otlptracehttp.WithInsecure())
+		}
+		exporter, err = otlptracehttp.New(ctx, opts...)
+		ll.Debug().Msg("OTLP HTTP exporter created")
+	} else {
+		// Default to gRPC exporter
+		opts := []otlptracegrpc.Option{
+			otlptracegrpc.WithEndpoint(otelCfg.Endpoint),
+		}
+		if otelCfg.Insecure {
+			opts = append(opts, otlptracegrpc.WithInsecure())
+		}
+		exporter, err = otlptracegrpc.New(ctx, opts...)
+		ll.Debug().Msg("OTLP gRPC exporter created")
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to create OTLP exporter: %w", err)
+	}
+
+	// Create TracerProvider
+	TracerProvider = sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+	)
+
+	// Set global TracerProvider
+	otel.SetTracerProvider(TracerProvider)
+
+	// Set global propagator
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+	return nil
+}
+
+// SetupOTELLogging initializes OpenTelemetry logging
+func SetupOTELLogging(ctx context.Context, otelCfg *OtelConfig, info *ServiceInfo) error {
 	logExporter, err := otlploggrpc.New(
 		ctx,
 		otlploggrpc.WithEndpoint(otelCfg.Endpoint),
@@ -205,7 +199,7 @@ func setupOTELLogging(ctx context.Context, otelCfg *config.OtelConfig) error {
 
 	// Instantiate a new slog logger
 	logger := otelslog.NewLogger(
-		ServiceName,
+		info.Name,
 		otelslog.WithSource(true),
 	)
 
@@ -216,8 +210,8 @@ func setupOTELLogging(ctx context.Context, otelCfg *config.OtelConfig) error {
 	return nil
 }
 
-// setupOTELMetrics initializes OpenTelemetry metrics
-func setupOTELMetrics(ctx context.Context, otelCfg *config.OtelConfig, res *resource.Resource) error {
+// SetupOTELMetrics initializes OpenTelemetry metrics
+func SetupOTELMetrics(ctx context.Context, otelCfg *OtelConfig, res *resource.Resource) error {
 	// Interval which the metrics will be reported to the collector
 	interval := 5 * time.Second
 	metricExporter, err := otlpmetricgrpc.New(
@@ -244,4 +238,49 @@ func setupOTELMetrics(ctx context.Context, otelCfg *config.OtelConfig, res *reso
 	slog.Default().InfoContext(ctx, "OpenTelemetry metrics initialized")
 
 	return nil
+}
+
+// OtelConfig holds the OpenTelemetry configuration
+type OtelConfig struct {
+	Enabled  bool   `env:"OTEL_ENABLED,default=true" json:"enabled" yaml:"enabled"`
+	Endpoint string `env:"OTEL_EXPORTER_OTLP_ENDPOINT,default=localhost:4317" json:"endpoint" yaml:"endpoint"`
+	Protocol string `env:"OTEL_EXPORTER_OTLP_PROTOCOL,default=grpc" json:"protocol" yaml:"protocol"`
+	Insecure bool   `env:"OTEL_INSECURE,default=true" json:"insecure" yaml:"insecure"`
+}
+
+// ServiceInfo holds the service information
+type ServiceInfo struct {
+	Name    string `json:"name" yaml:"name"`
+	Version string `json:"version" yaml:"version"`
+	Env     string `json:"env" yaml:"env"`
+}
+
+// getServiceInfo returns the service information
+func getServiceInfo(_ context.Context, _ *OtelConfig) *ServiceInfo {
+	serviceName := utils.GetEnvOrDefault("SERVICE_NAME", "service")
+	serviceVersion := utils.GetEnvOrDefault("SERVICE_VERSION", "v1.0.0")
+	envName := utils.GetEnvOrDefault("ENV_NAME", "dev")
+
+	return &ServiceInfo{
+		Name:    serviceName,
+		Version: serviceVersion,
+		Env:     envName,
+	}
+}
+
+// getResourceFromServiceInfo creates a resource from the service info
+func getResourceFromServiceInfo(ctx context.Context, info *ServiceInfo) (*resource.Resource, error) {
+	res, err := resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String(info.Name),
+			semconv.ServiceVersionKey.String(info.Version),
+			semconv.DeploymentEnvironmentKey.String(info.Env),
+		),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create resource: %w", err)
+	}
+
+	return res, nil
 }

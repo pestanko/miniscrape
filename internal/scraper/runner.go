@@ -10,6 +10,8 @@ import (
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper/resolvers"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/pestanko/miniscrape/pkg/utils"
 )
@@ -41,6 +43,18 @@ type asyncRunner struct {
 }
 
 func (a *asyncRunner) Run(ctx context.Context, selector models.RunSelector) []models.RunResult {
+	// create a new span
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent("Runner Started")
+	span.SetAttributes(attribute.String("category", selector.Category))
+	span.SetAttributes(attribute.String("page", selector.Page))
+	span.SetAttributes(attribute.String("tags", strings.Join(selector.Tags, ",")))
+
+	defer func() {
+		span.AddEvent("Runner Ended")
+		span.End()
+	}()
+
 	zerolog.Ctx(ctx).Debug().Msg("Runner Started!")
 	pages := a.filterPages(selector)
 	numberOfPages := len(pages)
@@ -87,12 +101,27 @@ func (a *asyncRunner) startAsyncRequests(
 		idx := idx
 		page := page
 		go func() {
+			span := trace.SpanFromContext(ctx)
+			span.AddEvent("start page resolve")
+			span.SetAttributes(
+				attribute.String("page", page.CodeName),
+				attribute.String("namespace", page.Namespace()),
+				attribute.String("resolver", page.Resolver),
+				attribute.String("url", page.URL),
+			)
+
+			defer func() {
+				span.AddEvent("end page resolve")
+				span.End()
+			}()
+
 			llPage := zerolog.Dict().Str("codename", page.CodeName).Str("namespace", page.Namespace()).Str("url", page.URL)
 			ll := zerolog.Ctx(ctx).With().
 				Dict("page", llPage).Logger()
 			ll.Debug().Int("idx", idx).Msg("Starting to Resolve")
 			ctx := ll.WithContext(ctx)
 			resolver := resolvers.NewGetCachedPageResolver(page, a.cache)
+
 			resChan <- resolver.Resolve(ctx)
 		}()
 	}
