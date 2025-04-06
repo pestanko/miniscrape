@@ -34,7 +34,7 @@ var httpClient = http.Client{
 	Timeout: 30 * time.Second,
 	Transport: otelhttp.NewTransport(http.DefaultTransport,
 		otelhttp.WithSpanNameFormatter(func(_ string, r *http.Request) string {
-			return fmt.Sprintf("HTTP %s %s", r.Method, r.URL.Path)
+			return fmt.Sprintf("HTTP %s %s%s", r.Method, r.URL.Host, r.URL.Path)
 		}),
 	),
 }
