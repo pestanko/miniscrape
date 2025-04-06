@@ -10,9 +10,9 @@ import (
 
 // HandleCategories handler
 func HandleCategories(scrapeService *scraper.Service) http.HandlerFunc {
-	return func(w http.ResponseWriter, _ *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var dto []categoryDto
-		for _, cat := range scrapeService.GetCategories() {
+		for _, cat := range scrapeService.GetCategories(r.Context()) {
 			catDto := categoryDto{
 				Name:  cat.Name,
 				Tags:  getAllTagsForCategory(cat.Pages),

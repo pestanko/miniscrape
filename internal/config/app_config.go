@@ -4,7 +4,9 @@ package config
 import (
 	"os"
 
-	"github.com/pestanko/miniscrape/pkg/utils/applog"
+	"github.com/pestanko/miniscrape/pkg/applog"
+	"github.com/pestanko/miniscrape/pkg/instrument"
+	"github.com/pestanko/miniscrape/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -20,7 +22,9 @@ type AppConfig struct {
 	// Log configuration
 	Log applog.LogConfig `json:"log"`
 	// Otel OpenTelemetry configuration
-	Otel OtelConfig `json:"otel" yaml:"otel"`
+	Otel instrument.OtelConfig `json:"otel" yaml:"otel"`
+	// Service Info
+	ServiceInfo instrument.ServiceInfo `json:"service_info" yaml:"service_info"`
 }
 
 // CacheCfg defines the configuration for the cache
@@ -39,14 +43,6 @@ type WebCfg struct {
 	Addr string `json:"addr" yaml:"addr"`
 	// Users list of available users
 	Users []User `json:"user" yaml:"user"`
-}
-
-// OtelConfig holds the OpenTelemetry configuration
-type OtelConfig struct {
-	Enabled  bool   `env:"OTEL_ENABLED,default=true" json:"enabled" yaml:"enabled"`
-	Endpoint string `env:"OTEL_EXPORTER_OTLP_ENDPOINT,default=localhost:4317" json:"endpoint" yaml:"endpoint"`
-	Protocol string `env:"OTEL_EXPORTER_OTLP_PROTOCOL,default=grpc" json:"protocol" yaml:"protocol"`
-	Insecure bool   `env:"OTEL_INSECURE,default=true" json:"insecure" yaml:"insecure"`
 }
 
 // User definition in the system
@@ -73,6 +69,18 @@ func GetAppConfig() *AppConfig {
 	if noCache := os.Getenv("APP_NO_CACHE"); noCache == "true" {
 		log.Info().Msg("Cache is explictelly disabled")
 		config.Cache.Enabled = false
+	}
+
+	if config.ServiceInfo.Name == "" {
+		config.ServiceInfo.Name = utils.GetEnvOrDefault("SERVICE_NAME", "miniscrape")
+	}
+
+	if config.ServiceInfo.Version == "" {
+		config.ServiceInfo.Version = utils.GetEnvOrDefault("SERVICE_VERSION", "v1.0.0")
+	}
+
+	if config.ServiceInfo.Env == "" {
+		config.ServiceInfo.Env = utils.GetEnvOrDefault("ENV_NAME", "dev")
 	}
 
 	return &config

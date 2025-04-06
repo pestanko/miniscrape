@@ -14,6 +14,8 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_INSECURE: true
       ENV_NAME: dev
+      SERVICE_NAME: miniscrape
+      SERVICE_VERSION: v1.0.0
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
@@ -23,6 +25,8 @@ services:
       start_period: 10s
     volumes:
       - miniscrape-run:/app/runtime
+    labels:
+      - autoheal-app
   
   miniscrape-ui:
     image: miniscrape-ui
@@ -39,6 +43,20 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    labels:
+      - autoheal-app
+
+  autoheal:
+    deploy:
+      replicas: 1
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal-app
+    image: willfarrell/autoheal:latest
+    network_mode: none
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   miniscrape-run:

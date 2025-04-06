@@ -2,10 +2,11 @@ package scraper
 
 import (
 	"context"
+	"time"
+
 	"github.com/pestanko/miniscrape/internal/cache"
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/models"
-	"time"
 
 	"github.com/pestanko/miniscrape/pkg/utils"
 )
@@ -18,8 +19,8 @@ type Service struct {
 
 // NewService create a new instance of the service
 func NewService(cfg *config.AppConfig) *Service {
-	categoriesLoader := func() *[]models.Category {
-		categories := models.LoadCategories(cfg)
+	categoriesLoader := func(ctx context.Context) *[]models.Category {
+		categories := models.LoadCategories(ctx, cfg)
 		return &categories
 	}
 
@@ -31,7 +32,7 @@ func NewService(cfg *config.AppConfig) *Service {
 
 // Scrape the pages based on selector
 func (s *Service) Scrape(ctx context.Context, selector models.RunSelector) []models.RunResult {
-	runner := NewAsyncRunner(&s.Cfg, s.GetCategories(), s.getCache())
+	runner := NewAsyncRunner(&s.Cfg, s.GetCategories(ctx), s.getCache())
 	return runner.Run(ctx, selector)
 }
 
@@ -41,8 +42,8 @@ func (s *Service) InvalidateCache(sel models.RunSelector) {
 }
 
 // GetCategories get all categories
-func (s *Service) GetCategories() []models.Category {
-	return *s.categories.Get()
+func (s *Service) GetCategories(ctx context.Context) []models.Category {
+	return *s.categories.Get(ctx)
 }
 
 func (s *Service) getCache() cache.Cache {

@@ -65,12 +65,11 @@ func Start(appCtx context.Context, params StartParams) (chan error, error) {
 		}
 
 		close(errC)
-
 	}()
 
 	return errC, nil
 }
 
-func noopFn(ctx context.Context) error {
+func noopFn(context.Context) error {
 	return nil
 }

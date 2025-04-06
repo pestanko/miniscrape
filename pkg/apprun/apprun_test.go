@@ -12,7 +12,7 @@ type emptyDeps struct {
 	isCloseCalled bool
 }
 
-func (e *emptyDeps) Close() error {
+func (e *emptyDeps) Close(_ context.Context) error {
 	e.isCloseCalled = true
 	return nil
 }
@@ -21,7 +21,7 @@ type emptyDepsErr struct {
 	isCloseCalled bool
 }
 
-func (e *emptyDepsErr) Close() error {
+func (e *emptyDepsErr) Close(_ context.Context) error {
 	e.isCloseCalled = true
 	return errors.New("error while closing")
 }
@@ -39,7 +39,7 @@ func TestCreateAppRunner(t *testing.T) {
 			return deps, nil
 		}))
 
-		err := runner.Run(ctx, func(ctx context.Context, d *emptyDeps) error {
+		err := runner.Run(ctx, func(_ context.Context, _ *emptyDeps) error {
 			return nil
 		})
 
@@ -57,7 +57,7 @@ func TestCreateAppRunner(t *testing.T) {
 			return deps, nil
 		}))
 
-		err := runner.Run(ctx, func(ctx context.Context, d *emptyDeps) error {
+		err := runner.Run(ctx, func(_ context.Context, _ *emptyDeps) error {
 			return nil
 		})
 
@@ -75,7 +75,7 @@ func TestCreateAppRunner(t *testing.T) {
 			return deps, nil
 		}), WithForceTracingEnabled[*emptyDeps](false))
 
-		err := runner.Run(ctx, func(ctx context.Context, d *emptyDeps) error {
+		err := runner.Run(ctx, func(_ context.Context, _ *emptyDeps) error {
 			return nil
 		})
 
@@ -94,7 +94,7 @@ func TestCreateAppRunner(t *testing.T) {
 			WithForceTracingEnabled[*emptyDeps](true),
 		)
 
-		err := runner.Run(ctx, func(ctx context.Context, d *emptyDeps) error {
+		err := runner.Run(ctx, func(_ context.Context, _ *emptyDeps) error {
 			return nil
 		})
 
@@ -110,7 +110,7 @@ func TestCreateAppRunner(t *testing.T) {
 			return deps, nil
 		}))
 
-		err := runner.Run(ctx, func(ctx context.Context, d *emptyDeps) error {
+		err := runner.Run(ctx, func(_ context.Context, _ *emptyDeps) error {
 			return errors.New("error while running the app")
 		})
 
@@ -126,7 +126,7 @@ func TestCreateAppRunner(t *testing.T) {
 			return nil, errors.New("error while creating deps")
 		}))
 
-		err := runner.Run(ctx, func(ctx context.Context, d *emptyDeps) error {
+		err := runner.Run(ctx, func(_ context.Context, _ *emptyDeps) error {
 			return nil
 		})
 

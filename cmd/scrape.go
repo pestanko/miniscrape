@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/models"
 	"github.com/pestanko/miniscrape/internal/scraper"
-	"github.com/pestanko/miniscrape/pkg/utils/applog"
+	"github.com/pestanko/miniscrape/pkg/applog"
 
 	"github.com/spf13/cobra"
 )
@@ -22,7 +23,7 @@ var scrapeCmd = &cobra.Command{
 	Use:   "scrape",
 	Short: "Scrape the pages",
 	Long:  ``,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, _ []string) error {
 		cfg := config.GetAppConfig()
 		applog.InitGlobalLogger(&cfg.Log)
 		if noCache {

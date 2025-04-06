@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 
-	"github.com/pestanko/miniscrape/internal/instrumentation"
 	"github.com/pestanko/miniscrape/internal/web"
+	"github.com/pestanko/miniscrape/pkg/applog"
 	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
-	"github.com/pestanko/miniscrape/pkg/utils/applog"
 
 	"github.com/pestanko/miniscrape/internal/deps"
 	"github.com/pestanko/miniscrape/pkg/apprun"
@@ -33,11 +34,6 @@ var serveCmd = &cobra.Command{
 
 		return run.Run(cmd.Context(), func(ctx context.Context, d *deps.Deps) error {
 			applog.InitGlobalLogger(&d.Cfg.Log)
-			if d.Cfg.Otel.Enabled {
-				if _, err := instrumentation.SetupTracing(ctx, d.Cfg); err != nil {
-					log.Error().Err(err).Msg("Failed to setup tracing")
-				}
-			}
 
 			server := web.NewServer(d.Cfg)
 
@@ -54,10 +50,17 @@ var serveCmd = &cobra.Command{
 
 			errC, err := chiapp.RunWebServer(ctx, server, ops)
 			if err != nil {
+				log.Error().Err(err).Msg("Failed to run web server - received error from the server")
 				return err
 			}
 
 			if err = <-errC; errC != nil {
+				if errors.Is(err, http.ErrServerClosed) {
+					log.Info().Msg("Web server closed")
+					return nil
+				}
+
+				log.Error().Err(err).Msg("Failed to run web server - received error from the channel")
 				return err
 			}
 

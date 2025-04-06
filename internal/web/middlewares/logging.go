@@ -1,10 +1,11 @@
 package middlewares
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/pestanko/miniscrape/pkg/utils/applog"
+	"github.com/pestanko/miniscrape/pkg/applog"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rs/zerolog"
@@ -56,6 +57,14 @@ func Logger(params LogParams) func(targetMux http.Handler) http.Handler {
 					"status":   o.status,
 				}).
 				Msg("Incoming request")
+
+			slog.Default().InfoContext(ctx, "Incoming request",
+				slog.String("htt_method", r.Method),
+				slog.String("request_uri", r.RequestURI),
+				slog.String("source_addr", r.RemoteAddr),
+				slog.Duration("duration", time.Since(start)),
+				slog.Int("http_status", o.status),
+			)
 		})
 	}
 }

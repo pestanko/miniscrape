@@ -7,16 +7,37 @@ import (
 	"github.com/pestanko/miniscrape/internal/scraper"
 	"github.com/pestanko/miniscrape/internal/web/handlers"
 	"github.com/pestanko/miniscrape/internal/web/middlewares"
+	"github.com/pestanko/miniscrape/pkg/instrument"
 	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
+	"github.com/riandyrn/otelchi"
+	otelchimetric "github.com/riandyrn/otelchi/metric"
 )
 
 // NewServer creates a new chi multiplexer instance
 func NewServer(cfg *config.AppConfig) *chi.Mux {
 	service := scraper.NewService(cfg)
+
+	baseCfg := otelchimetric.NewBaseConfig(
+		cfg.ServiceInfo.Name,
+		otelchimetric.WithMeterProvider(instrument.MeterProvider),
+	)
+
 	app := chiapp.CreateChiApp(
-		chiapp.WithServiceName("mini-scrape"),
+		chiapp.WithServiceName(baseCfg.ServerName),
 		chiapp.WithPublicHealthEndpoints("/api/health"),
 		chiapp.WithPrometheus(true),
+	)
+
+	app.Use(
+		otelchi.Middleware(
+			baseCfg.ServerName,
+			otelchi.WithChiRoutes(app),
+			otelchi.WithRequestMethodInSpanName(true),
+			otelchi.WithTraceResponseHeaders(otelchi.TraceHeaderConfig{}),
+		),
+		otelchimetric.NewRequestDurationMillis(baseCfg),
+		otelchimetric.NewRequestInFlight(baseCfg),
+		otelchimetric.NewResponseSizeBytes(baseCfg),
 	)
 
 	registerRoutes(app, service)
@@ -43,6 +64,8 @@ func registerRoutes(mux chi.Router, service *scraper.Service) {
 			r.Post("/", handlers.HandleCacheInvalidation(service))
 		})
 	})
+
+	chiapp.LogChiRoutes(mux)
 }
 
 func registerHealthRoutes(mux chi.Router) {
