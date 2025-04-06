@@ -9,7 +9,6 @@ import (
 
 	appmidlewares "github.com/pestanko/miniscrape/internal/web/middlewares"
 	"github.com/pestanko/miniscrape/pkg/applog"
-	"github.com/riandyrn/otelchi"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -98,7 +97,6 @@ func CreateChiApp(ops ...AppOpsFn) *chi.Mux {
 
 func defaultMiddlewares(ops *AppOps) func(r chi.Router) {
 	return func(r chi.Router) {
-		r.Use(otelchi.Middleware(ops.Name, otelchi.WithChiRoutes(r)))
 		r.Use(appmidlewares.RealIP())
 		r.Use(middleware.RequestID)
 		r.Use(appmidlewares.SetupCors())
