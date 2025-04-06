@@ -5,14 +5,18 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	appmidlewares "github.com/pestanko/miniscrape/internal/web/middlewares"
 	"github.com/pestanko/miniscrape/pkg/applog"
+	"github.com/pestanko/miniscrape/pkg/instrument"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/pestanko/miniscrape/pkg/utils/collut"
+	"github.com/riandyrn/otelchi"
+	otelchimetric "github.com/riandyrn/otelchi/metric"
 	"github.com/rs/zerolog"
 )
 
@@ -97,6 +101,23 @@ func CreateChiApp(ops ...AppOpsFn) *chi.Mux {
 
 func defaultMiddlewares(ops *AppOps) func(r chi.Router) {
 	return func(r chi.Router) {
+		baseCfg := otelchimetric.NewBaseConfig(
+			ops.Name,
+			otelchimetric.WithMeterProvider(instrument.MeterProvider),
+		)
+
+		r.Use(otelchi.Middleware(
+			baseCfg.ServerName,
+			otelchi.WithChiRoutes(r),
+			otelchi.WithRequestMethodInSpanName(true),
+			otelchi.WithTraceResponseHeaders(otelchi.TraceHeaderConfig{}),
+			otelchi.WithFilter(excludeHTTPPathPrefixes("/health", "/metrics")),
+		),
+			otelchimetric.NewRequestDurationMillis(baseCfg),
+			otelchimetric.NewRequestInFlight(baseCfg),
+			otelchimetric.NewResponseSizeBytes(baseCfg),
+		)
+
 		r.Use(appmidlewares.RealIP())
 		r.Use(middleware.RequestID)
 		r.Use(appmidlewares.SetupCors())
@@ -105,5 +126,16 @@ func defaultMiddlewares(ops *AppOps) func(r chi.Router) {
 			LogCfg: applog.LogConfig{},
 			Log:    *zerolog.DefaultContextLogger,
 		}))
+	}
+}
+
+func excludeHTTPPathPrefixes(prefixes ...string) func(r *http.Request) bool {
+	return func(r *http.Request) bool {
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(r.URL.Path, prefix) {
+				return false
+			}
+		}
+		return true
 	}
 }

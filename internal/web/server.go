@@ -2,46 +2,22 @@
 package web
 
 import (
-	"net/http"
-	"strings"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/pestanko/miniscrape/internal/config"
 	"github.com/pestanko/miniscrape/internal/scraper"
 	"github.com/pestanko/miniscrape/internal/web/handlers"
 	"github.com/pestanko/miniscrape/internal/web/middlewares"
-	"github.com/pestanko/miniscrape/pkg/instrument"
 	"github.com/pestanko/miniscrape/pkg/rest/chiapp"
-	"github.com/riandyrn/otelchi"
-	otelchimetric "github.com/riandyrn/otelchi/metric"
 )
 
 // NewServer creates a new chi multiplexer instance
 func NewServer(cfg *config.AppConfig) *chi.Mux {
 	service := scraper.NewService(cfg)
 
-	baseCfg := otelchimetric.NewBaseConfig(
-		cfg.ServiceInfo.Name,
-		otelchimetric.WithMeterProvider(instrument.MeterProvider),
-	)
-
 	app := chiapp.CreateChiApp(
-		chiapp.WithServiceName(baseCfg.ServerName),
+		chiapp.WithServiceName(cfg.ServiceInfo.Name),
 		chiapp.WithPublicHealthEndpoints("/api/health"),
 		chiapp.WithPrometheus(true),
-	)
-
-	app.Use(
-		otelchi.Middleware(
-			baseCfg.ServerName,
-			otelchi.WithChiRoutes(app),
-			otelchi.WithRequestMethodInSpanName(true),
-			otelchi.WithTraceResponseHeaders(otelchi.TraceHeaderConfig{}),
-			otelchi.WithFilter(excludeHTTPPathPrefixes("/health", "/metrics")),
-		),
-		otelchimetric.NewRequestDurationMillis(baseCfg),
-		otelchimetric.NewRequestInFlight(baseCfg),
-		otelchimetric.NewResponseSizeBytes(baseCfg),
 	)
 
 	registerRoutes(app, service)
@@ -79,15 +55,4 @@ func registerHealthRoutes(mux chi.Router) {
 	mux.Get("/health/live", handlers.HandleHealthStatus())
 	mux.Get("/health/ready", handlers.HandleHealthStatus())
 	mux.Get("/health", handlers.HandleHealthStatus())
-}
-
-func excludeHTTPPathPrefixes(prefixes ...string) func(r *http.Request) bool {
-	return func(r *http.Request) bool {
-		for _, prefix := range prefixes {
-			if strings.HasPrefix(r.URL.Path, prefix) {
-				return false
-			}
-		}
-		return true
-	}
 }
