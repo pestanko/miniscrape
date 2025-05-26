@@ -12,7 +12,7 @@ RUN go mod download
 COPY . ./
 
 # Build the binary.
-RUN go build -v -o bin/miniscrape
+RUN GOOS="linux" GOARCH="amd64" CGO_ENABLED=0 go build -v -o bin/miniscrape
 
 FROM debian:stable-slim
 
