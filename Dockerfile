@@ -11,8 +11,12 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . ./
 
+ENV GOOS=linux
+ENV GOARCH=amd64
+ENV CGO_ENABLED=0
+
 # Build the binary.
-RUN GOOS="linux" GOARCH="amd64" CGO_ENABLED=0 go build -v -o bin/miniscrape
+RUN go build -v -o bin/miniscrape
 
 FROM debian:stable-slim
 
