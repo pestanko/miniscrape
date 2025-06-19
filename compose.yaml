@@ -1,5 +1,5 @@
-include:
-  - compose.otel.yaml
+#include:
+#  - compose.otel.yaml
 
 services:
   miniscrape:
