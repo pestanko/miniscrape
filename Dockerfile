@@ -21,7 +21,7 @@ RUN go build -v -o bin/miniscrape
 FROM debian:stable-slim
 
 # Create a non-root user.
-RUN adduser -u 1000 --system --group --no-create-home user
+RUN useradd --system --uid 1000 --user-group --no-create-home user
 
 # Install curl for healthcheck.
 RUN apt update && \

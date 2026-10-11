@@ -16,7 +16,7 @@ services:
       ENV_NAME: dev
       SERVICE_NAME: miniscrape
       SERVICE_VERSION: v1.0.0
-    restart: on-failure
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
       interval: 10s
@@ -27,13 +27,13 @@ services:
       - miniscrape-run:/app/runtime
     labels:
       - autoheal-app
-  
+
   miniscrape-ui:
     image: miniscrape-ui
     build: ./miniscrape-ui
     ports:
       - "127.0.0.1:3000:3000"
-    restart: on-failure
+    restart: unless-stopped
     environment:
       LOG_LEVEL: info
       SERVICE_MINISCRAPE_URL: "http://miniscrape:8080"
